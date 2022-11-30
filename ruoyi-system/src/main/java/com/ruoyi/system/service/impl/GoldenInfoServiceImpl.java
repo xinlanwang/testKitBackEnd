@@ -20,8 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static com.ruoyi.common.constant.TestKitConstants.DEVICE_TYPE_GOLDENCAR;
-import static com.ruoyi.common.constant.TestKitConstants.DICT_STATUS_NORMAL;
+import static com.ruoyi.common.constant.TestKitConstants.*;
 
 /**
  * 字典 业务层处理
@@ -101,7 +100,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         if (goldenInfoVOS == null || goldenInfoVOS.size() == 0){
             return null;
         }
-        for (GoldenInfoVO goldenInfoVO : goldenInfoVOS) {//todo:待简化
+        for (GoldenInfoVO goldenInfoVO : goldenInfoVOS) {
             List<GoldenInfoComponentDTO> goldenInfoComponents = tCarlineInfoMapper.queryGoldenInfoDetail(clusterName,carlineModelType,goldenInfoVO.getMarketType());
             if (goldenInfoComponents == null && goldenInfoComponents.size() == 0 && StringUtils.isEmpty(goldenInfoVO.getMarketType())) {
                 continue;
@@ -316,28 +315,22 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
             }
         }
         //假设加入的值字典中不存在
-//        if (StringUtil.isNullOrEmpty(dictLabelMap.get(cleanOriginName))){
-            SysDictData sysDictData = new SysDictData();
-            sysDictData.setDictType(dictTypeName);
-            sysDictData.setMatrixType("4");
-            sysDictData.setStatus(DICT_STATUS_NORMAL);
-            sysDictData.setDictLabel(dictLabel);
-            Integer dictValueNum;
-            if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {
-                dictValueNum = dictDataMapper.selectMaxDictType(dictTypeName) + 1;
-            }else {
-                dictValueNum = 1;
-            }
-            dictValue = dictValueNum.toString();
-            sysDictData.setDictValue(dictValue);
-            sysDictDataService.insertMatrixDictData(sysDictData);
-            dictLabelMap.put(cleanOriginName,sysDictData.getDictValue());
-            dictMap.put(dictTypeName,dictLabelMap);
-//        }else {
-            //假如存在则刷为将状态刷为0
-//            dictValue = dictLabelMap.get(cleanOriginName);
-//            dictDataMapper.updateDictDataStatus(dictTypeName,cleanOriginName,dictValue,"0");todo：这里应该不涉及置0操作
-//        }
+        SysDictData sysDictData = new SysDictData();
+        sysDictData.setDictType(dictTypeName);
+        sysDictData.setMatrixType(DICT_MATRIXTYPE_OTHER);
+        sysDictData.setStatus(DICT_STATUS_NORMAL);
+        sysDictData.setDictLabel(dictLabel);
+        Integer dictValueNum;
+        if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {
+            dictValueNum = dictDataMapper.selectMaxDictType(dictTypeName) + 1;
+        }else {
+            dictValueNum = 1;
+        }
+        dictValue = dictValueNum.toString();
+        sysDictData.setDictValue(dictValue);
+        sysDictDataService.insertMatrixDictData(sysDictData);
+        dictLabelMap.put(cleanOriginName,sysDictData.getDictValue());
+        dictMap.put(dictTypeName,dictLabelMap);
         return dictValue;
     }
 

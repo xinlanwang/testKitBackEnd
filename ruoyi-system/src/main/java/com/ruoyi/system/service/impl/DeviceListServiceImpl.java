@@ -601,7 +601,6 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCarlineInfo.setMarketType(deviceInfoVo.getMarketType());
         tCarlineInfo.setVinCode(deviceInfoVo.getVinCode());
         tCarlineInfo.setDeviceName(deviceInfoVo.getGoldenCarName());
-        //todo：t_carline_info basic_type考虑删除
         tCarlineInfo.setVariantType(deviceInfoVo.getVariantType());
         tCarlineInfo.setDbVersion(deviceInfoVo.getDbVersion());
         tCarlineInfo.setUpdateTime(new Date());

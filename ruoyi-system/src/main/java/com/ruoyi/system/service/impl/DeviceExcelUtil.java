@@ -366,7 +366,6 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
         }
 
         List<ImportPartComponentDTO> importPartComponentDTOS = new ArrayList<>();
-        //todo 蹩脚的方案处理合并单元格，序列号沿用上栏的
         if (list != null && list.size() > 1){
             ImportPartComponentDTO firstComponentDTO = (ImportPartComponentDTO) list.get(0);
             if (firstComponentDTO != null){

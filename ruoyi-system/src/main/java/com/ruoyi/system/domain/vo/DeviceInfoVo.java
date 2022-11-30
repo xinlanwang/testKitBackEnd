@@ -38,7 +38,7 @@ public class DeviceInfoVo
    private String vinCode;
    @ApiModelProperty("数据库版本")
    private String dbVersion;
-   @ApiModelProperty("lashUpdated")//todo：名称修改
+   @ApiModelProperty("lashUpdated")
    private String clusterLastUpdateName;
 
    @ApiModelProperty("设备组件列表")

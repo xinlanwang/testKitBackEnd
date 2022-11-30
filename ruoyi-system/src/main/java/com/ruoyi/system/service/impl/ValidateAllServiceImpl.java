@@ -66,7 +66,6 @@ public class ValidateAllServiceImpl implements ValidateAllService
         return 0;
     }
 
-    // TODO: 2022/11/7 dict删除后操作
 
     @Override
     public void deleteDictDataByIds(Long[] dictUids) {
