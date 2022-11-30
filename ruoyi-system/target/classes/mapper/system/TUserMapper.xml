@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TUserMapper">
+    
+    <resultMap type="TUser" id="TUserResult">
+        <result property="uid"    column="uid"    />
+        <result property="userName"    column="user_name"    />
+        <result property="passWord"    column="pass_word"    />
+        <result property="nickName"    column="nick_name"    />
+        <result property="gender"    column="gender"    />
+        <result property="email"    column="email"    />
+        <result property="birthday"    column="birthday"    />
+        <result property="mobile"    column="mobile"    />
+        <result property="validCode"    column="valid_code"    />
+        <result property="loginCount"    column="login_count"    />
+        <result property="lastLoginTime"    column="last_login_time"    />
+        <result property="lastLoginIp"    column="last_login_ip"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="userType"    column="user_type"    />
+        <result property="loadingValid"    column="loading_valid"    />
+        <result property="status"    column="status"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createByUid"    column="create_by_uid"    />
+        <result property="updateByUid"    column="update_by_uid"    />
+        <result property="remark"    column="remark"    />
+        <result property="occupation"    column="occupation"    />
+        <result property="roleUid"    column="role_uid"    />
+    </resultMap>
+
+    <sql id="selectTUserVo">
+        select uid, user_name, pass_word, nick_name, gender, email, birthday, mobile, valid_code, login_count, last_login_time, last_login_ip, create_time, update_time, user_type, loading_valid, status, del_flag, create_by_uid, update_by_uid, remark, occupation, role_uid from t_user
+    </sql>
+
+    <select id="selectTUserList" parameterType="TUser" resultMap="TUserResult">
+        <include refid="selectTUserVo"/>
+        <where>  
+            <if test="userName != null  and userName != ''"> and user_name like concat('%', #{userName}, '%')</if>
+            <if test="passWord != null  and passWord != ''"> and pass_word = #{passWord}</if>
+            <if test="nickName != null  and nickName != ''"> and nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="gender != null "> and gender = #{gender}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="birthday != null "> and birthday = #{birthday}</if>
+            <if test="mobile != null  and mobile != ''"> and mobile = #{mobile}</if>
+            <if test="validCode != null  and validCode != ''"> and valid_code = #{validCode}</if>
+            <if test="loginCount != null "> and login_count = #{loginCount}</if>
+            <if test="lastLoginTime != null "> and last_login_time = #{lastLoginTime}</if>
+            <if test="lastLoginIp != null  and lastLoginIp != ''"> and last_login_ip = #{lastLoginIp}</if>
+            <if test="userType != null "> and user_type = #{userType}</if>
+            <if test="loadingValid != null "> and loading_valid = #{loadingValid}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="createByUid != null  and createByUid != ''"> and create_by_uid = #{createByUid}</if>
+            <if test="updateByUid != null  and updateByUid != ''"> and update_by_uid = #{updateByUid}</if>
+            <if test="occupation != null  and occupation != ''"> and occupation = #{occupation}</if>
+            <if test="roleUid != null  and roleUid != ''"> and role_uid = #{roleUid}</if>
+        </where>
+    </select>
+    
+    <select id="selectTUserByUid" parameterType="String" resultMap="TUserResult">
+        <include refid="selectTUserVo"/>
+        where uid = #{uid}
+    </select>
+        
+    <insert id="insertTUser" parameterType="TUser">
+        insert into t_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="userName != null and userName != ''">user_name,</if>
+            <if test="passWord != null and passWord != ''">pass_word,</if>
+            <if test="nickName != null">nick_name,</if>
+            <if test="gender != null">gender,</if>
+            <if test="email != null">email,</if>
+            <if test="birthday != null">birthday,</if>
+            <if test="mobile != null">mobile,</if>
+            <if test="validCode != null">valid_code,</if>
+            <if test="loginCount != null">login_count,</if>
+            <if test="lastLoginTime != null">last_login_time,</if>
+            <if test="lastLoginIp != null">last_login_ip,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="userType != null">user_type,</if>
+            <if test="loadingValid != null">loading_valid,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="delFlag != null and delFlag != ''">del_flag,</if>
+            <if test="createByUid != null">create_by_uid,</if>
+            <if test="updateByUid != null">update_by_uid,</if>
+            <if test="remark != null">remark,</if>
+            <if test="occupation != null">occupation,</if>
+            <if test="roleUid != null">role_uid,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uid != null">#{uid},</if>
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="passWord != null and passWord != ''">#{passWord},</if>
+            <if test="nickName != null">#{nickName},</if>
+            <if test="gender != null">#{gender},</if>
+            <if test="email != null">#{email},</if>
+            <if test="birthday != null">#{birthday},</if>
+            <if test="mobile != null">#{mobile},</if>
+            <if test="validCode != null">#{validCode},</if>
+            <if test="loginCount != null">#{loginCount},</if>
+            <if test="lastLoginTime != null">#{lastLoginTime},</if>
+            <if test="lastLoginIp != null">#{lastLoginIp},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="userType != null">#{userType},</if>
+            <if test="loadingValid != null">#{loadingValid},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="delFlag != null and delFlag != ''">#{delFlag},</if>
+            <if test="createByUid != null">#{createByUid},</if>
+            <if test="updateByUid != null">#{updateByUid},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="occupation != null">#{occupation},</if>
+            <if test="roleUid != null">#{roleUid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTUser" parameterType="TUser">
+        update t_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userName != null and userName != ''">user_name = #{userName},</if>
+            <if test="passWord != null and passWord != ''">pass_word = #{passWord},</if>
+            <if test="nickName != null">nick_name = #{nickName},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="birthday != null">birthday = #{birthday},</if>
+            <if test="mobile != null">mobile = #{mobile},</if>
+            <if test="validCode != null">valid_code = #{validCode},</if>
+            <if test="loginCount != null">login_count = #{loginCount},</if>
+            <if test="lastLoginTime != null">last_login_time = #{lastLoginTime},</if>
+            <if test="lastLoginIp != null">last_login_ip = #{lastLoginIp},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="userType != null">user_type = #{userType},</if>
+            <if test="loadingValid != null">loading_valid = #{loadingValid},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="delFlag != null and delFlag != ''">del_flag = #{delFlag},</if>
+            <if test="createByUid != null">create_by_uid = #{createByUid},</if>
+            <if test="updateByUid != null">update_by_uid = #{updateByUid},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="occupation != null">occupation = #{occupation},</if>
+            <if test="roleUid != null">role_uid = #{roleUid},</if>
+        </trim>
+        where uid = #{uid}
+    </update>
+
+    <delete id="deleteTUserByUid" parameterType="String">
+        delete from t_user where uid = #{uid}
+    </delete>
+
+    <delete id="deleteTUserByUids" parameterType="String">
+        delete from t_user where uid in 
+        <foreach item="uid" collection="array" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>

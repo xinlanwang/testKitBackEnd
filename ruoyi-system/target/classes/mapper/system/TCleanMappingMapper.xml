@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TCleanMappingMapper">
+    
+    <resultMap type="TCleanMapping" id="TCleanMappingResult">
+        <result property="uid"    column="uid"    />
+        <result property="confuseData"    column="confuse_data"    />
+        <result property="guessValue"    column="guess_value"    />
+        <result property="useScene"    column="use_scene"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createByUid"    column="create_by_uid"    />
+        <result property="updateByUid"    column="update_by_uid"    />
+    </resultMap>
+
+    <sql id="selectTCleanMappingVo">
+        select uid, confuse_data, guess_value, use_scene, create_time, update_time, create_by_uid, update_by_uid from t_clean_mapping
+    </sql>
+
+    <select id="selectTCleanMappingList" parameterType="TCleanMapping" resultMap="TCleanMappingResult">
+        <include refid="selectTCleanMappingVo"/>
+        <where>  
+            <if test="confuseData != null  and confuseData != ''"> and confuse_data = #{confuseData}</if>
+            <if test="guessValue != null  and guessValue != ''"> and guess_value = #{guessValue}</if>
+            <if test="useScene != null  and useScene != ''"> and use_scene = #{useScene}</if>
+            <if test="createByUid != null  and createByUid != ''"> and create_by_uid = #{createByUid}</if>
+            <if test="updateByUid != null  and updateByUid != ''"> and update_by_uid = #{updateByUid}</if>
+        </where>
+    </select>
+    
+    <select id="selectTCleanMappingByUid" parameterType="Long" resultMap="TCleanMappingResult">
+        <include refid="selectTCleanMappingVo"/>
+        where uid = #{uid}
+    </select>
+        
+    <insert id="insertTCleanMapping" parameterType="TCleanMapping" useGeneratedKeys="true" keyProperty="uid">
+        insert into t_clean_mapping
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="confuseData != null">confuse_data,</if>
+            <if test="guessValue != null">guess_value,</if>
+            <if test="useScene != null">use_scene,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="createByUid != null">create_by_uid,</if>
+            <if test="updateByUid != null">update_by_uid,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="confuseData != null">#{confuseData},</if>
+            <if test="guessValue != null">#{guessValue},</if>
+            <if test="useScene != null">#{useScene},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="createByUid != null">#{createByUid},</if>
+            <if test="updateByUid != null">#{updateByUid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTCleanMapping" parameterType="TCleanMapping">
+        update t_clean_mapping
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="confuseData != null">confuse_data = #{confuseData},</if>
+            <if test="guessValue != null">guess_value = #{guessValue},</if>
+            <if test="useScene != null">use_scene = #{useScene},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="createByUid != null">create_by_uid = #{createByUid},</if>
+            <if test="updateByUid != null">update_by_uid = #{updateByUid},</if>
+        </trim>
+        where uid = #{uid}
+    </update>
+
+    <delete id="deleteTCleanMappingByUid" parameterType="Long">
+        delete from t_clean_mapping where uid = #{uid}
+    </delete>
+
+    <delete id="deleteTCleanMappingByUids" parameterType="String">
+        delete from t_clean_mapping where uid in 
+        <foreach item="uid" collection="array" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>

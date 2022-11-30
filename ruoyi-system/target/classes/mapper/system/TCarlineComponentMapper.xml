@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TCarlineComponentMapper">
+    
+    <resultMap type="TCarlineComponent" id="TCarlineComponentResult">
+        <result property="componentUid"    column="component_uid"    />
+        <result property="carlineInfoUid"    column="carline_info_uid"    />
+        <result property="minimalHw"    column="minimal_hw"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createByUid"    column="create_by_uid"    />
+        <result property="updateByUid"    column="update_by_uid"    />
+    </resultMap>
+
+    <sql id="selectTCarlineComponentVo">
+        select component_uid, carline_info_uid, minimal_hw, create_time, update_time, create_by_uid, update_by_uid from t_carline_component
+    </sql>
+
+    <select id="selectTCarlineComponentList" parameterType="TCarlineComponent" resultMap="TCarlineComponentResult">
+        <include refid="selectTCarlineComponentVo"/>
+        <where>  
+            <if test="carlineInfoUid != null  and carlineInfoUid != ''"> and carline_info_uid = #{carlineInfoUid}</if>
+            <if test="minimalHw != null  and minimalHw != ''"> and minimal_hw = #{minimalHw}</if>
+            <if test="createByUid != null  and createByUid != ''"> and create_by_uid = #{createByUid}</if>
+            <if test="updateByUid != null  and updateByUid != ''"> and update_by_uid = #{updateByUid}</if>
+        </where>
+    </select>
+    
+    <select id="selectTCarlineComponentByComponentUid" parameterType="String" resultMap="TCarlineComponentResult">
+        <include refid="selectTCarlineComponentVo"/>
+        where component_uid = #{componentUid}
+    </select>
+        
+    <insert id="insertTCarlineComponent" parameterType="TCarlineComponent">
+        insert into t_carline_component
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="componentUid != null">component_uid,</if>
+            <if test="carlineInfoUid != null and carlineInfoUid != ''">carline_info_uid,</if>
+            <if test="minimalHw != null">minimal_hw,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="createByUid != null">create_by_uid,</if>
+            <if test="updateByUid != null">update_by_uid,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="componentUid != null">#{componentUid},</if>
+            <if test="carlineInfoUid != null and carlineInfoUid != ''">#{carlineInfoUid},</if>
+            <if test="minimalHw != null">#{minimalHw},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="createByUid != null">#{createByUid},</if>
+            <if test="updateByUid != null">#{updateByUid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTCarlineComponent" parameterType="TCarlineComponent">
+        update t_carline_component
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="carlineInfoUid != null and carlineInfoUid != ''">carline_info_uid = #{carlineInfoUid},</if>
+            <if test="minimalHw != null">minimal_hw = #{minimalHw},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="createByUid != null">create_by_uid = #{createByUid},</if>
+            <if test="updateByUid != null">update_by_uid = #{updateByUid},</if>
+        </trim>
+        where component_uid = #{componentUid}
+    </update>
+
+    <delete id="deleteTCarlineComponentByComponentUid" parameterType="String">
+        delete from t_carline_component where component_uid = #{componentUid}
+    </delete>
+
+    <delete id="deleteTCarlineComponentByComponentUids" parameterType="String">
+        delete from t_carline_component where component_uid in 
+        <foreach item="componentUid" collection="array" open="(" separator="," close=")">
+            #{componentUid}
+        </foreach>
+    </delete>
+</mapper>

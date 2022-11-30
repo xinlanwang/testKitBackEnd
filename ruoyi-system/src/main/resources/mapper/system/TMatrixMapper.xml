@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TMatrixMapper">
+    
+    <resultMap type="TMatrix" id="TMatrixResult">
+        <result property="uid"    column="uid"    />
+        <result property="clusterName"    column="cluster_name"    />
+        <result property="platformType"    column="platform_type"    />
+        <result property="projectType"    column="project_type"    />
+        <result property="variantType"    column="variant_type"    />
+        <result property="carlineModelType"    column="carline_model_type"    />
+        <result property="marketTypes"    column="market_types"    />
+        <result property="ocuCboxType"    column="ocu_cbox_type"    />
+        <result property="gatewayType"    column="gateway_type"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createByUid"    column="create_by_uid"    />
+        <result property="updateByUid"    column="update_by_uid"    />
+    </resultMap>
+
+    <sql id="selectTMatrixVo">
+        select uid, cluster_name, platform_type, project_type, variant_type, carline_model_type, market_types, ocu_cbox_type, gateway_type, create_time, update_time, create_by_uid, update_by_uid from t_matrix
+    </sql>
+
+    <select id="selectTMatrixList" parameterType="TMatrix" resultMap="TMatrixResult">
+        <include refid="selectTMatrixVo"/>
+        <where>  
+            <if test="uid != null "> and uid = #{uid}</if>
+            <if test="clusterName != null  and clusterName != ''"> and cluster_name like concat('%', #{clusterName}, '%')</if>
+            <if test="platformType != null  and platformType != ''"> and platform_type = #{platformType}</if>
+            <if test="projectType != null  and projectType != ''"> and project_type = #{projectType}</if>
+            <if test="variantType != null  and variantType != ''"> and variant_type = #{variantType}</if>
+            <if test="carlineModelType != null  and carlineModelType != ''"> and carline_model_type like concat('%', #{carlineModelType}, '%')</if>
+            <if test="marketTypes != null  and marketTypes != ''"> and market_types = #{marketTypes}</if>
+            <if test="ocuCboxType != null  and ocuCboxType != ''"> and ocu_cbox_type = #{ocuCboxType}</if>
+            <if test="gatewayType != null  and gatewayType != ''"> and gateway_type = #{gatewayType}</if>
+        </where>
+    </select>
+    
+    <select id="selectTMatrixByUid" parameterType="Long" resultMap="TMatrixResult">
+        <include refid="selectTMatrixVo"/>
+        where uid = #{uid}
+    </select>
+        
+    <insert id="insertTMatrix" parameterType="TMatrix">
+        insert into t_matrix
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="clusterName != null">cluster_name,</if>
+            <if test="platformType != null">platform_type,</if>
+            <if test="projectType != null">project_type,</if>
+            <if test="variantType != null">variantType,</if>
+            <if test="carlineModelType != null">carline_model_type,</if>
+            <if test="marketTypes != null">market_types,</if>
+            <if test="ocuCboxType != null">ocu_cbox_type,</if>
+            <if test="gatewayType != null">gateway_type,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="createByUid != null">create_by_uid,</if>
+            <if test="updateByUid != null">update_by_uid,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uid != null">#{uid},</if>
+            <if test="clusterName != null">#{clusterName},</if>
+            <if test="platformType != null">#{platformType},</if>
+            <if test="projectType != null">#{projectType},</if>
+            <if test="variantType != null">#{variantType},</if>
+            <if test="carlineModelType != null">#{carlineModelType},</if>
+            <if test="marketTypes != null">#{marketTypes},</if>
+            <if test="ocuCboxType != null">#{ocuCboxType},</if>
+            <if test="gatewayType != null">#{gatewayType},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="createByUid != null">#{createByUid},</if>
+            <if test="updateByUid != null">#{updateByUid},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTMatrix" parameterType="TMatrix">
+        update t_matrix
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="clusterName != null">cluster_name = #{clusterName},</if>
+            <if test="goldenCarType != null">golden_car_type = #{goldenCarType},</if>
+            <if test="goldenClusterNameType != null">golden_cluster_name_type = #{goldenClusterNameType},</if>
+            <if test="platformType != null">platform_type = #{platformType},</if>
+            <if test="projectType != null">project_type = #{projectType},</if>
+            <if test="variantType != null">variant_type = #{variantType},</if>
+            <if test="carlineModelType != null">carline_model_type = #{carlineModelType},</if>
+            <if test="marketTypes != null">market_types = #{marketTypes},</if>
+            <if test="ocuCboxType != null">ocu_cbox_type = #{ocuCboxType},</if>
+            <if test="gatewayType != null">gateway_type = #{gatewayType},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="createByUid != null">create_by_uid = #{createByUid},</if>
+            <if test="updateByUid != null">update_by_uid = #{updateByUid},</if>
+        </trim>
+        where uid = #{uid}
+    </update>
+
+    <delete id="deleteTMatrixByUid" parameterType="Long">
+        delete from t_matrix where uid = #{uid}
+    </delete>
+
+    <delete id="deleteTMatrixByUids" parameterType="String">
+        delete from t_matrix where uid in 
+        <foreach item="uid" collection="array" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>

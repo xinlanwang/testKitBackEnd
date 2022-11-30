@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TSysDictTypeMapper">
+    
+    <resultMap type="TSysDictType" id="TSysDictTypeResult">
+        <result property="uid"    column="uid"    />
+        <result property="oid"    column="oid"    />
+        <result property="dictName"    column="dict_name"    />
+        <result property="dictType"    column="dict_type"    />
+        <result property="createByUid"    column="create_by_uid"    />
+        <result property="updateByUid"    column="update_by_uid"    />
+        <result property="remark"    column="remark"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="isPublish"    column="is_publish"    />
+        <result property="sort"    column="sort"    />
+    </resultMap>
+
+    <sql id="selectTSysDictTypeVo">
+        select uid, oid, dict_name, dict_type, create_by_uid, update_by_uid, remark, status, create_time, update_time, is_publish, sort from t_sys_dict_type
+    </sql>
+
+    <select id="selectTSysDictTypeList" parameterType="TSysDictType" resultMap="TSysDictTypeResult">
+        <include refid="selectTSysDictTypeVo"/>
+        <where>  
+            <if test="oid != null "> and oid = #{oid}</if>
+            <if test="dictName != null  and dictName != ''"> and dict_name like concat('%', #{dictName}, '%')</if>
+            <if test="dictType != null  and dictType != ''"> and dict_type = #{dictType}</if>
+            <if test="createByUid != null  and createByUid != ''"> and create_by_uid = #{createByUid}</if>
+            <if test="updateByUid != null  and updateByUid != ''"> and update_by_uid = #{updateByUid}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="isPublish != null "> and is_publish = #{isPublish}</if>
+            <if test="sort != null "> and sort = #{sort}</if>
+        </where>
+    </select>
+    
+    <select id="selectTSysDictTypeByUid" parameterType="String" resultMap="TSysDictTypeResult">
+        <include refid="selectTSysDictTypeVo"/>
+        where uid = #{uid}
+    </select>
+        
+    <insert id="insertTSysDictType" parameterType="TSysDictType">
+        insert into t_sys_dict_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="oid != null">oid,</if>
+            <if test="dictName != null">dict_name,</if>
+            <if test="dictType != null">dict_type,</if>
+            <if test="createByUid != null and createByUid != ''">create_by_uid,</if>
+            <if test="updateByUid != null and updateByUid != ''">update_by_uid,</if>
+            <if test="remark != null">remark,</if>
+            <if test="status != null">status,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="isPublish != null">is_publish,</if>
+            <if test="sort != null">sort,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uid != null">#{uid},</if>
+            <if test="oid != null">#{oid},</if>
+            <if test="dictName != null">#{dictName},</if>
+            <if test="dictType != null">#{dictType},</if>
+            <if test="createByUid != null and createByUid != ''">#{createByUid},</if>
+            <if test="updateByUid != null and updateByUid != ''">#{updateByUid},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="status != null">#{status},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="isPublish != null">#{isPublish},</if>
+            <if test="sort != null">#{sort},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTSysDictType" parameterType="TSysDictType">
+        update t_sys_dict_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="oid != null">oid = #{oid},</if>
+            <if test="dictName != null">dict_name = #{dictName},</if>
+            <if test="dictType != null">dict_type = #{dictType},</if>
+            <if test="createByUid != null and createByUid != ''">create_by_uid = #{createByUid},</if>
+            <if test="updateByUid != null and updateByUid != ''">update_by_uid = #{updateByUid},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="isPublish != null">is_publish = #{isPublish},</if>
+            <if test="sort != null">sort = #{sort},</if>
+        </trim>
+        where uid = #{uid}
+    </update>
+
+    <delete id="deleteTSysDictTypeByUid" parameterType="String">
+        delete from t_sys_dict_type where uid = #{uid}
+    </delete>
+
+    <delete id="deleteTSysDictTypeByUids" parameterType="String">
+        delete from t_sys_dict_type where uid in 
+        <foreach item="uid" collection="array" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>

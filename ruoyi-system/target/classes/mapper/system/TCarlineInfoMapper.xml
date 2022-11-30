@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TCarlineInfoMapper">
+    
+    <resultMap type="TCarlineInfo" id="TCarlineInfoResult">
+        <result property="uid"    column="uid"    />
+        <result property="clusterUid"    column="cluster_uid"    />
+        <result property="platformType"    column="platform_type"    />
+        <result property="marketType"    column="market_type"    />
+        <result property="basicType"    column="basic_type"    />
+        <result property="variantType"    column="variant_type"    />
+        <result property="vinCode"    column="vin_code"    />
+        <result property="dbVersion"    column="db_version"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="createByUid"    column="create_by_uid"    />
+        <result property="updateByUid"    column="update_by_uid"    />
+        <result property="resp"    column="resp"    />
+    </resultMap>
+
+    <resultMap type="DeviceListVo" id="DeviceListVo">
+        <result property="carlineIcon"    column="carline_icon"    />
+        <result property="goldenCarName"    column="goldenCarName"    />
+        <result property="clusterName"    column="clusterName"    />
+        <result property="projectType"    column="projectType"    />
+        <result property="marketType"    column="marketType"    />
+        <result property="carlineModelType"    column="carlineModelType"    />
+        <result property="platformType"    column="platformType"    />
+        <result property="carlineType"    column="carlineType"    />
+        <result property="variantType"    column="variantType"    />
+        <result property="vinCode"    column="vinCode"    />
+        <result property="carline_info_uid"    column="carlineInfoUid"    />
+    </resultMap>
+
+    <sql id="selectTCarlineInfoVo">
+        select uid, cluster_uid, platform_type, market_type, basic_type, variant_type, vin_code, db_version, create_time, update_time, create_by_uid, update_by_uid, resp from t_carline_info
+    </sql>
+
+
+
+    <select id="queryDeviceList" parameterType="com.ruoyi.system.domain.param.DeviceListParam" resultMap="DeviceListVo">
+        select t.carline_icon,tci.device_name as goldenCarName,tc.cluster_name as clusterName,tc.project_type as projectType,tc.device_type as carlineType,tci.platform_type as platformType,
+        tci.market_type as marketType,t.carline_model_type as carlineModelType,tci.variant_type as variantType,tci.vin_code as vinCode,tci.carline_info_uid
+        from t_carline_info tci
+        left join t_cluster tc on tc.uid = tci.cluster_uid
+        left join t_carline t on t.uid = tc.carline_uid
+        where 1= 1
+        <if test="componentType != null  and componentType != '' and wareType != null  and wareType != '' and componentModel != null  and componentModel != ''">
+        and  tci.carline_info_uid in (select tcc.carline_info_uid
+        from t_carline_component tcc
+        left join t_component_data tcd on tcc.component_uid = tcd.uid
+        where 1 = 1
+
+        and tcd.ware_type = #{wareType}
+        and tcd.component_type = #{componentType}
+        AND lower(tcd.component_version) like lower(concat('%', #{componentModel}, '%'))
+        )
+        </if>
+        <if test="carlineType != null  and carlineType != ''">
+          and tc.device_type = #{carlineType}
+        </if>
+        <if test="goldenCarName != null and goldenCarName != ''">
+            AND lower(tci.device_name) like lower(concat('%', #{goldenCarName}, '%'))
+        </if>
+        <if test="lastUpdated != null and lastUpdated != ''">
+            AND lower(tc.last_updated) like lower(concat('%', #{lastUpdated}, '%'))
+        </if>
+        <if test="dbVersion != null and dbVersion != ''">
+            AND lower(tci.db_version) like lower(concat('%', #{dbVersion}, '%'))
+        </if>
+        <if test="vinCode != null and vinCode != ''">
+            AND lower(tci.vin_code) like lower(concat('%', #{vinCode}, '%'))
+        </if>
+        <if test="marketTypes != null and marketTypes.length > 0">
+            and tci.market_type in
+            <foreach item="item" index="index" collection="marketTypes" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="variantTypes != null and variantTypes.length > 0">
+            and tci.variant_type in
+            <foreach collection="variantTypes" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="projectTypes != null and projectTypes.length > 0">
+            and tc.project_type in
+            <foreach collection="projectTypes" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="platformTypes != null and platformTypes.length > 0">
+            and tci.platform_type in
+            <foreach collection="platformTypes" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="clusterNames != null and clusterNames.length > 0">
+            and tc.cluster_name in
+            <foreach collection="clusterNames" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="carlineModelTypes != null and carlineModelTypes.length > 0">
+            and t.carline_model_type in
+            <foreach collection="carlineModelTypes" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by tci.update_time desc
+    </select>
+
+    <select id="selectTCarlineInfoList" parameterType="TCarlineInfo" resultMap="TCarlineInfoResult">
+        <include refid="selectTCarlineInfoVo"/>
+        <where>  
+            <if test="clusterUid != null  and clusterUid != ''"> and cluster_uid = #{clusterUid}</if>
+            <if test="platformType != null  and platformType != ''"> and platform_type = #{platformType}</if>
+            <if test="marketType != null  and marketType != ''"> and market_type = #{marketType}</if>
+            <if test="basicType != null  and basicType != ''"> and basic_type = #{basicType}</if>
+            <if test="variantType != null  and variantType != ''"> and variant_type = #{variantType}</if>
+            <if test="vinCode != null  and vinCode != ''"> and vin_code = #{vinCode}</if>
+            <if test="dbVersion != null  and dbVersion != ''"> and db_version = #{dbVersion}</if>
+            <if test="createByUid != null  and createByUid != ''"> and create_by_uid = #{createByUid}</if>
+            <if test="updateByUid != null  and updateByUid != ''"> and update_by_uid = #{updateByUid}</if>
+            <if test="resp != null  and resp != ''"> and resp = #{resp}</if>
+        </where>
+    </select>
+    
+    <select id="selectTCarlineInfoByUid" parameterType="String" resultMap="TCarlineInfoResult">
+        <include refid="selectTCarlineInfoVo"/>
+        where uid = #{uid}
+    </select>
+        
+    <insert id="insertTCarlineInfo" parameterType="TCarlineInfo">
+        insert into t_carline_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="clusterUid != null">cluster_uid,</if>
+            <if test="platformType != null">platform_type,</if>
+            <if test="marketType != null">market_type,</if>
+            <if test="basicType != null and basicType != ''">basic_type,</if>
+            <if test="variantType != null and variantType != ''">variantType,</if>
+            <if test="vinCode != null">vin_code,</if>
+            <if test="dbVersion != null">db_version,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="createByUid != null">create_by_uid,</if>
+            <if test="updateByUid != null">update_by_uid,</if>
+            <if test="resp != null">resp,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uid != null">#{uid},</if>
+            <if test="clusterUid != null">#{clusterUid},</if>
+            <if test="platformType != null">#{platformType},</if>
+            <if test="marketType != null">#{marketType},</if>
+            <if test="basicType != null and basicType != ''">#{basicType},</if>
+            <if test="variantType != null and variantType != ''">#{variantType},</if>
+            <if test="vinCode != null">#{vinCode},</if>
+            <if test="dbVersion != null">#{dbVersion},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="createByUid != null">#{createByUid},</if>
+            <if test="updateByUid != null">#{updateByUid},</if>
+            <if test="resp != null">#{resp},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTCarlineInfo" parameterType="TCarlineInfo">
+        update t_carline_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="clusterUid != null">cluster_uid = #{clusterUid},</if>
+            <if test="platformType != null">platform_type = #{platformType},</if>
+            <if test="marketType != null">market_type = #{marketType},</if>
+            <if test="basicType != null and basicType != ''">basic_type = #{basicType},</if>
+            <if test="variantType != null and variantType != ''">variant_type = #{variantType},</if>
+            <if test="vinCode != null">vin_code = #{vinCode},</if>
+            <if test="dbVersion != null">db_version = #{dbVersion},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="createByUid != null">create_by_uid = #{createByUid},</if>
+            <if test="updateByUid != null">update_by_uid = #{updateByUid},</if>
+            <if test="resp != null">resp = #{resp},</if>
+        </trim>
+        where uid = #{uid}
+    </update>
+
+    <delete id="deleteTCarlineInfoByUid" parameterType="String">
+        delete from t_carline_info where uid = #{uid}
+    </delete>
+
+    <delete id="deleteTCarlineInfoByUids" parameterType="String">
+        delete from t_carline_info where uid in 
+        <foreach item="uid" collection="array" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>
