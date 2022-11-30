@@ -18,14 +18,6 @@ public interface SysDictDataMapper extends BaseMapper<SysDictData>
 {
 
     /**
-     * 设备详情A基本信息
-     */
-    String queryDeviceInfoSql = "select max(cast(dict_value as unsigned integer ))\n" +
-            "from sys_dict_data\n" +
-            "where dict_type = #{dictType}";
-    @Select(queryDeviceInfoSql)
-    Integer queryMaxValueByDictType(@Param("dictType") String dictType);
-    /**
      * 批量逻辑删除字典数据信息
      *
      * @param dictCodes 需要删除的字典数据ID
@@ -40,6 +32,12 @@ public interface SysDictDataMapper extends BaseMapper<SysDictData>
      */
     public int logicDelectDictDataByIds(Long[] dictCodes);
     public int logicDelectDictDataByMatrixType(@Param("matrixType") String matrixType);
+
+    String queryDeviceInfoSql = "select max(cast(dict_value as unsigned integer ))\n" +
+            "from sys_dict_data\n" +
+            "where dict_type = #{dictType}";
+//    @Select(queryDeviceInfoSql)
+    public Integer selectMaxDictType(@Param("dictType") String dictType);
     /**
      * 根据条件分页查询字典数据
      * 

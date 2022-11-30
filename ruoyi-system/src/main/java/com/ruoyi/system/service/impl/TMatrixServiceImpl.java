@@ -260,7 +260,12 @@ public class TMatrixServiceImpl implements ITMatrixService
             sysDictData.setMatrixType(matrixType);
             sysDictData.setStatus("0");//状态（0正常 1停用）todo:魔法值
             sysDictData.setDictLabel(dictLabel);
-            Integer dictValueNum = dictLabelMap.size() + 1;
+            Integer dictValueNum;
+            if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {
+                dictValueNum = dictDataMapper.selectMaxDictType(dictTypeName) + 1;
+            }else {
+                dictValueNum = 1;
+            }
             dictValue = dictValueNum.toString();
             sysDictData.setDictValue(dictValue);
             sysDictDataService.insertMatrixDictData(sysDictData);

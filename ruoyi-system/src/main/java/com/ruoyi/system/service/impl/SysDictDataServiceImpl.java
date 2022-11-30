@@ -1,6 +1,8 @@
 package com.ruoyi.system.service.impl;
 
 import java.util.List;
+
+import com.ruoyi.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.core.domain.entity.SysDictData;
@@ -110,6 +112,16 @@ public class SysDictDataServiceImpl implements ISysDictDataService
     @Override
     public int insertMatrixDictData(SysDictData data)
     {
+        String dictType = data.getDictType();
+        if (StringUtils.isEmpty(dictType)){
+            return -1;
+        }
+        Integer currentMaxValue = dictDataMapper.selectMaxDictType(dictType);
+        if (currentMaxValue == null){
+            currentMaxValue = 0;
+        }
+        Integer dictValue = currentMaxValue + 1;
+        data.setDictValue(dictValue.toString());
         int row = dictDataMapper.insertMatrixDictData(data);
         if (row > 0)
         {
