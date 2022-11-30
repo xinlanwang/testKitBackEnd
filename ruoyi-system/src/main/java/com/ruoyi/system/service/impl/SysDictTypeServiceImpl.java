@@ -20,6 +20,8 @@ import com.ruoyi.system.mapper.SysDictDataMapper;
 import com.ruoyi.system.mapper.SysDictTypeMapper;
 import com.ruoyi.system.service.ISysDictTypeService;
 
+import static com.ruoyi.common.constant.TestKitConstants.DICT_STATUS_NORMAL;
+
 /**
  * 字典 业务层处理
  * 
@@ -157,7 +159,7 @@ public class SysDictTypeServiceImpl implements ISysDictTypeService
     public void loadingDictCache()
     {
         SysDictData dictData = new SysDictData();
-        dictData.setStatus("0");
+        dictData.setStatus(DICT_STATUS_NORMAL);
         Map<String, List<SysDictData>> dictDataMap = dictDataMapper.selectDictDataList(dictData).stream().collect(Collectors.groupingBy(SysDictData::getDictType));
         for (Map.Entry<String, List<SysDictData>> entry : dictDataMap.entrySet())
         {

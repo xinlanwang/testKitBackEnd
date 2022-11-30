@@ -246,6 +246,8 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
         return val;
     }
 
+    private static int MAXROW = 30;
+    private static int MAXCOL = 200;
     /**
      * 获取某一区块下的GoldenInfo数据
      * @param sheet sheet页
@@ -259,7 +261,7 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
         Row startRow = sheet.getRow(startRowNum);
         // 获取结束行
         int endRowNum = startRowNum;
-        for (int i = startRowNum; i < startRowNum + 50; i++){//heard.getPhysicalNumberOfCells() 200列的大值 todo：魔法值
+        for (int i = startRowNum; i < startRowNum + MAXROW; i++){//heard.getPhysicalNumberOfCells() 200列的大值
             Boolean Cell0 = cellValueIsNotEmpty(sheet.getRow(i), startColNum + 1);
             Boolean Cell3 = cellValueIsNotEmpty(sheet.getRow(i), startColNum);
             Boolean Cell1 = cellValueIsNotEmpty(sheet.getRow(i + 1), startColNum + 1);
@@ -277,7 +279,7 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
 //        System.out.println("此次循环最后一行的值为：" + endRowNum);
         //获取结束列
         Integer endColNum = startColNum;
-        for (int i = startColNum + 1; i < startColNum + 200; i++){//heard.getPhysicalNumberOfCells() 200列的大值 todo：魔法值
+        for (int i = startColNum + 1; i < startColNum + MAXCOL; i++){
             Boolean Cell0 = cellValueIsNotEmpty(sheet.getRow(startRowNum), i + 0);
 
             if (!(Cell0)){//列合并没法管

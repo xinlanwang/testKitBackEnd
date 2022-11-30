@@ -2,6 +2,7 @@ package com.ruoyi.system.service.impl;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,9 @@ import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.DictUtils;
 import com.ruoyi.system.mapper.SysDictDataMapper;
 import com.ruoyi.system.service.ISysDictDataService;
+
+import static com.ruoyi.common.constant.TestKitConstants.DICT_MATRIXTYPE_VALIDATE;
+import static com.ruoyi.common.constant.TestKitConstants.DICT_STATUS_NORMAL;
 
 /**
  * 字典 业务层处理
@@ -113,22 +117,30 @@ public class SysDictDataServiceImpl implements ISysDictDataService
     public int insertMatrixDictData(SysDictData data)
     {
         String dictType = data.getDictType();
-        if (StringUtils.isEmpty(dictType)){
+        if (StringUtils.isEmpty(dictType) && StringUtils.isEmpty(data.getDictLabel())){
             return -1;
         }
-        Integer currentMaxValue = dictDataMapper.selectMaxDictType(dictType);
-        if (currentMaxValue == null){
-            currentMaxValue = 0;
+        SysDictData sysDictData = dictDataMapper.selectOne(new QueryWrapper<SysDictData>().eq("dict_type", data.getDictType()).eq("dict_label", data.getDictLabel()));
+        if (sysDictData != null){
+            sysDictData.setStatus(DICT_STATUS_NORMAL);
+            dictDataMapper.updateDictData(sysDictData);
+            return 1;
+        }else {
+            Integer currentMaxValue = dictDataMapper.selectMaxDictType(dictType);
+            if (currentMaxValue == null){
+                currentMaxValue = 0;
+            }
+            Integer dictValue = currentMaxValue + 1;
+            data.setDictValue(dictValue.toString());
+            int row = dictDataMapper.insertMatrixDictData(data);
+            if (row > 0)
+            {
+                List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
+                DictUtils.setDictCache(data.getDictType(), dictDatas);
+            }
+            return row;
         }
-        Integer dictValue = currentMaxValue + 1;
-        data.setDictValue(dictValue.toString());
-        int row = dictDataMapper.insertMatrixDictData(data);
-        if (row > 0)
-        {
-            List<SysDictData> dictDatas = dictDataMapper.selectDictDataByType(data.getDictType());
-            DictUtils.setDictCache(data.getDictType(), dictDatas);
-        }
-        return row;
+
     }
 
     @Override

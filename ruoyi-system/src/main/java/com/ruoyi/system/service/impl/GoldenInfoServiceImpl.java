@@ -20,6 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static com.ruoyi.common.constant.TestKitConstants.DEVICE_TYPE_GOLDENCAR;
+import static com.ruoyi.common.constant.TestKitConstants.DICT_STATUS_NORMAL;
+
 /**
  * 字典 业务层处理
  * 
@@ -52,7 +55,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         Integer pageSize = 10;
 
         QueryWrapper<TCluster> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("device_type",3);
+        queryWrapper.eq("device_type",DEVICE_TYPE_GOLDENCAR);
         queryWrapper.groupBy("cluster_name");
         queryWrapper.orderByDesc("update_time");
         Page<TCluster> page = new Page<>(pageNum, pageSize);
@@ -87,7 +90,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
 
 
         //页码装配
-        result.put("total",tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("device_type",3).groupBy("cluster_name")).size());
+        result.put("total",tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("device_type",DEVICE_TYPE_GOLDENCAR).groupBy("cluster_name")).size());
         result.put("goldenListVos",goldenListVos);
         return result;
     }
@@ -317,7 +320,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
             SysDictData sysDictData = new SysDictData();
             sysDictData.setDictType(dictTypeName);
             sysDictData.setMatrixType("4");
-            sysDictData.setStatus("0");//状态（0正常 1停用）todo:魔法值
+            sysDictData.setStatus(DICT_STATUS_NORMAL);
             sysDictData.setDictLabel(dictLabel);
             Integer dictValueNum;
             if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {

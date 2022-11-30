@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ruoyi.common.constant.TestKitConstants.*;
 import static com.ruoyi.common.utils.PageUtils.startPage;
 
 /**
@@ -168,10 +169,10 @@ public class DeviceListServiceImpl implements DeviceListService {
                 TCarline tCarline = new TCarline();
                 TCluster tCluster = new TCluster();
                 TCarlineInfo tCarlineInfo = new TCarlineInfo();
-                if (key.equals("Devices")){//这里的Device其实是Car
+                if (key.equals(DEVICE_TYPE_CAR)){//这里的Device其实是Car
                     tCluster.setDeviceType("2");
                 }else {
-                    tCluster.setDeviceType("1");
+                    tCluster.setDeviceType(DEVICE_TYPE_BENCH);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getDeviceName())){
 //                    tCarline.setgoldenCarName(importDeviceDTO.getDeviceName());
@@ -452,7 +453,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             SysDictData sysDictData = new SysDictData();
             sysDictData.setDictType(dictTypeName);
             sysDictData.setMatrixType(matrixType);
-            sysDictData.setStatus("0");//状态（0正常 1停用）todo:魔法值
+            sysDictData.setStatus(DICT_STATUS_NORMAL);
             sysDictData.setDictLabel(dictLabel);
             Integer dictValueNum;
             if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {

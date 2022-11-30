@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.TMatrixMapper;
 import com.ruoyi.system.service.ITMatrixService;
 
+import static com.ruoyi.common.constant.TestKitConstants.*;
+
 /**
  * `BIGINT(32)`Service业务层处理
  * 
@@ -151,8 +153,7 @@ public class TMatrixServiceImpl implements ITMatrixService
         Map<String, Map<String,String>> dictMap = getDictMap(dictTypes);
 
         //清除
-        tMatrixMapper.delete(new QueryWrapper<TMatrix>().eq("matrix_type",""));//规则清除
-        dictDataMapper.logicDelectDictDataByMatrixType("1");//字典清除
+        tMatrixMapper.delete(new QueryWrapper<TMatrix>().eq("matrix_type",MATRIXTYPE_MATRIX));//规则清除
         //build
         List<TMatrix> saveMatrix = new ArrayList<>();
         for (ImportMatrixDTO importMatrixDTO:importMatrixDTOS){
@@ -161,21 +162,21 @@ public class TMatrixServiceImpl implements ITMatrixService
             }
             if (!StringUtil.isNullOrEmpty(importMatrixDTO.getMarketType()) || importMatrixDTO.getMarketType().toUpperCase().split(";").length > 1){
                 TMatrix newMatrixDO = new TMatrix();
-                buildNewMatrixDO(dictMap, importMatrixDTO, newMatrixDO,dictTypes,"2");
+                buildNewMatrixDO(dictMap, importMatrixDTO, newMatrixDO,dictTypes,MATRIXTYPE_MATRIX);
                 StringBuffer marketTypeBuffer = new StringBuffer();
                 for (String marketType : importMatrixDTO.getMarketType().toUpperCase().split(";")) {// 存在：CN;TW;KR;JP;HK
-                    String marketTypeValue = getDictValue("marketType", dictMap, marketType,"2");
+                    String marketTypeValue = getDictValue("marketType", dictMap, marketType,MATRIXTYPE_MATRIX);
                     marketTypeBuffer.append(marketTypeValue + ",");
                 }
                 newMatrixDO.setMarketTypes(marketTypeBuffer.deleteCharAt(marketTypeBuffer.length() - 1).toString());
-                newMatrixDO.setMatrixType("2");//todo:魔法值
+                newMatrixDO.setMatrixType(MATRIXTYPE_MATRIX);
                 saveMatrix.add(newMatrixDO);
             }else {
                 TMatrix newMatrixDO = new TMatrix();
-                buildNewMatrixDO(dictMap, importMatrixDTO, newMatrixDO,dictTypes,"2");
-                String marketTypeValue = getDictValue("marketType", dictMap, importMatrixDTO.getMarketType(),"2");
+                buildNewMatrixDO(dictMap, importMatrixDTO, newMatrixDO,dictTypes,MATRIXTYPE_MATRIX);
+                String marketTypeValue = getDictValue("marketType", dictMap, importMatrixDTO.getMarketType(),MATRIXTYPE_MATRIX);
                 newMatrixDO.setMarketTypes(marketTypeValue);
-                newMatrixDO.setMatrixType("2");//todo:魔法值
+                newMatrixDO.setMatrixType(MATRIXTYPE_MATRIX);
                 saveMatrix.add(newMatrixDO);
             }
         }
@@ -194,12 +195,13 @@ public class TMatrixServiceImpl implements ITMatrixService
                 "variantType","taskType","carlineModelType","goldenCarType","goldenClusterNameType"};
         Map<String, Map<String,String>> dictMap = getDictMap(dictTypes);
         //清除
-        tMatrixMapper.delete(new QueryWrapper<TMatrix>().eq("matrix_type",""));
+        tMatrixMapper.delete(new QueryWrapper<TMatrix>().eq("matrix_type",MATRIXTYPE_VALIDATE));
+        dictDataMapper.logicDelectDictDataByMatrixType(DICT_MATRIXTYPE_VALIDATE);//字典清除
 
         //作为字典导入
         for (ImportValidateDTO importValidateDTO:importValidateDTOS){
             TMatrix newMatrixDO = new TMatrix();
-            buildNewMatrixDO(dictMap, importValidateDTO, newMatrixDO,dictTypes,"1");
+            buildNewMatrixDO(dictMap, importValidateDTO, newMatrixDO,dictTypes, DICT_MATRIXTYPE_VALIDATE);
         }
 
         //作为规则导入
@@ -210,8 +212,8 @@ public class TMatrixServiceImpl implements ITMatrixService
                 continue;
             }
             String[] subDictTypes = new String[] {"carlineModelType","goldenCarType","goldenClusterNameType"};
-            buildNewMatrixDO(dictMap, importValidateDTO, newMatrixDO,subDictTypes,"1");
-            newMatrixDO.setMatrixType("1");//todo:魔法值
+            buildNewMatrixDO(dictMap, importValidateDTO, newMatrixDO,subDictTypes,MATRIXTYPE_VALIDATE);
+            newMatrixDO.setMatrixType(MATRIXTYPE_VALIDATE);
             saveMatrix.add(newMatrixDO);
         }
         for (TMatrix tMatrix:saveMatrix){
@@ -228,7 +230,7 @@ public class TMatrixServiceImpl implements ITMatrixService
      */
     private void buildNewMatrixDO(Map<String, Map<String, String>> dictMap, Object entity, TMatrix newMatrixDO,String[] dictTypes,String matrixType) {
         for (String dictType:dictTypes) {
-            if ("marketType".equals(dictType) && "2".equals(matrixType)){
+            if ("marketType".equals(dictType) && MATRIXTYPE_MATRIX.equals(matrixType)){
                 continue;
             }
             String dictValue = getDictValue(dictType, dictMap, ReflectUtils.invokeGetter(entity,dictType),matrixType);
@@ -258,7 +260,7 @@ public class TMatrixServiceImpl implements ITMatrixService
             SysDictData sysDictData = new SysDictData();
             sysDictData.setDictType(dictTypeName);
             sysDictData.setMatrixType(matrixType);
-            sysDictData.setStatus("0");//状态（0正常 1停用）todo:魔法值
+            sysDictData.setStatus(DICT_STATUS_NORMAL);
             sysDictData.setDictLabel(dictLabel);
             Integer dictValueNum;
             if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {
@@ -274,7 +276,7 @@ public class TMatrixServiceImpl implements ITMatrixService
         }else {
             //假如存在则刷为将状态刷为0
             dictValue = dictLabelMap.get(dictLabel);
-            dictDataMapper.updateDictDataStatus(dictTypeName,dictLabel,dictValue,"0");
+            dictDataMapper.updateDictDataStatus(dictTypeName,dictLabel,dictValue,DICT_STATUS_NORMAL);
         }
         return dictValue;
     }

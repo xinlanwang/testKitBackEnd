@@ -148,7 +148,7 @@ public class MatrixController extends BaseController {
     })
     @PostMapping("/addDictdata")
     @ApiOperation("新增字典某类型下键值类型")
-    public AjaxResult add(@Validated @RequestBody SysDictData dict)
+    public AjaxResult add(@RequestBody SysDictData dict)
     {
         return toAjax(dictDataService.insertMatrixDictData(dict));
     }
@@ -180,7 +180,7 @@ public class MatrixController extends BaseController {
             @ApiImplicitParam(name = "dictValue", value = "字典键值", dataType = "String", dataTypeClass = String.class),
             @ApiImplicitParam(name = "dictType", value = "字典类型", dataType = "String", dataTypeClass = String.class)
     })
-    public AjaxResult edit(@Validated @RequestBody SysDictData dict)
+    public AjaxResult edit(@RequestBody SysDictData dict)
     {
         return toAjax(dictDataService.updateDictData(dict));
     }
