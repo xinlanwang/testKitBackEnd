@@ -1,5 +1,6 @@
 package com.ruoyi.system.service;
 
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
@@ -19,7 +20,7 @@ public interface DeviceListService
 
     public List queryDeviceList(DeviceListParam deviceListParam);
 
-    public Integer compareComponent( DeviceCompareParam deviceCompareParam);
+    public AjaxResult compareComponent(DeviceCompareParam deviceCompareParam);
 
     public int insertDeviceInfo(DeviceInfoVo deviceInfoVo);
 

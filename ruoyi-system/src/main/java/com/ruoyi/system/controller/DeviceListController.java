@@ -80,16 +80,8 @@ public class DeviceListController extends BaseController
     @ApiOperation("查询车型基本信息列表")
 //    @PreAuthorize("@ss.hasPermi('device:devicelist:list')")
     @PostMapping("/compare")
-    public R<String> compareComponent(@Validated @RequestBody DeviceCompareParam deviceCompareParam) {
-        Integer i = deviceListService.compareComponent(deviceCompareParam);
-        if (i == 3){
-            return R.ok("正常");
-        }else if (i == 2){
-            return R.ok("大于最低版本");
-        }else if (i == 1){
-            return R.ok("小于最低版本");
-        }
-        return R.fail("为空或者没找到");
+    public AjaxResult compareComponent(@Validated @RequestBody DeviceCompareParam deviceCompareParam) {
+        return deviceListService.compareComponent(deviceCompareParam);
     }
 
     @PostMapping("/save")

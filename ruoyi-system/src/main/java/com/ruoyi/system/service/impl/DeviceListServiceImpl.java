@@ -1,8 +1,10 @@
 package com.ruoyi.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.system.domain.DeviceCompareVO;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
@@ -160,7 +162,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         //结果：https://sumomoriaty.oss-cn-beijing.aliyuncs.com/zdcar/202212011422541.png
     }
 
-    public Integer compareComponent(DeviceCompareParam deviceCompareParam){
+    public AjaxResult compareComponent(DeviceCompareParam deviceCompareParam){
         String carlineModelType = deviceCompareParam.getCarlineModelType();
         String clusterName = deviceCompareParam.getClusterName();
         String marketType = deviceCompareParam.getMarketType();
@@ -169,31 +171,39 @@ public class DeviceListServiceImpl implements DeviceListService {
         String componentModel = deviceCompareParam.getComponentModel();
         if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) ||
                 StringUtils.isEmpty(wareType) || StringUtils.isEmpty(componentType) || StringUtils.isEmpty(componentModel)){
-            return -1;
+            return AjaxResult.error("参数不得为空");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
         if (goldenInfoComponentDTOS == null || goldenInfoComponentDTOS.size() == 0){
-            return -1;
+            return AjaxResult.error("GoldenInfo里并没有对应取值");
         }
         Map<String,GoldenInfoComponentDTO> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
         for (String goldenComponentType:goldenInfoComponentDTOMap.keySet()){
             String cleanStr = cleanStr(goldenComponentType);
             componentType = new String(cleanStr(componentType));
             if (componentType.contains(cleanStr) || componentType.equals(cleanStr)){
-                if ("sw".equals(wareType)){
-                    return compareSWComponent(componentModel,goldenInfoComponentDTOMap.get(goldenComponentType));
-                }else if ("hw".equals(wareType)){
-                    return compareHWComponent(componentModel,goldenInfoComponentDTOMap.get(goldenComponentType));
+                DeviceCompareVO deviceCompareVO = new DeviceCompareVO();
+                if ("SW".equals(wareType.toUpperCase())){
+                    Integer compareNum = compareSWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
+                    deviceCompareVO.setCompareNum(compareNum);
+                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getSwComponentVersion());
+                    return AjaxResult.success(deviceCompareVO);
+                }else if ("HW".equals(wareType.toUpperCase())){
+                    Integer compareNum = compareHWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
+                    deviceCompareVO.setCompareNum(compareNum);
+                    deviceCompareVO.setMinimalHW(goldenInfoComponentDTOMap.get(goldenComponentType).getMinimalHW());
+                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());
+                    return AjaxResult.success(deviceCompareVO);
                 }
             }
         }
-        return -1;
+        return AjaxResult.error("该Gold下没有找到对应零配件");
     }
 
 
     private int compareSWComponent(String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
-        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getSwComponentVersion());
-        Integer correnVersion = cleanNum(componentModel);
+        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getSwComponentVersion(),MIN);
+        Integer correnVersion = cleanNum(componentModel,MIN);
         if (correnVersion >= normalVersion){
             return 3;
         }else {
@@ -201,19 +211,33 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
     }
     private int compareHWComponent(String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
-        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getHwComponentVersion());
-        Integer minimalVersion = cleanNum(goldenInfoComponentDTO.getMinimalHW());
-        Integer correnVersion = cleanNum(componentModel);
+        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getHwComponentVersion(),MIN);
+        Integer minimalVersion = cleanNum(goldenInfoComponentDTO.getMinimalHW(),MIN);
+        Integer correnVersion = cleanNum(componentModel,MIN);
         if (correnVersion >= normalVersion){
             return 3;
-        }else if (correnVersion > minimalVersion){
+        }else if (correnVersion >= minimalVersion){
             return 2;
         }else {
             return 1;
         }
     }
 
-    private Integer cleanNum(String deviceComponent) {
+    Integer MIN = -1;
+    Integer MAX = 1;
+    private Integer cleanNum(String deviceComponent,Integer getNum) {
+        String[] split = deviceComponent.split("/");
+        if (MAX.equals(split)) {
+            deviceComponent = new String(split[split.length - 1]);
+        }else {
+            deviceComponent = new String(split[0]);
+        }
+        split = deviceComponent.split("-");
+        if (MAX.equals(split)) {
+            deviceComponent = new String(split[split.length - 1]);
+        }else {
+            deviceComponent = new String(split[0]);
+        }
         char[] chars = deviceComponent.toCharArray();
         StringBuffer buffer=new StringBuffer();
         for(int i = 0; i < chars.length; i ++) {
