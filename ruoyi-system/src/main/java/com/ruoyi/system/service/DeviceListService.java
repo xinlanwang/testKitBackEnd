@@ -2,6 +2,7 @@ package com.ruoyi.system.service;
 
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
+import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 
@@ -18,6 +19,7 @@ public interface DeviceListService
 
     public List queryDeviceList(DeviceListParam deviceListParam);
 
+    public Integer compareComponent( DeviceCompareParam deviceCompareParam);
 
     public int insertDeviceInfo(DeviceInfoVo deviceInfoVo);
 

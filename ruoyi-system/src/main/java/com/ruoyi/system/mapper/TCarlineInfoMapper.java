@@ -48,7 +48,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     /**
      * GoldenInfo设备详情基本信息
      */
-    String queryGoldenInfoListSql = "select tc.carline_model_type as carlineModelType,tci.carline_info_uid as carlineInfoUid,tci.market_type as marketType,\n" +
+    String queryGoldenInfoListSql = "select tc.golden_car_name as carlineModelType,tci.carline_info_uid as carlineInfoUid,tci.market_type as marketType,\n" +
             "       tl.cluster_name as clusterName\n" +
             "from t_carline tc\n" +
             "left join t_cluster tl on tl.carline_uid = tc.uid\n" +
@@ -71,7 +71,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "left join t_cluster tcs on tci.cluster_uid = tcs.uid\n" +
             "left join t_carline tcl on tcl.uid = tcs.carline_uid\n" +
             "where tcs.cluster_name = #{clusterName}\n" +
-            " and tcl.carline_model_type = #{carlineModelType}\n" +
+            " and tcl.golden_car_name = #{carlineModelType}\n" +
             " and market_type = #{marketType};" ;
     @Select(queryGoldenInfoDetailSql)
     List<GoldenInfoComponentDTO> queryGoldenInfoDetail(@Param("clusterName") String clusterName, @Param("carlineModelType") String carlineModelType, @Param("marketType") String marketType);
@@ -136,13 +136,28 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "            left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "            left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
             "            where tc.cluster_name = #{clusterName} \n" +
-            "            and tcl.carline_model_type = #{carlineModelType} \n" +
+            "            and tcl.golden_car_name = #{carlineModelType} \n" +
             "            and tc.device_type = '3'\n" +
             "            )\n" +
             "and tc.cluster_name = #{clusterName} \n" +
-            "            and tcl.carline_model_type = #{carlineModelType} \n" +
+            "            and tcl.golden_car_name = #{carlineModelType} \n" +
             "            and tc.device_type = '3'\n" +
             "group by market_type";
     @Select(selectDeviceComponentsListSql)
     public List<GoldenInfoVO> selectDeviceComponentsList(@Param("clusterName") String clusterName, @Param("carlineModelType") String carlineModelType);
+
+
+
+    String selectGoldenCarlineInfoSql = "select tcd.component_type as componentType,tcd.sw_version as swComponentVersion,tcd.part_number as partNumber,tcd.hw_version as hwComponentVersion,tcd.temporary_variable as temporaryVariable,tcd.minimal_hw as minimalHW\n" +
+            "from t_component_data tcd\n" +
+            "left join t_carline_component tcc on tcd.uid = tcc.component_uid\n" +
+            "left join t_carline_info tci on tci.carline_info_uid = tcc.carline_info_uid\n" +
+            "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "left join t_carline tca on tc.carline_uid = tca.uid\n" +
+            "where tc.device_type = '3'\n" +
+            "and tc.cluster_name = #{goldenClusterNameType}\n" +
+            "and tca.golden_car_name = #{goldenCarType}\n" +
+            "and tci.market_type = #{marketType}";
+    @Select(selectGoldenCarlineInfoSql)
+    List<GoldenInfoComponentDTO> selectGoldenCarlineInfo(String carlineModelType,  @Param("goldenClusterNameType") String goldenClusterNameType,  @Param("marketType") String marketType,  @Param("goldenCarType") Long goldenCarType);
 }

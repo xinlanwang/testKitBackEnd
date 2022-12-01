@@ -422,7 +422,7 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
             char[] chars = trueCellName.toCharArray();
             StringBuffer buffer=new StringBuffer();
             for(int i = 0; i < chars.length; i ++) {
-                if((chars[i] >= 19968 && chars[i] <= 40869) || (chars[i] >= 97 && chars[i] <= 122) || (chars[i] >= 65 && chars[i] <= 90)) {
+                if((chars[i] >= 19968 && chars[i] <= 40869) || (chars[i] >= 97 && chars[i] <= 122)|| (chars[i] >= 48 && chars[i] <= 57) || (chars[i] >= 65 && chars[i] <= 90)) {
                     buffer.append(chars[i]);//去除特殊格式
                 }
             }
@@ -510,7 +510,7 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
             char[] chars = sheetName.toCharArray();
             StringBuffer buffer=new StringBuffer();
             for(int i = 0; i < chars.length; i ++) {
-                if((chars[i] >= 19968 && chars[i] <= 40869) || (chars[i] >= 97 && chars[i] <= 122) || (chars[i] >= 65 && chars[i] <= 90)) {
+                if((chars[i] >= 19968 && chars[i] <= 40869) || (chars[i] >= 97 && chars[i] <= 122)|| (chars[i] >= 48 && chars[i] <= 57) || (chars[i] >= 65 && chars[i] <= 90)) {
                     buffer.append(chars[i]);//去除特殊格式
                 }
             }

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.system.domain.po.TComponentData;
 import com.ruoyi.system.domain.po.TMatrix;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -16,6 +18,26 @@ import java.util.List;
 @Mapper
 public interface TMatrixMapper extends BaseMapper<TMatrix>
 {
+
+    String queryDeviceInfoSql = "select golden_car_type\n" +
+            "from t_matrix\n" +
+            "where matrix_type = 1\n" +
+            "and carline_model_type = #{carlineModelType}\n" +
+            "and golden_cluster_name_type =#{goldenClusterNameType}";
+    @Select(queryDeviceInfoSql)
+    public List<Long> selectGoldenCarType(@Param("carlineModelType") String carlineModelType,@Param("goldenClusterNameType") String goldenClusterNameType);
+
+
+    String selectGoldenClusterNameTypeSql = "select dict_value,dict_type\n" +
+            "from sys_dict_data\n" +
+            "where dict_label = (select dict_label\n" +
+            "from sys_dict_data\n" +
+            "where dict_type = 'clusterName'\n" +
+            "and dict_value = #{clusterNameType})\n" +
+            "and dict_type = 'goldenClusterNameType'";
+    @Select(selectGoldenClusterNameTypeSql)
+    public String selectGoldenClusterNameType(@Param("clusterNameType") String clusterNameType);
+
     /**
      * 查询`BIGINT(32)`
      * 
@@ -63,4 +85,6 @@ public interface TMatrixMapper extends BaseMapper<TMatrix>
      * @return 结果
      */
     public int deleteTMatrixByUids(Long[] uids);
+
+
 }

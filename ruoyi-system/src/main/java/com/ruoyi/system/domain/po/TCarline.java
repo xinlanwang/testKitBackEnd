@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.ruoyi.common.core.domain.LocalBaseEntity;
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -19,6 +20,7 @@ import org.springframework.data.annotation.Id;
 
 
 @TableName()
+@Data
 public class TCarline  extends LocalBaseEntity
 {
     private static final long serialVersionUID = 1L;
@@ -56,91 +58,4 @@ public class TCarline  extends LocalBaseEntity
     @Excel(name = "是否显示：1显示0 不显示")
     private Integer isShow;
 
-    public void setUid(Long uid)
-    {
-        this.uid = uid;
-    }
-
-    public Long getUid()
-    {
-        return uid;
-    }
-    public void setCarlineName(String carlineModelType) 
-    {
-        this.carlineModelType = carlineModelType;
-    }
-
-    public String getCarlineName() 
-    {
-        return carlineModelType;
-    }
-    public void setgoldenCarName(String goldenCarName) 
-    {
-        this.goldenCarName = goldenCarName;
-    }
-
-    public String getgoldenCarName() 
-    {
-        return goldenCarName;
-    }
-
-    public void setStatus(Integer status) 
-    {
-        this.status = status;
-    }
-
-    public Integer getStatus() 
-    {
-        return status;
-    }
-    public void setCreateByUid(String createByUid) 
-    {
-        this.createByUid = createByUid;
-    }
-
-    public String getCreateByUid() 
-    {
-        return createByUid;
-    }
-    public void setUpdateByUid(String updateByUid) 
-    {
-        this.updateByUid = updateByUid;
-    }
-
-    public String getUpdateByUid() 
-    {
-        return updateByUid;
-    }
-    public void setSort(Long sort) 
-    {
-        this.sort = sort;
-    }
-
-    public Long getSort() 
-    {
-        return sort;
-    }
-    public void setIsShow(Integer isShow) 
-    {
-        this.isShow = isShow;
-    }
-
-    public Integer getIsShow() 
-    {
-        return isShow;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("uid", getUid())
-            .append("carlineModelType", getCarlineName())
-            .append("goldenCarName", getgoldenCarName())
-            .append("status", getStatus())
-            .append("createByUid", getCreateByUid())
-            .append("updateByUid", getUpdateByUid())
-            .append("sort", getSort())
-            .append("isShow", getIsShow())
-            .toString();
-    }
 }

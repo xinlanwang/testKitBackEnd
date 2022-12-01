@@ -173,9 +173,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
 
         for (String sheetName:sheetMap.keySet()){
             Map<String, List<ImportPartComponentDTO>> regionMap = sheetMap.get(sheetName);
-            String carlineModelTypeValue = getUnsureValue("carlineModelType",sheetName, dictMap);
+            String goldenCarTypeValue = getUnsureValue("goldenCarType",sheetName, dictMap);
             TCarline tCarline = new TCarline();
-            tCarline.setCarlineName(carlineModelTypeValue);
+            tCarline.setGoldenCarName(goldenCarTypeValue);
             tCarlineMapper.insert(tCarline);
             for (String marketType:regionMap.keySet()){
                 if (regionMap.get(marketType) == null || regionMap.get(marketType).size() == 0){

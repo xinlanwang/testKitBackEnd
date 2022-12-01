@@ -3,8 +3,9 @@ package com.ruoyi.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
-import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
+import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.po.*;
 import com.ruoyi.system.domain.vo.DeviceInfoComponent;
@@ -14,7 +15,6 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DeviceListService;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +39,8 @@ public class DeviceListServiceImpl implements DeviceListService {
     private TClusterMapper tClusterMapper;
     @Autowired
     private TCarlineInfoMapper tCarlineInfoMapper;
+    @Autowired
+    private TMatrixMapper tMatrixMapper;
     @Autowired
     private TComponentDataMapper tComponentDataMapper;
     @Autowired
@@ -139,8 +141,108 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
         deviceInfoVo.setDeviceInfoComponents(deviceInfoComponents);
         return deviceInfoVo;
-
     }
+
+
+
+    public List<GoldenInfoComponentDTO> getGoldenInfoComponents( String carlineModelType,String ClusterNameType,String marketType){
+        //虽然都是CLU，但名称相同，映射的字典表不同，这里需要做个转换
+        String goldenClusterNameType = tMatrixMapper.selectGoldenClusterNameType(ClusterNameType);
+        List<Long> goldenCarTypes = tMatrixMapper.selectGoldenCarType(carlineModelType, goldenClusterNameType);
+        //理论上对应的有且仅有一个，但目前有重复的 todo
+        //https://sumomoriaty.oss-cn-beijing.aliyuncs.com/zdcar/202212011111630.png
+        if (goldenCarTypes == null || goldenCarTypes.size() == 0){
+            return null;
+        }
+        Long goldenCarType = goldenCarTypes.get(0);
+        //因为carline/sop字段混乱，carlineModelType暂不参与比较
+        return tCarlineInfoMapper.selectGoldenCarlineInfo(carlineModelType, goldenClusterNameType, marketType, goldenCarType);
+        //结果：https://sumomoriaty.oss-cn-beijing.aliyuncs.com/zdcar/202212011422541.png
+    }
+
+    public Integer compareComponent(DeviceCompareParam deviceCompareParam){
+        String carlineModelType = deviceCompareParam.getCarlineModelType();
+        String clusterName = deviceCompareParam.getClusterName();
+        String marketType = deviceCompareParam.getMarketType();
+        String wareType = deviceCompareParam.getWareType();
+        String componentType = deviceCompareParam.getComponentType();
+        String componentModel = deviceCompareParam.getComponentModel();
+        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) ||
+                StringUtils.isEmpty(wareType) || StringUtils.isEmpty(componentType) || StringUtils.isEmpty(componentModel)){
+            return -1;
+        }
+        List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
+        if (goldenInfoComponentDTOS == null || goldenInfoComponentDTOS.size() == 0){
+            return -1;
+        }
+        Map<String,GoldenInfoComponentDTO> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
+        for (String goldenComponentType:goldenInfoComponentDTOMap.keySet()){
+            String cleanStr = cleanStr(goldenComponentType);
+            componentType = new String(cleanStr(componentType));
+            if (componentType.contains(cleanStr) || componentType.equals(cleanStr)){
+                if ("sw".equals(wareType)){
+                    return compareSWComponent(componentModel,goldenInfoComponentDTOMap.get(goldenComponentType));
+                }else if ("hw".equals(wareType)){
+                    return compareHWComponent(componentModel,goldenInfoComponentDTOMap.get(goldenComponentType));
+                }
+            }
+        }
+        return -1;
+    }
+
+
+    private int compareSWComponent(String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
+        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getSwComponentVersion());
+        Integer correnVersion = cleanNum(componentModel);
+        if (correnVersion >= normalVersion){
+            return 3;
+        }else {
+            return 1;
+        }
+    }
+    private int compareHWComponent(String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
+        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getHwComponentVersion());
+        Integer minimalVersion = cleanNum(goldenInfoComponentDTO.getMinimalHW());
+        Integer correnVersion = cleanNum(componentModel);
+        if (correnVersion >= normalVersion){
+            return 3;
+        }else if (correnVersion > minimalVersion){
+            return 2;
+        }else {
+            return 1;
+        }
+    }
+
+    private Integer cleanNum(String deviceComponent) {
+        char[] chars = deviceComponent.toCharArray();
+        StringBuffer buffer=new StringBuffer();
+        for(int i = 0; i < chars.length; i ++) {
+            if((chars[i] >= 48 && chars[i] <= 57)) {
+                buffer.append(chars[i]);//去除特殊格式
+            }
+        }
+        return Integer.valueOf(buffer.toString());
+    }
+    private String cleanStr(String deviceComponent) {
+        char[] chars = deviceComponent.toCharArray();
+        StringBuffer buffer=new StringBuffer();
+        for(int i = 0; i < chars.length; i ++) {
+            if((chars[i] >= 19968 && chars[i] <= 40869) || (chars[i] >= 97 && chars[i] <= 122) || (chars[i] >= 65 && chars[i] <= 90)) {
+                buffer.append(chars[i]);//去除特殊格式
+            }
+        }
+        return new String(buffer.toString().toUpperCase());
+    }
+
+    private Map<String, GoldenInfoComponentDTO> buildCompareMap(List<GoldenInfoComponentDTO> goldenInfoComponentDTOS) {
+        Map<String, GoldenInfoComponentDTO> componentDTOMap = new HashMap<>();
+        for (GoldenInfoComponentDTO goldenInfoComponentDTO:goldenInfoComponentDTOS){
+            String componentType = goldenInfoComponentDTO.getComponentType();
+            componentDTOMap.put(componentType,goldenInfoComponentDTO);
+        }
+        return componentDTOMap;
+    }
+
 
     /**
      * 导入设备信息
@@ -196,7 +298,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getCarline())){
                     String carlineModelType = getDictValue("carlineModelType", dictMap, importDeviceDTO.getCarline(), "0");
-                    tCarline.setCarlineName(carlineModelType);
+                    tCarline.setCarlineModelType(carlineModelType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getVariantType())){
                     String variantType = getDictValue("variantType", dictMap, importDeviceDTO.getVariantType(), "0");
@@ -589,7 +691,7 @@ public class DeviceListServiceImpl implements DeviceListService {
     Map<String,String> cleanMap;
 
     private static void buildCarlinePO(DeviceInfoVo deviceInfoVo, TCarline tCarline) {
-        tCarline.setCarlineName(deviceInfoVo.getCarlineModelType());
+        tCarline.setCarlineModelType(deviceInfoVo.getCarlineModelType());
 //        tCarline.setgoldenCarName(deviceInfoVo.getGoldenCarName());
         tCarline.setStatus(1);
         tCarline.setUpdateTime(new Date());

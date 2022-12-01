@@ -74,10 +74,10 @@ public class TCarlineServiceImpl implements ITCarlineService
     public int insertTCarline(TCarline tCarline)
     {
 //        tCarline.setUid(100l);
-        tCarline.setgoldenCarName("2");
+        tCarline.setGoldenCarName("2");
         tCarline.setSort(1L);
         tCarline.setIsShow(1);
-        tCarline.setCarlineName("2");
+        tCarline.setCarlineModelType("2");
         tCarline.setStatus(1);
         tCarline.setCreateByUid("1");
         tCarline.setUpdateByUid("2");

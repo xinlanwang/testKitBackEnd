@@ -12,6 +12,7 @@ import java.util.Set;
 public class GoldenListPlatfromVO {
 
     private String carlineInfoUid;
+    private String goldenCarType;
     private String carlineModelType;
     private Integer marketType;
     private LinkedHashSet<Integer> marketTypes;
