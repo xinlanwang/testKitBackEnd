@@ -169,7 +169,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 TCarline tCarline = new TCarline();
                 TCluster tCluster = new TCluster();
                 TCarlineInfo tCarlineInfo = new TCarlineInfo();
-                if (key.equals(DEVICE_TYPE_CAR)){//这里的Device其实是Car
+                if (key.equals("Devices")){//这里的Device其实是Car
                     tCluster.setDeviceType("2");
                 }else {
                     tCluster.setDeviceType(DEVICE_TYPE_BENCH);
