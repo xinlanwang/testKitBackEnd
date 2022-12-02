@@ -56,12 +56,8 @@ public class DeviceListController extends BaseController
     @PostMapping("/importDTCReport")
     @ApiOperation("导入DTC报告")
     public AjaxResult importDTCReport(MultipartFile file) throws Exception{
-        DeviceExcelUtil<ImportDeviceDTO> util = new DeviceExcelUtil<ImportDeviceDTO>(ImportDeviceDTO.class);
-        Map<String,List<ImportDeviceDTO>> importDeviceMap = new HashMap<>();
-        util.importDeviceExcel(file.getInputStream(),importDeviceMap);
         String operName = "user";
-        String message = deviceListService.importDevice(importDeviceMap, true, operName);
-        return success(message);
+        return deviceListService.importDTCReport(file, true, operName);
     }
 
 

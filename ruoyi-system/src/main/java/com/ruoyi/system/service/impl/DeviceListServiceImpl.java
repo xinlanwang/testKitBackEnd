@@ -1,5 +1,7 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.util.ReUtil;
+import cn.hutool.core.util.XmlUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDictData;
@@ -7,6 +9,7 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.DeviceCompareVO;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
+import com.ruoyi.system.domain.dto.TDTCReportDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.po.*;
@@ -15,15 +18,20 @@ import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import com.ruoyi.system.domain.vo.DeviceListVo;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DeviceListService;
+import io.netty.util.internal.SocketUtils;
 import io.netty.util.internal.StringUtil;
+import jdk.nashorn.internal.runtime.FindProperty;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.*;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.ruoyi.common.constant.TestKitConstants.*;
 import static com.ruoyi.common.utils.PageUtils.startPage;
@@ -49,6 +57,9 @@ public class DeviceListServiceImpl implements DeviceListService {
     private TCarlineComponentMapper tCarlineComponentMapper;
     @Autowired
     private SysDictDataMapper dictDataMapper;
+
+    @Autowired
+    private TDtcReportMapper tdtcReportMapper;
     @Autowired
     private SysDictDataServiceImpl sysDictDataService;
     /**
@@ -115,6 +126,74 @@ public class DeviceListServiceImpl implements DeviceListService {
         return 1;
     }
 
+    @Override
+    public AjaxResult importDTCReport(MultipartFile file, boolean b, String operName){
+        try {
+            List<Object> tdtcReportDTOS = new ArrayList<>();
+            Document docResult=XmlUtil.readXML(file.getInputStream());
+            String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
+            Map<Object, Object> VINMap = new HashMap<>();
+            VINMap.put("VIN",VIN);
+            tdtcReportDTOS.add(VINMap);
+            NodeList nodeListByXPath = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock", docResult);
+            for (int i = 0 ; i < nodeListByXPath.getLength();i ++){
+                Node item = nodeListByXPath.item(i);
+                TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
+                String adresse = reportDTO.getAdresse();
+                TDTCReport tdtcReport = tdtcReportMapper.selectOne(new QueryWrapper<TDTCReport>().eq("adresse", adresse));
+                Map<String, String> componentMap = new HashMap<>();
+                componentMap.put("SWVersion",reportDTO.getSWVersion());
+                componentMap.put("HWVersion",reportDTO.getHWVersion());
+                componentMap.put("PN",reportDTO.getHWTeilenummer());
+                if (tdtcReport != null) {
+                    String componentType = tdtcReport.getComponentType();
+                    componentMap.put("componentType",componentType);
+                    reportDTO.setComponentType(componentType);
+                    if ("005F".equals(adresse)){
+                        String regex = tdtcReport.getSearchedOdxFileVersion();
+                        String content = reportDTO.getSearchedOdxFileVersion();
+                        Pattern pattern = Pattern.compile(regex);
+                        Matcher matcher = pattern.matcher(content);
+                        if(matcher.find()){
+                            String variant = matcher.group(1);
+                            System.out.println("variant:" + variant);
+                            componentMap.put("variant",variant);
+                        }else {
+                            regex = tdtcReport.getSystembezeichnung();
+                            content = reportDTO.getSystembezeichnung();
+                            pattern = Pattern.compile(regex);
+                            matcher = pattern.matcher(content);
+                            if(matcher.find()){
+                                String variant = matcher.group(1);
+                                System.out.println("variant:" + variant);
+                                componentMap.put("variant",variant);
+                            }
+                        }
+                    }
+                    tdtcReportDTOS.add(componentMap);
+                }
+            }
+            return AjaxResult.success(tdtcReportDTOS);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void test1(){
+//        String regex = "EV_HCP3([\\S]*?)Node[\\s\\S]*?";
+//        String content = "EV_HCP3BaseNodeAU41X_001001";
+        String content = "MU-TH-N-CN   ";
+        String regex = "[ ]*MU-T{0,1}([BHP])[\\\\s\\\\S]*?";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+
+        if(matcher.find()){
+            System.out.println(matcher.group(1));
+        }else {
+            System.out.println("false");
+        }
+    }
     /**
      * 批量删除
      * @param carlineInfoUids
@@ -649,18 +728,18 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (deviceInfoVo == null){
             return -1;
         }
-        //t_carline
-        QueryWrapper<TCarline> tcarlineWrapper = new QueryWrapper<>();
-//        tcarlineWrapper.eq("golden_car_name", deviceInfoVo.getGoldenCarName());
-        tcarlineWrapper.eq("carline_model_type", deviceInfoVo.getCarlineModelType());
-        TCarline tCarline = tCarlineMapper.selectOne(tcarlineWrapper);
-        if (null == tCarline) {
-            //创建tcarline
-            tCarline = new TCarline();
-            tCarline.setCreateTime(new Date());
-            buildCarlinePO(deviceInfoVo, tCarline);
-            tCarlineMapper.insert(tCarline);
+        //deviceName不得重复
+        QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
+        tcarlineWrapper.eq("device_name", deviceInfoVo.getGoldenCarName());
+        List<TCarlineInfo> tCarlineInfos = tCarlineInfoMapper.selectList(tcarlineWrapper);
+        if (null != tCarlineInfos) {
+            return -1;
         }
+        //创建tcarline
+        TCarline tCarline = new TCarline();
+        tCarline.setCreateTime(new Date());
+        buildCarlinePO(deviceInfoVo, tCarline);
+        tCarlineMapper.insert(tCarline);
 
         //t_cluster
         TCluster tCluster = new TCluster();
