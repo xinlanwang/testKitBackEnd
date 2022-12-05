@@ -177,8 +177,9 @@ public class DeviceListServiceImpl implements DeviceListService {
                         String content = reportDTO.getSearchedOdxFileVersion();
                         Pattern pattern = Pattern.compile(regex);
                         Matcher matcher = pattern.matcher(content);
+                        String variant = null;
                         if(matcher.find()){
-                            String variant = matcher.group(1);
+                            variant = matcher.group(1).toUpperCase();
                             System.out.println("variant:" + variant);
                             componentMap.put("variant",variant);
                         }else {
@@ -187,9 +188,37 @@ public class DeviceListServiceImpl implements DeviceListService {
                             pattern = Pattern.compile(regex);
                             matcher = pattern.matcher(content);
                             if(matcher.find()){
-                                String variant = matcher.group(1);
+                                variant = matcher.group(1).toUpperCase();
                                 System.out.println("variant:" + variant);
                                 componentMap.put("variant",variant);
+                            }
+                        }
+                        if (StringUtils.isNotEmpty(variant)){
+                            //MIB3
+                            if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)){
+                                String swVersion = componentMap.get("SWVersion");
+                                char[] chars = swVersion.toUpperCase().toCharArray();
+                                Boolean isPureNum = true;
+                                for (int j = 0; j < chars.length;j++){
+                                    if (chars[j] < 48 && chars[j] > 57){
+                                        isPureNum = false;
+                                    }
+                                }
+                                if (isPureNum){
+                                    componentMap.put("SWVersion",new String("P" + swVersion));
+                                }else {
+                                    if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >=48 && chars[1] <=57
+                                            && chars[2] >=48 && chars[2] <=57 && chars[3] >=48 && chars[3] <=57){
+                                        if (chars[1] >= 53){
+                                            componentMap.put("SWVersion",new String("E3" + chars[1] + chars[2] + chars[3]));
+                                        }else {
+                                            componentMap.put("SWVersion",new String("E4" + chars[1] + chars[2] + chars[3]));
+                                        }
+                                    }
+                                }
+
+                            }else { //HCP3
+
                             }
                         }
                         Map<String, String> zdcMap = new HashMap<>();
