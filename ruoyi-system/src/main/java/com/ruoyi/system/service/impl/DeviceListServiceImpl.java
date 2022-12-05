@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.reflect.ReflectUtils;
 import com.ruoyi.system.domain.DeviceCompareVO;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
@@ -134,7 +135,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             Document docResult=XmlUtil.readXML(file.getInputStream());
             String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
             Map<Object, Object> VINMap = new HashMap<>();
-            VINMap.put("Vehicle","Fahrgestellnummer");
+            VINMap.put("ecu-id","Vehicle");
             VINMap.put("VIN",VIN);
             tdtcReportDTOS.add(VINMap);
             NodeList nodeListByXPath = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock", docResult);
@@ -151,46 +152,24 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentMap.put("HWVersion",reportDTO.getHWVersion());
                 componentMap.put("PN",reportDTO.getHWTeilenummer());
                 if (tdtcReport != null) {
+                    componentMap.put("ecu-id", tdtcReport.getEcuId());
                     String componentType = tdtcReport.getComponentType();
-                    if (adresse.equals("0019") ){
-                        String regex = "EV_(HCP5|[^_]+?(?=AU|MEB|UNECE)|[^_]+)[\\S ]*?";
-                        String content = reportDTO.getSearchedOdxFileVersion();
-                        Pattern pattern = Pattern.compile(regex);
-                        Matcher matcher = pattern.matcher(content);
-                        if (matcher.find()){
-                            componentType = new String(matcher.group(1));
-                        }
-                    }
-                    if (adresse.equals("0075") ){
-                        String regex = "EV_(HCP5|[^_]+?(?=AU|MEB|UNECE)|[^_]+)[\\S ]*?";
-                        String content = reportDTO.getSearchedOdxFileVersion();
-                        Pattern pattern = Pattern.compile(regex);
-                        Matcher matcher = pattern.matcher(content);
-                        if (matcher.find()){
-                            componentType = new String(matcher.group(1));
+                    if (StringUtils.isNotEmpty(componentType) && componentType.contains("::")){
+                        for (String s : componentType.split(",,")) {
+                            String[] split = s.split("::");
+                            if (split != null && split.length >= 2){
+                                componentType = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
+                            }
                         }
                     }
                     componentMap.put("componentType",componentType);
                     reportDTO.setComponentType(componentType);
-                    if ("005F".equals(adresse)){
-                        String regex = tdtcReport.getSearchedOdxFileVersion();
-                        String content = reportDTO.getSearchedOdxFileVersion();
-                        Pattern pattern = Pattern.compile(regex);
-                        Matcher matcher = pattern.matcher(content);
+                    if (StringUtils.isNotEmpty(tdtcReport.getVariant())){
                         String variant = null;
-                        if(matcher.find()){
-                            variant = matcher.group(1).toUpperCase();
-                            System.out.println("variant:" + variant);
-                            componentMap.put("variant",variant);
-                        }else {
-                            regex = tdtcReport.getSystembezeichnung();
-                            content = reportDTO.getSystembezeichnung();
-                            pattern = Pattern.compile(regex);
-                            matcher = pattern.matcher(content);
-                            if(matcher.find()){
-                                variant = matcher.group(1).toUpperCase();
-                                System.out.println("variant:" + variant);
-                                componentMap.put("variant",variant);
+                        for (String s : tdtcReport.getVariant().split(",,")) {
+                            String[] split = s.split("::");
+                            if (split != null && split.length >= 2){
+                                variant = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
                             }
                         }
                         if (StringUtils.isNotEmpty(variant)){
@@ -216,15 +195,15 @@ public class DeviceListServiceImpl implements DeviceListService {
                                         }
                                     }
                                 }
-
-                            }else { //HCP3
-
                             }
                         }
+                    }
+                    if ("005F".equals(adresse)){
                         Map<String, String> zdcMap = new HashMap<>();
                         zdcMap.put("componentType","ZDC");
                         zdcMap.put("ZDC",reportDTO.getZdcName());
                         zdcMap.put("Version",reportDTO.getZdcVersion());
+                        zdcMap.put("ecu-id","005F-ZDC");
                         tdtcReportDTOS.add(zdcMap);
                     }
                     tdtcReportDTOS.add(componentMap);
@@ -238,6 +217,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 if (StringUtils.isNotEmpty(reportDTO.getSystembezeichnung()) && reportDTO.getSystembezeichnung().contains("AED")){
                     reportDTO = XmlUtil.xmlToBean(nodeListByXPath1.item(j), TDTCReportDTO.class);
                     Map<String, String> aedMap = new HashMap<>();
+                    aedMap.put("ecu-id","005F-AED");
                     aedMap.put("componentType","AED");
                     aedMap.put("SWVersion",reportDTO.getSWVersion());
                     aedMap.put("HWVersion",reportDTO.getHWVersion());
@@ -247,6 +227,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 if ("Data Medium".equals(reportDTO.getSubtName())){
                     Map<String, String> aedMap = new HashMap<>();
                     aedMap.put("componentType","Navi DB");
+                    aedMap.put("ecu-id","005F-Data Medium");
                     aedMap.put("SWVersion",reportDTO.getSWVersion());
                     tdtcReportDTOS.add(aedMap);
                 }
@@ -255,6 +236,15 @@ public class DeviceListServiceImpl implements DeviceListService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String regexStr(String content, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
+        if (matcher.find()){
+            return  matcher.group(1);
+        }
+        return null;
     }
 
     @Test

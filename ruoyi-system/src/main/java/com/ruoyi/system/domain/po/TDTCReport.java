@@ -26,10 +26,9 @@ public class TDTCReport
     private Long uid;
     @TableField("Adresse")
     private String Adresse;
+    @TableField("ecu_id")
+    private String ecuId;
     @TableField("componentType")
     private String componentType;
-    @TableField("Systembezeichnung")
-    private String Systembezeichnung;
-    @TableField("SearchedOdxFileVersion")
-    private String SearchedOdxFileVersion;
+    private String variant;
 }
