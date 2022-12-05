@@ -21,14 +21,15 @@ public class TDTCReportDTO extends LocalBaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 唯一uid */
+    private String Systembezeichnung;
     private String Adresse;
+    private String SubtName;
     private String HWTeilenummer;
     private String Fahrgestellnummer;
     private String SearchedOdxFileVersion;
     private String SWVersion;
     private String HWVersion;
     private String ZdcName;
-    private String Systembezeichnung;
     private String ZdcVersion;
     private String regularString;
     private String componentType;

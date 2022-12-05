@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.*;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -133,12 +134,16 @@ public class DeviceListServiceImpl implements DeviceListService {
             Document docResult=XmlUtil.readXML(file.getInputStream());
             String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
             Map<Object, Object> VINMap = new HashMap<>();
+            VINMap.put("Vehicle","Fahrgestellnummer");
             VINMap.put("VIN",VIN);
             tdtcReportDTOS.add(VINMap);
             NodeList nodeListByXPath = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock", docResult);
             for (int i = 0 ; i < nodeListByXPath.getLength();i ++){
                 Node item = nodeListByXPath.item(i);
                 TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
+                if (reportDTO == null){
+                    continue;
+                }
                 String adresse = reportDTO.getAdresse();
                 TDTCReport tdtcReport = tdtcReportMapper.selectOne(new QueryWrapper<TDTCReport>().eq("adresse", adresse));
                 Map<String, String> componentMap = new HashMap<>();
@@ -147,6 +152,24 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentMap.put("PN",reportDTO.getHWTeilenummer());
                 if (tdtcReport != null) {
                     String componentType = tdtcReport.getComponentType();
+                    if (adresse.equals("0019") ){
+                        String regex = "EV_(HCP5|[^_]+?(?=AU|MEB|UNECE)|[^_]+)[\\S ]*?";
+                        String content = reportDTO.getSearchedOdxFileVersion();
+                        Pattern pattern = Pattern.compile(regex);
+                        Matcher matcher = pattern.matcher(content);
+                        if (matcher.find()){
+                            componentType = new String(matcher.group(1));
+                        }
+                    }
+                    if (adresse.equals("0075") ){
+                        String regex = "EV_(HCP5|[^_]+?(?=AU|MEB|UNECE)|[^_]+)[\\S ]*?";
+                        String content = reportDTO.getSearchedOdxFileVersion();
+                        Pattern pattern = Pattern.compile(regex);
+                        Matcher matcher = pattern.matcher(content);
+                        if (matcher.find()){
+                            componentType = new String(matcher.group(1));
+                        }
+                    }
                     componentMap.put("componentType",componentType);
                     reportDTO.setComponentType(componentType);
                     if ("005F".equals(adresse)){
@@ -169,8 +192,34 @@ public class DeviceListServiceImpl implements DeviceListService {
                                 componentMap.put("variant",variant);
                             }
                         }
+                        Map<String, String> zdcMap = new HashMap<>();
+                        zdcMap.put("componentType","ZDC");
+                        zdcMap.put("ZDC",reportDTO.getZdcName());
+                        zdcMap.put("Version",reportDTO.getZdcVersion());
+                        tdtcReportDTOS.add(zdcMap);
                     }
                     tdtcReportDTOS.add(componentMap);
+                }
+
+            }
+            NodeList nodeListByXPath1 = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock/SubTeilnehmer/Sub",docResult);
+            for (int j = 0;j < nodeListByXPath1.getLength();j++){
+                Node item = nodeListByXPath1.item(j);
+                TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
+                if (StringUtils.isNotEmpty(reportDTO.getSystembezeichnung()) && reportDTO.getSystembezeichnung().contains("AED")){
+                    reportDTO = XmlUtil.xmlToBean(nodeListByXPath1.item(j), TDTCReportDTO.class);
+                    Map<String, String> aedMap = new HashMap<>();
+                    aedMap.put("componentType","AED");
+                    aedMap.put("SWVersion",reportDTO.getSWVersion());
+                    aedMap.put("HWVersion",reportDTO.getHWVersion());
+                    aedMap.put("PN",reportDTO.getHWTeilenummer());
+                    tdtcReportDTOS.add(aedMap);
+                }
+                if ("Data Medium".equals(reportDTO.getSubtName())){
+                    Map<String, String> aedMap = new HashMap<>();
+                    aedMap.put("componentType","Navi DB");
+                    aedMap.put("SWVersion",reportDTO.getSWVersion());
+                    tdtcReportDTOS.add(aedMap);
                 }
             }
             return AjaxResult.success(tdtcReportDTOS);
