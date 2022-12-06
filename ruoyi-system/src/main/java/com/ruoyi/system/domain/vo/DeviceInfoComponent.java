@@ -10,8 +10,13 @@ public class DeviceInfoComponent {
     private Long carlineInfoUid;
     @ApiModelProperty("组件类型：mu代表mu，gw代表gw，hud代表hud，km代表kombi等")
     private String componentType;
-    @ApiModelProperty("物品类型，hw代表硬件，sw软件，ot代表其他")
+    private String componentName;
+    private String partNumber;
+    private String hwVersion;
+    private String swVersion;
+    private String componentVersion;
     private String wareType;
-    @ApiModelProperty("配件版本")
-    private String componentModel;
+    private String zdcName;
+    private String zdcVersion;
+
 }

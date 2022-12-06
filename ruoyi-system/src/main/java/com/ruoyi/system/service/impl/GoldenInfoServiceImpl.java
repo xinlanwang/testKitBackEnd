@@ -95,13 +95,13 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
     }
 
     @Override
-    public List<GoldenInfoVO> queryClusterInfo(String clusterName, String carlineModelType) {
-        List<GoldenInfoVO> goldenInfoVOS = tCarlineInfoMapper.selectDeviceComponentsList(clusterName,carlineModelType);
+    public List<GoldenInfoVO> queryClusterInfo(String clusterName, String goldenCarName) {
+        List<GoldenInfoVO> goldenInfoVOS = tCarlineInfoMapper.selectDeviceComponentsList(clusterName,goldenCarName);
         if (goldenInfoVOS == null || goldenInfoVOS.size() == 0){
             return null;
         }
         for (GoldenInfoVO goldenInfoVO : goldenInfoVOS) {
-            List<GoldenInfoComponentDTO> goldenInfoComponents = tCarlineInfoMapper.queryGoldenInfoDetail(clusterName,carlineModelType,goldenInfoVO.getMarketType());
+            List<GoldenInfoComponentDTO> goldenInfoComponents = tCarlineInfoMapper.queryGoldenInfoDetail(clusterName,goldenCarName,goldenInfoVO.getMarketType());
             if (goldenInfoComponents == null && goldenInfoComponents.size() == 0 && StringUtils.isEmpty(goldenInfoVO.getMarketType())) {
                 continue;
             }
@@ -114,8 +114,12 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                 }else {
                     componentVO = new GoldenInfoComponentVO();
                 }
-                componentVO.setHwComponentVersion(goldenInfoComponent.getHwComponentVersion());
-                componentVO.setSwComponentVersion(goldenInfoComponent.getSwComponentVersion());
+                if ("HW".equals(goldenInfoComponent.getWareType())){
+                    componentVO.setHwComponentVersion(goldenInfoComponent.getComponentVersion());
+                }
+                if ("SW".equals(goldenInfoComponent.getWareType())){
+                    componentVO.setSwComponentVersion(goldenInfoComponent.getComponentVersion());
+                }
                 componentVO.setComponentType(goldenInfoComponent.getComponentType());
                 componentVO.setPartNumber(goldenInfoComponent.getPartNumber());
                 componentVO.setClusterName(goldenInfoComponent.getTemporaryVariable());
@@ -208,12 +212,12 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     }
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getPARTNUMBER()) && StringUtils.isNotEmpty(importPartComponentDTO.getHWVERSION())
                             && StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION()) && StringUtils.isNotEmpty(importPartComponentDTO.getMINIMALHW())) {
-                        TComponentData tComponentData = new TComponentData();
-                    tComponentData.setComponentType(importPartComponentDTO.getCOMPONENTS());
-                    tComponentData.setPartNumber(importPartComponentDTO.getPARTNUMBER());
-                    tComponentData.setSwVersion(importPartComponentDTO.getSWVERSION());
-                    tComponentData.setHwVersion(importPartComponentDTO.getHWVERSION());
-                    tComponentData.setMinimalHw(importPartComponentDTO.getMINIMALHW());
+                    TComponentData componentData = new TComponentData();
+                    TCarlineComponent deviceInfoComponent = new TCarlineComponent();
+                    componentData.setComponentType(importPartComponentDTO.getCOMPONENTS());
+                    componentData.setPartNumber(importPartComponentDTO.getPARTNUMBER());
+                    componentData.setPartNumber(importPartComponentDTO.getPARTNUMBER());
+                    deviceInfoComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
                     String temporaryVariable = null;
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getSOPCARLINE())) {
                         temporaryVariable = new String(importPartComponentDTO.getSOPCARLINE());
@@ -225,31 +229,59 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                             temporaryVariable = new String(importPartComponentDTO.getCARLINE());
                         }
                     }
-                    tComponentData.setTemporaryVariable(temporaryVariable);
+                    deviceInfoComponent.setTemporaryVariable(temporaryVariable);
                     //TCarlineComponent
-                    TCarlineComponent carlineComponent = new TCarlineComponent();
-                    carlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    carlineComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
-                    carlineComponent.setPartNumber(importPartComponentDTO.getPARTNUMBER());
-                    TComponentData tComponentDataSW = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
-                            .eq("sw_version", tComponentData.getSwVersion())
-                            .eq("hw_version", tComponentData.getHwVersion())
-                            .eq("part_number", tComponentData.getPartNumber())
-                            .eq("component_type", tComponentData.getComponentType()));
-                    if (tComponentDataSW != null) {
-                        carlineComponent.setComponentUid(tComponentDataSW.getUid());
-                        tCarlineComponentMapper.insert(carlineComponent);
-                    } else {
-                        tComponentDataMapper.insert(tComponentData);
-                        carlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(carlineComponent);
+                    deviceInfoComponent.setCarlineInfoUid(carlineInfoUid);
+                    deviceInfoComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
+
+                    if (StringUtils.isNotEmpty(importPartComponentDTO.getHWVERSION())){
+                        String wareType = "HW";
+                        componentData.setWareType("HW");
+                        componentData.setComponentVersion(importPartComponentDTO.getSWVERSION());
+                        insertComponent(deviceInfoComponent, wareType, componentData);
                     }
+                    if (StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION())){
+                        componentData.setWareType("SW");
+                        String wareType = "SW";
+                        componentData.setComponentVersion(importPartComponentDTO.getSWVERSION());
+                        insertComponent(deviceInfoComponent, wareType, componentData);
+                    }
+                    tCarlineComponentMapper.insert(deviceInfoComponent);
                 }
                     }
             }
         }
 
         return null;
+    }
+
+
+
+    private void insertComponent(TCarlineComponent tCarlineComponent,String wareType, TComponentData componentData) {
+        componentData.setUid(null);
+        TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
+                .eq("component_type", componentData.getComponentType())
+                .eq("component_name", componentData.getComponentName())
+                .eq("ware_type", componentData.getWareType())
+                .eq("component_version", componentData.getComponentVersion())
+                .eq("part_number", componentData.getPartNumber()));
+        if (tComponentData != null){
+            if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)){
+                tCarlineComponent.setSwVersionUid(tComponentData.getUid());
+            }else if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)){
+                tCarlineComponent.setHwVersionUid(tComponentData.getUid());
+            }
+        }else {
+            componentData.setUid(null);
+            tComponentDataMapper.insert(componentData);
+            if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)){
+                tCarlineComponent.setSwVersionUid(componentData.getUid());
+            }
+            if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)){
+                tCarlineComponent.setHwVersionUid(componentData.getUid());
+            }
+
+        }
     }
 
     /**

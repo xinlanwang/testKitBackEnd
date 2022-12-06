@@ -47,7 +47,9 @@ public class DeviceListController extends BaseController
     {
         DeviceExcelUtil<ImportDeviceDTO> util = new DeviceExcelUtil<ImportDeviceDTO>(ImportDeviceDTO.class);
         Map<String,List<ImportDeviceDTO>> importDeviceMap = new HashMap<>();
-        util.importDeviceExcel(file.getInputStream(),importDeviceMap);
+        if (util != null) {
+            util.importDeviceExcel(file.getInputStream(), importDeviceMap);
+        }
         String operName = "user";
         String message = deviceListService.importDevice(importDeviceMap, true, operName);
         return success(message);

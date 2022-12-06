@@ -15,6 +15,7 @@ public class DeviceListParam extends BaseEntity {
 
         @ApiModelProperty("设备类型：bc代表bench，car代表car，gd代表目标goldeninfo")
         private String carlineType;
+
         /** 版本号名称 */
         @ApiModelProperty("版本号名称")
         private String[] clusterNames;
@@ -36,12 +37,14 @@ public class DeviceListParam extends BaseEntity {
         //模糊项
         @ApiModelProperty("Component模糊搜索必填字段：组件类型：mu代表mu，gw代表gw，hud代表hud，km代表kombi等")
         private String componentType;
-        @ApiModelProperty("Component模糊搜索必填字段：物品类型，hw代表硬件，sw软件，ot代表其他")
+        @ApiModelProperty("Component模糊搜索选填字段：软件版本")
+        private String swVersion;
+        @ApiModelProperty("Component模糊搜索选填字段：硬件版本")
+        private String hwVersion;
         private String wareType;
-        @ApiModelProperty("Component模糊搜索必填字段：配件版本")
         private String componentModel;
         @ApiModelProperty("deviceName模糊搜索")
-        private String goldenCarName;
+        private String deviceName;
         @ApiModelProperty("vin模糊搜索")
         private String vinCode;
         @ApiModelProperty("最近更新")

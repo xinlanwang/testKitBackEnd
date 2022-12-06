@@ -2,8 +2,10 @@ package com.ruoyi.system.domain.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 @ApiModel("goldenInfo配件列表")
+@Data
 public class GoldenInfoComponentVO {
 
 
@@ -20,69 +22,6 @@ public class GoldenInfoComponentVO {
     private String minimalHW;
 
     private String componentType;
-
-
-    public GoldenInfoComponentVO(String partNumber, String clusterName, String hwComponentVersion, String swComponentVersion, String minimalHW) {
-        this.partNumber = partNumber;
-        this.clusterName = clusterName;
-        this.hwComponentVersion = hwComponentVersion;
-        this.swComponentVersion = swComponentVersion;
-        this.minimalHW = minimalHW;
-    }
-
-    public String getHwComponentVersion() {
-        return hwComponentVersion;
-    }
-
-    public void setHwComponentVersion(String hwComponentVersion) {
-        this.hwComponentVersion = hwComponentVersion;
-    }
-
-    public String getSwComponentVersion() {
-        return swComponentVersion;
-    }
-
-    public void setSwComponentVersion(String swComponentVersion) {
-        this.swComponentVersion = swComponentVersion;
-    }
-
-    public String getComponentType() {
-        return componentType;
-    }
-
-    public void setComponentType(String componentType) {
-        this.componentType = componentType;
-    }
-
-
-    public String getPartNumber() {
-        return partNumber;
-    }
-
-    public void setPartNumber(String partNumber) {
-        this.partNumber = partNumber;
-    }
-
-    public String getClusterName() {
-        return clusterName;
-    }
-
-    public void setClusterName(String clusterName) {
-        this.clusterName = clusterName;
-    }
-
-
-    public String getMinimalHW() {
-        return minimalHW;
-    }
-
-    public void setMinimalHW(String minimalHW) {
-        this.minimalHW = minimalHW;
-    }
-
-    public GoldenInfoComponentVO() {
-    }
-
 
 
 }

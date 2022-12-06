@@ -28,7 +28,8 @@ public class TDTCReport
     private String Adresse;
     @TableField("ecu_id")
     private String ecuId;
-    @TableField("componentType")
-    private String componentType;
+    @TableField("component_name")
+    private String componentName;
     private String variant;
+    private String componentType;
 }

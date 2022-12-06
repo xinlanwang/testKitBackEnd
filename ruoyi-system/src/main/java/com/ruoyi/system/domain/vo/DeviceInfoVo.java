@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * devicelist
@@ -22,6 +23,7 @@ public class DeviceInfoVo
    private String carlineType;
    @ApiModelProperty("版本规范车族名称，对应devicesName")
    private String goldenCarName;
+   private String deviceName;
    @ApiModelProperty("版本名称，如cl34，cl37等")
    private String clusterName;
    @ApiModelProperty("工程名称")
@@ -43,5 +45,6 @@ public class DeviceInfoVo
 
    @ApiModelProperty("设备组件列表")
    private List<DeviceInfoComponent> deviceInfoComponents;
+   private Map<String,DeviceInfoComponent> deviceInfoComponentMap;
 
 }

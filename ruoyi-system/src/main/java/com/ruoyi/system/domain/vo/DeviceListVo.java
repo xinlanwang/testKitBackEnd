@@ -16,7 +16,7 @@ public class DeviceListVo
 
    private Long carlineInfoUid;
    private String carlineIcon;
-   private String goldenCarName;
+   private String deviceName;
 
    private String clusterName;
 

@@ -22,18 +22,26 @@ public class TCarlineComponent extends LocalBaseEntity
 {
     private static final long serialVersionUID = 1L;
 
-    /** 组件主键 */
-    private Long componentUid;
+    /** 自增唯一值 */
+    @Excel(name = "自增唯一值")
+    @TableId(type = IdType.AUTO)
+    private Long uid;
 
     /** 车型参数主键 */
     @Excel(name = "车型参数主键")
     private Long carlineInfoUid;
 
+    private Long swVersionUid;
+    private Long hwVersionUid;
+    private String zdcName;
+    private String zdcVersion;
+
     /** 最低配置 */
     @Excel(name = "最低配置")
     private String minimalHw;
 
-    private String partNumber;
+    private String temporaryVariable;
+
 
     /** 创建者 */
     @Excel(name = "创建者")
@@ -42,6 +50,8 @@ public class TCarlineComponent extends LocalBaseEntity
     /** 更新者 */
     @Excel(name = "更新者")
     private String updateByUid;
-    private Integer sort;
+
+
+
 
 }

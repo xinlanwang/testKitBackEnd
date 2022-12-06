@@ -14,7 +14,8 @@ public class DeviceCompareParam extends BaseEntity {
         String carlineModelType;
         String clusterName;
         String marketType;
-        String wareType;
+        String swVersion;
         String componentType;
-        String componentModel;
+        String hwVersion;
+        String partNumber;
 }

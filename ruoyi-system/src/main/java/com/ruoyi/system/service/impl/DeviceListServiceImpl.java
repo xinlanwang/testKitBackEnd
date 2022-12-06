@@ -1,6 +1,6 @@
 package com.ruoyi.system.service.impl;
+import java.util.Date;
 
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -19,9 +19,7 @@ import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import com.ruoyi.system.domain.vo.DeviceListVo;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DeviceListService;
-import io.netty.util.internal.SocketUtils;
 import io.netty.util.internal.StringUtil;
-import jdk.nashorn.internal.runtime.FindProperty;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.*;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -122,7 +119,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         buildCarlinePO(deviceInfoVo, tCarline);
         tCarlineMapper.updateById(tCarline);
         //t_component_data与其连接表的保存
-        saveComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
+        buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
 
         //保存
         return 1;
@@ -135,108 +132,109 @@ public class DeviceListServiceImpl implements DeviceListService {
             Document docResult=XmlUtil.readXML(file.getInputStream());
             String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
             Map<Object, Object> VINMap = new HashMap<>();
-            VINMap.put("ecu-id","Vehicle");
+            VINMap.put("ecuId","Vehicle");
             VINMap.put("VIN",VIN);
             tdtcReportDTOS.add(VINMap);
-            NodeList nodeListByXPath = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock", docResult);
+    NodeList nodeListByXPath = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock", docResult);
             for (int i = 0 ; i < nodeListByXPath.getLength();i ++){
-                Node item = nodeListByXPath.item(i);
-                TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
-                if (reportDTO == null){
-                    continue;
-                }
-                String adresse = reportDTO.getAdresse();
-                TDTCReport tdtcReport = tdtcReportMapper.selectOne(new QueryWrapper<TDTCReport>().eq("adresse", adresse));
-                Map<String, String> componentMap = new HashMap<>();
-                componentMap.put("SWVersion",reportDTO.getSWVersion());
-                componentMap.put("HWVersion",reportDTO.getHWVersion());
-                componentMap.put("PN",reportDTO.getHWTeilenummer());
-                if (tdtcReport != null) {
-                    componentMap.put("ecu-id", tdtcReport.getEcuId());
-                    String componentType = tdtcReport.getComponentType();
-                    if (StringUtils.isNotEmpty(componentType) && componentType.contains("::")){
-                        for (String s : componentType.split(",,")) {
-                            String[] split = s.split("::");
-                            if (split != null && split.length >= 2){
-                                componentType = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
-                            }
-                        }
+        Node item = nodeListByXPath.item(i);
+        TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
+        if (reportDTO == null){
+            continue;
+        }
+        String adresse = reportDTO.getAdresse();
+        TDTCReport tdtcReport = tdtcReportMapper.selectOne(new QueryWrapper<TDTCReport>().eq("adresse", adresse));
+        Map<String, String> componentMap = new HashMap<>();
+        componentMap.put("SWVersion",reportDTO.getSWVersion());
+        componentMap.put("HWVersion",reportDTO.getHWVersion());
+        componentMap.put("PN",reportDTO.getHWTeilenummer());
+        if (tdtcReport != null) {
+            componentMap.put("ecuId", tdtcReport.getEcuId());
+            String componentName = tdtcReport.getComponentName();
+            if (StringUtils.isNotEmpty(componentName) && componentName.contains("::")){
+                for (String s : componentName.split(",,")) {
+                    String[] split = s.split("::");
+                    if (split != null && split.length >= 2){
+                        componentName = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
                     }
-                    componentMap.put("componentType",componentType);
-                    reportDTO.setComponentType(componentType);
-                    if (StringUtils.isNotEmpty(tdtcReport.getVariant())){
-                        String variant = null;
-                        for (String s : tdtcReport.getVariant().split(",,")) {
-                            String[] split = s.split("::");
-                            if (split != null && split.length >= 2){
-                                variant = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
+                }
+            }
+            componentMap.put("componentName",componentName);
+            componentMap.put("componentType",tdtcReport.getComponentType());
+            reportDTO.setComponentType(componentName);
+            if (StringUtils.isNotEmpty(tdtcReport.getVariant())){
+                String variant = null;
+                for (String s : tdtcReport.getVariant().split(",,")) {
+                    String[] split = s.split("::");
+                    if (split != null && split.length >= 2){
+                        variant = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
+                    }
+                }
+                if (StringUtils.isNotEmpty(variant)){
+                    //MIB3
+                    if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)){
+                        String swVersion = componentMap.get("SWVersion");
+                        char[] chars = swVersion.toUpperCase().toCharArray();
+                        Boolean isPureNum = true;
+                        for (int j = 0; j < chars.length;j++){
+                            if (chars[j] < 48 && chars[j] > 57){
+                                isPureNum = false;
                             }
                         }
-                        if (StringUtils.isNotEmpty(variant)){
-                            //MIB3
-                            if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)){
-                                String swVersion = componentMap.get("SWVersion");
-                                char[] chars = swVersion.toUpperCase().toCharArray();
-                                Boolean isPureNum = true;
-                                for (int j = 0; j < chars.length;j++){
-                                    if (chars[j] < 48 && chars[j] > 57){
-                                        isPureNum = false;
-                                    }
-                                }
-                                if (isPureNum){
-                                    componentMap.put("SWVersion",new String("P" + swVersion));
+                        if (isPureNum){
+                            componentMap.put("SWVersion",new String("P" + swVersion));
+                        }else {
+                            if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >=48 && chars[1] <=57
+                                    && chars[2] >=48 && chars[2] <=57 && chars[3] >=48 && chars[3] <=57){
+                                if (chars[1] >= 53){
+                                    componentMap.put("SWVersion",new String("E3" + chars[1] + chars[2] + chars[3]));
                                 }else {
-                                    if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >=48 && chars[1] <=57
-                                            && chars[2] >=48 && chars[2] <=57 && chars[3] >=48 && chars[3] <=57){
-                                        if (chars[1] >= 53){
-                                            componentMap.put("SWVersion",new String("E3" + chars[1] + chars[2] + chars[3]));
-                                        }else {
-                                            componentMap.put("SWVersion",new String("E4" + chars[1] + chars[2] + chars[3]));
-                                        }
-                                    }
+                                    componentMap.put("SWVersion",new String("E4" + chars[1] + chars[2] + chars[3]));
                                 }
                             }
                         }
                     }
-                    if ("005F".equals(adresse)){
-                        Map<String, String> zdcMap = new HashMap<>();
-                        zdcMap.put("componentType","ZDC");
-                        zdcMap.put("ZDC",reportDTO.getZdcName());
-                        zdcMap.put("Version",reportDTO.getZdcVersion());
-                        zdcMap.put("ecu-id","005F-ZDC");
-                        tdtcReportDTOS.add(zdcMap);
-                    }
-                    tdtcReportDTOS.add(componentMap);
-                }
-
-            }
-            NodeList nodeListByXPath1 = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock/SubTeilnehmer/Sub",docResult);
-            for (int j = 0;j < nodeListByXPath1.getLength();j++){
-                Node item = nodeListByXPath1.item(j);
-                TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
-                if (StringUtils.isNotEmpty(reportDTO.getSystembezeichnung()) && reportDTO.getSystembezeichnung().contains("AED")){
-                    reportDTO = XmlUtil.xmlToBean(nodeListByXPath1.item(j), TDTCReportDTO.class);
-                    Map<String, String> aedMap = new HashMap<>();
-                    aedMap.put("ecu-id","005F-AED");
-                    aedMap.put("componentType","AED");
-                    aedMap.put("SWVersion",reportDTO.getSWVersion());
-                    aedMap.put("HWVersion",reportDTO.getHWVersion());
-                    aedMap.put("PN",reportDTO.getHWTeilenummer());
-                    tdtcReportDTOS.add(aedMap);
-                }
-                if ("Data Medium".equals(reportDTO.getSubtName())){
-                    Map<String, String> aedMap = new HashMap<>();
-                    aedMap.put("componentType","Navi DB");
-                    aedMap.put("ecu-id","005F-Data Medium");
-                    aedMap.put("SWVersion",reportDTO.getSWVersion());
-                    tdtcReportDTOS.add(aedMap);
                 }
             }
-            return AjaxResult.success(tdtcReportDTOS);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            if ("005F".equals(adresse)){
+                Map<String, String> zdcMap = new HashMap<>();
+                zdcMap.put("componentName",componentName);
+                zdcMap.put("componentType",componentName);
+                zdcMap.put("zdcName",reportDTO.getZdcName());
+                zdcMap.put("zdcVersion",reportDTO.getZdcVersion());
+                zdcMap.put("ecuId","005F-ZDC");
+                tdtcReportDTOS.add(zdcMap);
+            }
+            tdtcReportDTOS.add(componentMap);
         }
     }
+    NodeList nodeListByXPath1 = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock/SubTeilnehmer/Sub",docResult);
+            for (int j = 0;j < nodeListByXPath1.getLength();j++){
+        Node item = nodeListByXPath1.item(j);
+        TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
+        if (StringUtils.isNotEmpty(reportDTO.getSystembezeichnung()) && reportDTO.getSystembezeichnung().contains("AED")){
+            reportDTO = XmlUtil.xmlToBean(nodeListByXPath1.item(j), TDTCReportDTO.class);
+            Map<String, String> aedMap = new HashMap<>();
+            aedMap.put("ecuId","005F-AED");
+            aedMap.put("componentName","AED");
+            aedMap.put("componentType","AED");
+            aedMap.put("SWVersion",reportDTO.getSWVersion());
+            aedMap.put("HWVersion",reportDTO.getHWVersion());
+            aedMap.put("PN",reportDTO.getHWTeilenummer());
+            tdtcReportDTOS.add(aedMap);
+        }
+        if ("Data Medium".equals(reportDTO.getSubtName())){
+            Map<String, String> aedMap = new HashMap<>();
+            aedMap.put("ecuId","005F-Data Medium");
+            aedMap.put("DBVersion",reportDTO.getSWVersion());
+            tdtcReportDTOS.add(aedMap);
+        }
+    }
+            return AjaxResult.success(tdtcReportDTOS);
+} catch (IOException e) {
+        throw new RuntimeException(e);
+        }
+        }
 
     private static String regexStr(String content, String regex) {
         Pattern pattern = Pattern.compile(regex);
@@ -288,7 +286,44 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (deviceInfoComponents == null || deviceInfoComponents.size() == 0){
             return null;
         }
-        deviceInfoVo.setDeviceInfoComponents(deviceInfoComponents);
+        Map<String,DeviceInfoComponent> deviceInfoComponentMap = new HashMap<>();
+        for (DeviceInfoComponent deviceInfoComponent:deviceInfoComponents){
+            String componentType = deviceInfoComponent.getComponentType();
+            if (StringUtils.isEmpty(componentType)){
+                continue;
+            }
+            DeviceInfoComponent deviceMap;
+            if (deviceInfoComponentMap.get(componentType) == null){
+                deviceMap = new DeviceInfoComponent();
+            }else {
+                deviceMap = deviceInfoComponentMap.get(componentType);
+            }
+            if (deviceInfoComponent.getCarlineInfoUid() != null){
+                deviceMap.setCarlineInfoUid(deviceInfoComponent.getCarlineInfoUid());
+            }
+            if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentType())){
+                deviceMap.setComponentType(deviceInfoComponent.getComponentType());
+            }
+            if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentName())){
+                deviceMap.setComponentName(deviceInfoComponent.getComponentName());
+            }if (StringUtils.isNotEmpty(deviceInfoComponent.getPartNumber())){
+                deviceMap.setPartNumber(deviceInfoComponent.getPartNumber());
+            }if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentVersion()) && StringUtils.isNotEmpty(deviceInfoComponent.getWareType())){
+                if ("SW".equals(deviceInfoComponent.getWareType())){
+                    deviceMap.setSwVersion(deviceInfoComponent.getComponentVersion());
+                }
+                if ("HW".equals(deviceInfoComponent.getWareType())){
+                    deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());
+                }
+            }if (StringUtils.isNotEmpty(deviceInfoComponent.getZdcName())){
+                deviceMap.setZdcName(deviceInfoComponent.getZdcName());
+            }
+            if (StringUtils.isNotEmpty(deviceInfoComponent.getZdcVersion())){
+                deviceMap.setZdcVersion(deviceInfoComponent.getZdcVersion());
+            }
+            deviceInfoComponentMap.put(componentType,deviceMap);
+        }
+        deviceInfoVo.setDeviceInfoComponentMap(deviceInfoComponentMap);
         return deviceInfoVo;
     }
 
@@ -313,11 +348,12 @@ public class DeviceListServiceImpl implements DeviceListService {
         String carlineModelType = deviceCompareParam.getCarlineModelType();
         String clusterName = deviceCompareParam.getClusterName();
         String marketType = deviceCompareParam.getMarketType();
-        String wareType = deviceCompareParam.getWareType();
         String componentType = deviceCompareParam.getComponentType();
-        String componentModel = deviceCompareParam.getComponentModel();
-        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) ||
-                StringUtils.isEmpty(wareType) || StringUtils.isEmpty(componentType) || StringUtils.isEmpty(componentModel)){
+        String swVersion = deviceCompareParam.getSwVersion();
+        String hwVersion = deviceCompareParam.getHwVersion();
+        String partNumber = deviceCompareParam.getPartNumber();
+        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType)
+                || StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(hwVersion) || StringUtils.isNotEmpty(swVersion))){
             return AjaxResult.error("参数不得为空");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
@@ -330,16 +366,19 @@ public class DeviceListServiceImpl implements DeviceListService {
             componentType = new String(cleanStr(componentType));
             if (componentType.contains(cleanStr) || componentType.equals(cleanStr)){
                 DeviceCompareVO deviceCompareVO = new DeviceCompareVO();
-                if ("SW".equals(wareType.toUpperCase())){
-                    Integer compareNum = compareSWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
-                    deviceCompareVO.setCompareNum(compareNum);
-                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getSwComponentVersion());
-                    return AjaxResult.success(deviceCompareVO);
-                }else if ("HW".equals(wareType.toUpperCase())){
+                String componentModel = null;
+                if (StringUtils.isNotEmpty(hwVersion)){
+                    componentModel = hwVersion;
                     Integer compareNum = compareHWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
                     deviceCompareVO.setCompareNum(compareNum);
                     deviceCompareVO.setMinimalHW(goldenInfoComponentDTOMap.get(goldenComponentType).getMinimalHW());
                     deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());
+                    return AjaxResult.success(deviceCompareVO);
+                }else {
+                    componentModel = swVersion;
+                    Integer compareNum = compareSWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
+                    deviceCompareVO.setCompareNum(compareNum);
+                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getSwComponentVersion());
                     return AjaxResult.success(deviceCompareVO);
                 }
             }
@@ -498,212 +537,117 @@ public class DeviceListServiceImpl implements DeviceListService {
                 tCarlineInfoMapper.insert(tCarlineInfo);
                 Long carlineInfoUid = tCarlineInfo.getCarlineInfoUid();
 
-                
-                TComponentData muhwData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getMUHW())){
-                    String muhw = importDeviceDTO.getMUHW();
-                    muhwData.setComponentType("mu");
-                    muhwData.setcomponentVersion(muhw);
-                    muhwData.setWareType("hw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", muhwData.getComponentType())
-                            .eq("component_version", muhwData.getcomponentVersion())
-                            .eq("ware_type", muhwData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(muhwData);
-                        tCarlineComponent.setComponentUid(muhwData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData muswData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getMUSW())){
-                    String musw = importDeviceDTO.getMUSW();
-                    muswData.setComponentType("mu");
-                    muswData.setcomponentVersion(musw);
-                    muswData.setWareType("sw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", muswData.getComponentType())
-                            .eq("component_version", muswData.getcomponentVersion())
-                            .eq("ware_type", muswData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(muswData);
-                        tCarlineComponent.setComponentUid(muswData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData asterixHWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getAsterixHW())){
-                    String asterixHW = importDeviceDTO.getAsterixHW();
-                    asterixHWData.setComponentType("asterix");
-                    asterixHWData.setcomponentVersion(asterixHW);
-                    asterixHWData.setWareType("hw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", asterixHWData.getComponentType())
-                            .eq("component_version", asterixHWData.getcomponentVersion())
-                            .eq("ware_type", asterixHWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(asterixHWData);
-                        tCarlineComponent.setComponentUid(asterixHWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData asterixSWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getAsterixSW())){
-                    String asterixSW = importDeviceDTO.getAsterixSW();
-                    asterixSWData.setComponentType("asterix");
-                    asterixSWData.setcomponentVersion(asterixSW);
-                    asterixSWData.setWareType("sw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", asterixSWData.getComponentType())
-                            .eq("component_version", asterixSWData.getcomponentVersion())
-                            .eq("ware_type", asterixSWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(asterixSWData);
-                        tCarlineComponent.setComponentUid(asterixSWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData kombiHWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getKombiHW())){
-                    String kombiHW = importDeviceDTO.getKombiHW();
-                    kombiHWData.setComponentType("kombi");
-                    kombiHWData.setcomponentVersion(kombiHW);
-                    kombiHWData.setWareType("hw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", kombiHWData.getComponentType())
-                            .eq("component_version", kombiHWData.getcomponentVersion())
-                            .eq("ware_type", kombiHWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(kombiHWData);
-                        tCarlineComponent.setComponentUid(kombiHWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData kombiSWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getKombiSW())){
-                    String kombiSW = importDeviceDTO.getKombiSW();
-                    kombiSWData.setComponentType("kombi");
-                    kombiSWData.setcomponentVersion(kombiSW);
-                    kombiSWData.setWareType("sw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", kombiSWData.getComponentType())
-                            .eq("component_version", kombiSWData.getcomponentVersion())
-                            .eq("ware_type", kombiSWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(kombiSWData);
-                        tCarlineComponent.setComponentUid(kombiSWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData gatewayHWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getGatewayHW())){
-                    String gatewayHW = importDeviceDTO.getGatewayHW();
-                    gatewayHWData.setComponentType("Gateway");
-                    gatewayHWData.setcomponentVersion(gatewayHW);
-                    gatewayHWData.setWareType("hw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", gatewayHWData.getComponentType())
-                            .eq("component_version", gatewayHWData.getcomponentVersion())
-                            .eq("ware_type", gatewayHWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(gatewayHWData);
-                        tCarlineComponent.setComponentUid(gatewayHWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData gatewaySWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getGatewaySW())){
-                    String gatewaySW = importDeviceDTO.getGatewaySW();
-                    gatewaySWData.setComponentType("Gateway");
-                    gatewaySWData.setcomponentVersion(gatewaySW);
-                    gatewaySWData.setWareType("sw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", gatewaySWData.getComponentType())
-                            .eq("component_version", gatewaySWData.getcomponentVersion())
-                            .eq("ware_type", gatewaySWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(gatewaySWData);
-                        tCarlineComponent.setComponentUid(gatewaySWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData conboxOCUHWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getConboxOCUHW())){
-                    String conboxOCUHW = importDeviceDTO.getConboxOCUHW();
-                    conboxOCUHWData.setComponentType("Conbox/OCU");
-                    conboxOCUHWData.setcomponentVersion(conboxOCUHW);
-                    conboxOCUHWData.setWareType("hw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", conboxOCUHWData.getComponentType())
-                            .eq("component_version", conboxOCUHWData.getcomponentVersion())
-                            .eq("ware_type", conboxOCUHWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(conboxOCUHWData);
-                        tCarlineComponent.setComponentUid(conboxOCUHWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
-                TComponentData conboxOCUSWData = new TComponentData();
-                if (StringUtils.isNotEmpty(importDeviceDTO.getConboxOCUSW())){
-                    String conboxOCUSW = importDeviceDTO.getConboxOCUSW();
-                    conboxOCUSWData.setComponentType("Conbox/OCU");
-                    conboxOCUSWData.setcomponentVersion(conboxOCUSW);
-                    conboxOCUSWData.setWareType("sw");
-                    TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                    tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-                    TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", conboxOCUSWData.getComponentType())
-                            .eq("component_version", conboxOCUSWData.getcomponentVersion())
-                            .eq("ware_type", conboxOCUSWData.getWareType()));
-                    if (tComponentData != null){
-                        tCarlineComponent.setComponentUid(tComponentData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }else {
-                        tComponentDataMapper.insert(conboxOCUSWData);
-                        tCarlineComponent.setComponentUid(conboxOCUSWData.getUid());
-                        tCarlineComponentMapper.insert(tCarlineComponent);
-                    }
-                }
+                String componentType = "MU";
+                String hwVersion = importDeviceDTO.getMUHW();
+                String swVersion = importDeviceDTO.getMUSW();
+                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
+
+                componentType = new String("ASTERIX");
+                hwVersion = new String(importDeviceDTO.getAsterixHW());
+                swVersion = new String(importDeviceDTO.getAsterixSW());
+                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
+
+                componentType = new String("KOMBI");
+                hwVersion = new String(importDeviceDTO.getKombiHW());
+                swVersion = new String(importDeviceDTO.getKombiSW());
+                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
+
+                componentType = new String("GATEWAY");
+                hwVersion = new String(importDeviceDTO.getGatewayHW());
+                swVersion = new String(importDeviceDTO.getGatewaySW());
+                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
+
+                componentType = new String("CONBOX/OCU");
+                hwVersion = new String(importDeviceDTO.getConboxOCUHW());
+                swVersion = new String(importDeviceDTO.getConboxOCUSW());
+                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
             }
         }
-        return "Sucess";
+        return "SUCCESS!";
     }
 
+    private void buildImportComponent(Long carlineInfoUid, String componentType, String hwVersion, String swVersion) {
+        TComponentData componentData = new TComponentData();
+        componentData.setComponentType(componentType);
+        componentData.setComponentName(componentType);
+        componentData.setIsAvaliabel(1);
+        componentData.setPartNumber(null);
+        componentData.setSort(0);
+        TCarlineComponent tCarlineComponent = new TCarlineComponent();
+        tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
+        if (StringUtils.isNotEmpty(hwVersion)){
+            String wareType = "HW";
+            componentData.setWareType("HW");
+            componentData.setComponentVersion(hwVersion);
+            insertComponent(tCarlineComponent, wareType, componentData);
+        }
+        if (StringUtils.isNotEmpty(swVersion)){
+            componentData.setWareType("SW");
+            String wareType = "SW";
+            componentData.setComponentVersion(swVersion);
+            insertComponent(tCarlineComponent, wareType, componentData);
+        }
+        tCarlineComponentMapper.insert(tCarlineComponent);
+    }
+
+
+    private void insertComponent(TCarlineComponent tCarlineComponent,String wareType, TComponentData componentData) {
+        tCarlineComponent.setUid(null);
+        TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
+                .eq("component_type", componentData.getComponentType())
+                .eq("component_name", componentData.getComponentName())
+                .eq("ware_type", componentData.getWareType())
+                .eq("component_version", componentData.getComponentVersion())
+                .eq("part_number", componentData.getPartNumber()));
+        if (tComponentData != null){
+            if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)){
+                tCarlineComponent.setSwVersionUid(tComponentData.getUid());
+            }else if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)){
+             tCarlineComponent.setHwVersionUid(tComponentData.getUid());
+            }
+        }else {
+            componentData.setUid(null);
+            tComponentDataMapper.insert(componentData);
+            if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)){
+                tCarlineComponent.setSwVersionUid(componentData.getUid());
+            }
+            if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)){
+                tCarlineComponent.setHwVersionUid(componentData.getUid());
+            }
+        }
+
+    }
+
+    private void buildUpdateComponent(DeviceInfoVo deviceInfoVo, Long carlineInfoUid) {
+        if (null != deviceInfoVo.getDeviceInfoComponents() && deviceInfoVo.getDeviceInfoComponents().size() > 0){
+            for (DeviceInfoComponent deviceInfoComponent : deviceInfoVo.getDeviceInfoComponents()) {
+                TComponentData componentData = new TComponentData();
+                componentData.setComponentType(deviceInfoComponent.getComponentType());
+                componentData.setComponentName(deviceInfoComponent.getComponentName());
+                componentData.setIsAvaliabel(1);
+                componentData.setPartNumber(deviceInfoComponent.getPartNumber());
+                componentData.setSort(0);
+                TCarlineComponent tCarlineComponent = new TCarlineComponent();
+                tCarlineComponent.setZdcName(deviceInfoComponent.getZdcName());
+                tCarlineComponent.setZdcVersion(deviceInfoComponent.getZdcVersion());
+                tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
+                if (StringUtils.isNotEmpty(deviceInfoComponent.getHwVersion())){
+                    String wareType = "HW";
+                    componentData.setWareType("HW");
+                    componentData.setComponentVersion(deviceInfoComponent.getHwVersion());
+                    insertComponent(tCarlineComponent, wareType, componentData);
+                }
+                if (StringUtils.isNotEmpty(deviceInfoComponent.getSwVersion())){
+                    componentData.setWareType("SW");
+                    String wareType = "SW";
+                    componentData.setComponentVersion(deviceInfoComponent.getSwVersion());
+                    insertComponent(tCarlineComponent, wareType, componentData);
+                }
+                tCarlineComponentMapper.insert(tCarlineComponent);
+            }
+
+        }
+    }
     /**
      * 查询字典值
      * @param dictTypeName 查询的字典type名
@@ -777,10 +721,15 @@ public class DeviceListServiceImpl implements DeviceListService {
                 .eq("carline_info_uid", carlineInfoUid));
         if (tCarlineComponents != null && tCarlineComponents.size() > 0) {
             for (TCarlineComponent tCarlineComponent : tCarlineComponents) {
-                List<TCarlineComponent> ifDeleteTCarlineComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>()
-                        .eq("component_uid", tCarlineComponent.getComponentUid()));
-                if (ifDeleteTCarlineComponents != null && ifDeleteTCarlineComponents.size() == 1) {
-                    tComponentDataMapper.deleteById(ifDeleteTCarlineComponents.get(0).getComponentUid());
+                List<TCarlineComponent> ifDeleteTCarlineSWComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>()
+                        .eq("sw_version_uid", tCarlineComponent.getSwVersionUid()));
+                if (ifDeleteTCarlineSWComponents != null && ifDeleteTCarlineSWComponents.size() == 1) {
+                    tComponentDataMapper.deleteById(ifDeleteTCarlineSWComponents.get(0).getSwVersionUid());
+                }
+                List<TCarlineComponent> ifDeleteTCarlineHWComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>()
+                        .eq("hw_version_uid", tCarlineComponent.getHwVersionUid()));
+                if (ifDeleteTCarlineHWComponents != null && ifDeleteTCarlineHWComponents.size() == 1) {
+                    tComponentDataMapper.deleteById(ifDeleteTCarlineHWComponents.get(0).getHwVersionUid());
                 }
             }
         }
@@ -797,12 +746,12 @@ public class DeviceListServiceImpl implements DeviceListService {
             return -1;
         }
         //deviceName不得重复
-        QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
+        /*QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
         tcarlineWrapper.eq("device_name", deviceInfoVo.getGoldenCarName());
         List<TCarlineInfo> tCarlineInfos = tCarlineInfoMapper.selectList(tcarlineWrapper);
         if (null != tCarlineInfos) {
             return -1;
-        }
+        }*/
         //创建tcarline
         TCarline tCarline = new TCarline();
         tCarline.setCreateTime(new Date());
@@ -825,39 +774,12 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCarlineInfoMapper.insert(tCarlineInfo);
 
         //t_component_data与其连接表的保存
-        saveComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
+        buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
         //保存
         return 1;
     }
 
-    private void saveComponent(DeviceInfoVo deviceInfoVo, Long tCarlineInfoUid) {
-        if (null != deviceInfoVo.getDeviceInfoComponents() && deviceInfoVo.getDeviceInfoComponents().size() > 0){
-            for (DeviceInfoComponent deviceInfoComponent : deviceInfoVo.getDeviceInfoComponents()) {
-                List<TComponentData> tComponentDatas = tComponentDataMapper.selectList(new QueryWrapper<TComponentData>()
-                        .eq("component_type", deviceInfoComponent.getComponentType())
-                        .eq("ware_type", deviceInfoComponent.getWareType())
-                        .eq("component_version", deviceInfoComponent.getComponentModel()));
-                TComponentData tComponentData = new TComponentData();
-                if (null != tComponentDatas && tComponentDatas.size() > 0){
-                    tComponentData = tComponentDatas.get(0);
-                }else {
-                    tComponentData.setComponentType(deviceInfoComponent.getComponentType());
-                    tComponentData.setWareType(deviceInfoComponent.getWareType());
-                    tComponentData.setcomponentVersion(deviceInfoComponent.getComponentModel());
-                    tComponentDataMapper.insert(tComponentData);
-                }
 
-                //t_carline_component 关系表
-                TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                tCarlineComponent.setComponentUid(tComponentData.getUid());
-                tCarlineComponent.setCarlineInfoUid(tCarlineInfoUid);
-                tCarlineComponent.setCreateTime(new Date());
-                tCarlineComponent.setUpdateTime(new Date());
-                tCarlineComponentMapper.insert(tCarlineComponent);
-            }
-
-        }
-    }
 
     Map<String,String> cleanMap;
 
@@ -873,7 +795,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCarlineInfo.setPlatformType(deviceInfoVo.getPlatformType());
         tCarlineInfo.setMarketType(deviceInfoVo.getMarketType());
         tCarlineInfo.setVinCode(deviceInfoVo.getVinCode());
-        tCarlineInfo.setDeviceName(deviceInfoVo.getGoldenCarName());
+        tCarlineInfo.setDeviceName(deviceInfoVo.getDeviceName());
         tCarlineInfo.setVariantType(deviceInfoVo.getVariantType());
         tCarlineInfo.setDbVersion(deviceInfoVo.getDbVersion());
         tCarlineInfo.setUpdateTime(new Date());

@@ -28,110 +28,25 @@ public class TComponentData extends LocalBaseEntity
     private Long uid;
 
     private String partNumber;
-    private String swVersion;
-    private String hwVersion;
-    private String minimalHw;
-    private String temporaryVariable;
-
-    /** mu代表mu，gw代表gw，hud代表hud，km代表kombi等 */
+    private Integer isAvaliabel;
+    private String wareType;
+    private String componentVersion;
     @Excel(name = "mu代表mu，gw代表gw，hud代表hud，km代表kombi等")
     private String componentType;
-
     /** 配件名称 */
     @Excel(name = "配件名称")
     private String componentName;
+    private Integer sort;
 
-    /** hw代表硬件，sw软件，ot代表其他 */
-    @Excel(name = "hw代表硬件，sw软件，ot代表其他")
-    private String wareType;
 
-    /** 创建者 */
     @Excel(name = "创建者")
     private String createByUid;
-
     /** 更新者 */
     @Excel(name = "更新者")
     private String updateByUid;
 
-    /** 软硬件版本号 */
-    @Excel(name = "配件版本")
-    private String componentVersion;
 
 
-    public void setUid(Long uid)
-    {
-        this.uid = uid;
-    }
 
-    public Long getUid()
-    {
-        return uid;
-    }
-    public void setComponentType(String componentType) 
-    {
-        this.componentType = componentType;
-    }
 
-    public String getComponentType() 
-    {
-        return componentType;
-    }
-    public void setcomponentVersion(String componentVersion)
-    {
-        this.componentVersion = componentVersion;
-    }
-
-    public String getcomponentVersion()
-    {
-        return componentVersion;
-    }
-    public void setWareType(String wareType) 
-    {
-        this.wareType = wareType;
-    }
-
-    public String getWareType() 
-    {
-        return wareType;
-    }
-    public void setCreateByUid(String createByUid) 
-    {
-        this.createByUid = createByUid;
-    }
-
-    public String getCreateByUid() 
-    {
-        return createByUid;
-    }
-    public void setUpdateByUid(String updateByUid) 
-    {
-        this.updateByUid = updateByUid;
-    }
-
-    public String getUpdateByUid() 
-    {
-        return updateByUid;
-    }
-    public void setcomponentName(String componentName)
-    {
-        this.componentName = componentName;
-    }
-
-    public String getcomponentName()
-    {
-        return componentName;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("uid", getUid())
-            .append("componentType", getComponentType())
-            .append("componentVersion", getcomponentVersion())
-            .append("wareType", getWareType())
-            .append("createByUid", getCreateByUid())
-            .append("updateByUid", getUpdateByUid())
-            .append("componentName", getcomponentName())
-            .toString();
-    }
 }
