@@ -27,5 +27,6 @@ public class DeviceListVo
    private String carlineModelType;
    private String variantType;
    private String vinCode;
+   private String lastUpdated;
 
 }

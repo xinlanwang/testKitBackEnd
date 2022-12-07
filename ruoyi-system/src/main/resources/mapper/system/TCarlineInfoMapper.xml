@@ -42,7 +42,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="queryDeviceList" parameterType="com.ruoyi.system.domain.param.DeviceListParam" resultMap="DeviceListVo">
         select t.carline_icon,tci.device_name as deviceName,tc.cluster_name as clusterName,tc.project_type as projectType,tc.device_type as carlineType,tci.platform_type as platformType,
-        tci.market_type as marketType,t.carline_model_type as carlineModelType,tci.variant_type as variantType,tci.vin_code as vinCode,tci.carline_info_uid
+        tci.market_type as marketType,t.carline_model_type as carlineModelType,tc.last_updated as lastUpdated,tci.variant_type as variantType,tci.vin_code as vinCode,tci.carline_info_uid
         from t_carline_info tci
         left join t_cluster tc on tc.uid = tci.cluster_uid
         left join t_carline t on t.uid = tc.carline_uid

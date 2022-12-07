@@ -42,9 +42,18 @@ public class DeviceInfoVo
    private String dbVersion;
    @ApiModelProperty("lashUpdated")
    private String clusterLastUpdateName;
+   @ApiModelProperty("record")
+   private String basicType;
 
    @ApiModelProperty("设备组件列表")
    private List<DeviceInfoComponent> deviceInfoComponents;
    private Map<String,DeviceInfoComponent> deviceInfoComponentMap;
 
+   public Map<String, DeviceInfoComponent> getDeviceInfoComponentMap() {
+      return deviceInfoComponentMap;
+   }
+
+   public void setDeviceInfoComponentMap(Map<String, DeviceInfoComponent> deviceInfoComponentMap) {
+      this.deviceInfoComponentMap = deviceInfoComponentMap;
+   }
 }

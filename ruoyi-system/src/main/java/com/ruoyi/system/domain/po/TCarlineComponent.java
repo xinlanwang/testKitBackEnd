@@ -51,7 +51,83 @@ public class TCarlineComponent extends LocalBaseEntity
     @Excel(name = "更新者")
     private String updateByUid;
 
+    public Long getUid() {
+        return uid;
+    }
 
+    public void setUid(Long uid) {
+        this.uid = uid;
+    }
 
+    public Long getCarlineInfoUid() {
+        return carlineInfoUid;
+    }
 
+    public void setCarlineInfoUid(Long carlineInfoUid) {
+        this.carlineInfoUid = carlineInfoUid;
+    }
+
+    public Long getSwVersionUid() {
+        return swVersionUid;
+    }
+
+    public void setSwVersionUid(Long swVersionUid) {
+        this.swVersionUid = swVersionUid;
+    }
+
+    public Long getHwVersionUid() {
+        return hwVersionUid;
+    }
+
+    public void setHwVersionUid(Long hwVersionUid) {
+        this.hwVersionUid = hwVersionUid;
+    }
+
+    public String getZdcName() {
+        return zdcName;
+    }
+
+    public void setZdcName(String zdcName) {
+        this.zdcName = zdcName;
+    }
+
+    public String getZdcVersion() {
+        return zdcVersion;
+    }
+
+    public void setZdcVersion(String zdcVersion) {
+        this.zdcVersion = zdcVersion;
+    }
+
+    public String getMinimalHw() {
+        return minimalHw;
+    }
+
+    public void setMinimalHw(String minimalHw) {
+        this.minimalHw = minimalHw;
+    }
+
+    public String getTemporaryVariable() {
+        return temporaryVariable;
+    }
+
+    public void setTemporaryVariable(String temporaryVariable) {
+        this.temporaryVariable = temporaryVariable;
+    }
+
+    public String getCreateByUid() {
+        return createByUid;
+    }
+
+    public void setCreateByUid(String createByUid) {
+        this.createByUid = createByUid;
+    }
+
+    public String getUpdateByUid() {
+        return updateByUid;
+    }
+
+    public void setUpdateByUid(String updateByUid) {
+        this.updateByUid = updateByUid;
+    }
 }
