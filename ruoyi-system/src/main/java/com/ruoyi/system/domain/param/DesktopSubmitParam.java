@@ -20,6 +20,8 @@ public class DesktopSubmitParam  {
         @ApiModelProperty
         Date submitDate;
 
+        @ApiModelProperty
+        private String operIp;
 
        List<DesktopRecordParam> desktopRecordParams;
 }

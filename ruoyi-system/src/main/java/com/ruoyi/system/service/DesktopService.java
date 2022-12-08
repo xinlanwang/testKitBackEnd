@@ -5,6 +5,7 @@ import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.param.DesktopSubmitParam;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
+import com.ruoyi.system.domain.po.TDesktopLog;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,4 +21,5 @@ public interface DesktopService
 {
 
     public String submit(DesktopSubmitParam desktopSubmitParam);
+
 }

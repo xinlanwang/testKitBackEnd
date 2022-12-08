@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TDesktopLogMapper">
+    
+    <resultMap type="TDesktopLog" id="TDesktopLogResult">
+        <result property="uid"    column="uid"    />
+        <result property="localhostUserId"    column="localhost_user_id"    />
+        <result property="operUserName"    column="oper_user_name"    />
+        <result property="operationUid"    column="operation_uid"    />
+        <result property="operationType"    column="operation_type"    />
+        <result property="operationFiled"    column="operation_filed"    />
+        <result property="beforeOperationValue"    column="before_operation_value"    />
+        <result property="afterOperationValue"    column="after_operation_value"    />
+        <result property="requestMethod"    column="request_method"    />
+        <result property="operTime"    column="oper_time"    />
+        <result property="operUrl"    column="oper_url"    />
+        <result property="operIp"    column="oper_ip"    />
+    </resultMap>
+
+    <sql id="selectTDesktopLogVo">
+        select uid, localhost_user_id, oper_user_name, operation_uid, operation_type, operation_filed, before_operation_value, after_operation_value, request_method, oper_time, oper_url, oper_ip from t_desktop_log
+    </sql>
+
+    <select id="selectTDesktopLogList" parameterType="TDesktopLog" resultMap="TDesktopLogResult">
+        <include refid="selectTDesktopLogVo"/>
+        <where>  
+            <if test="localhostUserId != null "> and localhost_user_id = #{localhostUserId}</if>
+            <if test="operUserName != null  and operUserName != ''"> and oper_user_name like concat('%', #{operUserName}, '%')</if>
+            <if test="operationUid != null  and operationUid != ''"> and operation_uid = #{operationUid}</if>
+            <if test="operationType != null  and operationType != ''"> and operation_type = #{operationType}</if>
+            <if test="operationFiled != null  and operationFiled != ''"> and operation_filed = #{operationFiled}</if>
+            <if test="beforeOperationValue != null  and beforeOperationValue != ''"> and before_operation_value = #{beforeOperationValue}</if>
+            <if test="afterOperationValue != null  and afterOperationValue != ''"> and after_operation_value = #{afterOperationValue}</if>
+            <if test="requestMethod != null  and requestMethod != ''"> and request_method = #{requestMethod}</if>
+            <if test="operTime != null "> and oper_time = #{operTime}</if>
+            <if test="operUrl != null  and operUrl != ''"> and oper_url = #{operUrl}</if>
+            <if test="operIp != null  and operIp != ''"> and oper_ip = #{operIp}</if>
+        </where>
+    </select>
+    
+    <select id="selectTDesktopLogByUid" parameterType="Long" resultMap="TDesktopLogResult">
+        <include refid="selectTDesktopLogVo"/>
+        where uid = #{uid}
+    </select>
+        
+    <insert id="insertTDesktopLog" parameterType="TDesktopLog" useGeneratedKeys="true" keyProperty="uid">
+        insert into t_desktop_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="localhostUserId != null">localhost_user_id,</if>
+            <if test="operUserName != null">oper_user_name,</if>
+            <if test="operationUid != null">operation_uid,</if>
+            <if test="operationType != null">operation_type,</if>
+            <if test="operationFiled != null">operation_filed,</if>
+            <if test="beforeOperationValue != null">before_operation_value,</if>
+            <if test="afterOperationValue != null">after_operation_value,</if>
+            <if test="requestMethod != null">request_method,</if>
+            <if test="operTime != null">oper_time,</if>
+            <if test="operUrl != null">oper_url,</if>
+            <if test="operIp != null">oper_ip,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="localhostUserId != null">#{localhostUserId},</if>
+            <if test="operUserName != null">#{operUserName},</if>
+            <if test="operationUid != null">#{operationUid},</if>
+            <if test="operationType != null">#{operationType},</if>
+            <if test="operationFiled != null">#{operationFiled},</if>
+            <if test="beforeOperationValue != null">#{beforeOperationValue},</if>
+            <if test="afterOperationValue != null">#{afterOperationValue},</if>
+            <if test="requestMethod != null">#{requestMethod},</if>
+            <if test="operTime != null">#{operTime},</if>
+            <if test="operUrl != null">#{operUrl},</if>
+            <if test="operIp != null">#{operIp},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTDesktopLog" parameterType="TDesktopLog">
+        update t_desktop_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="localhostUserId != null">localhost_user_id = #{localhostUserId},</if>
+            <if test="operUserName != null">oper_user_name = #{operUserName},</if>
+            <if test="operationUid != null">operation_uid = #{operationUid},</if>
+            <if test="operationType != null">operation_type = #{operationType},</if>
+            <if test="operationFiled != null">operation_filed = #{operationFiled},</if>
+            <if test="beforeOperationValue != null">before_operation_value = #{beforeOperationValue},</if>
+            <if test="afterOperationValue != null">after_operation_value = #{afterOperationValue},</if>
+            <if test="requestMethod != null">request_method = #{requestMethod},</if>
+            <if test="operTime != null">oper_time = #{operTime},</if>
+            <if test="operUrl != null">oper_url = #{operUrl},</if>
+            <if test="operIp != null">oper_ip = #{operIp},</if>
+        </trim>
+        where uid = #{uid}
+    </update>
+
+    <delete id="deleteTDesktopLogByUid" parameterType="Long">
+        delete from t_desktop_log where uid = #{uid}
+    </delete>
+
+    <delete id="deleteTDesktopLogByUids" parameterType="String">
+        delete from t_desktop_log where uid in 
+        <foreach item="uid" collection="array" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 import java.util.Date;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -545,6 +546,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                     String resp = importDeviceDTO.getResp();
                     tCarlineInfo.setResp(resp);
                 }
+                String versionCode = DateUtil.format(new Date(), "yyMMddHHmmss");
+                tCarlineInfo.setVersionCode(versionCode);
                 tCarlineMapper.insert(tCarline);
                 tCluster.setCarlineUid(tCarline.getUid());
                 tClusterMapper.insert(tCluster);
@@ -807,6 +810,9 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     private static void buildTCarlineInfoPO(DeviceInfoVo deviceInfoVo, TCarlineInfo tCarlineInfo) {
+        tCarlineInfo.setBasicType(deviceInfoVo.getBasicType());
+        String versionCode = DateUtil.format(new Date(), "yyMMddHHmmss");
+        tCarlineInfo.setVersionCode(versionCode);
         tCarlineInfo.setPlatformType(deviceInfoVo.getPlatformType());
         tCarlineInfo.setMarketType(deviceInfoVo.getMarketType());
         tCarlineInfo.setVinCode(deviceInfoVo.getVinCode());
@@ -814,6 +820,14 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCarlineInfo.setVariantType(deviceInfoVo.getVariantType());
         tCarlineInfo.setDbVersion(deviceInfoVo.getDbVersion());
         tCarlineInfo.setUpdateTime(new Date());
+    }
+
+    @Test
+    public void test2(){
+        String now = DateUtil.format(new Date(), "yyMMddHHmmss");
+        System.out.println(now);
+//        DateUtil.format("")
+//        DateUtil.compare()
     }
     private static void buildTClusterPO(DeviceInfoVo deviceInfoVo, TCluster tCluster) {
         tCluster.setprojectType(deviceInfoVo.getProjectType());//暂定工程项空缺不单独建表直接以名称替代

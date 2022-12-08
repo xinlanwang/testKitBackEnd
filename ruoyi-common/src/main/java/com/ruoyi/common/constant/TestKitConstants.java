@@ -21,6 +21,10 @@ public class TestKitConstants
     public static final String DICT_MATRIXTYPE_VALIDATE = "1";
     public static final String DICT_MATRIXTYPE_OTHER = "2";
 
+    public static final String OPERATION_TYPE_INSERT = "1";
+    public static final String OPERATION_TYPE_UPDATE = "2";
+    public static final String OPERATION_TYPE_DELETE = "3";
+
 
     /**
      * matrix规则类型

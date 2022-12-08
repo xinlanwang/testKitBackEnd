@@ -25,12 +25,15 @@ public class TCarlineInfo extends LocalBaseEntity
     /** 主键 */
     @TableId(type = IdType.AUTO)
     private Long carlineInfoUid;
+    private Long originalCarlineInfoUid;
 
     private String deviceName;
 
     /** 版本号id */
     @Excel(name = "版本号id")
     private Long clusterUid;
+
+    private String versionCode;
 
     /** 平台类型 */
     @Excel(name = "平台类型")

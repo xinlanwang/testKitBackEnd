@@ -1,5 +1,6 @@
 package com.ruoyi.system.domain.param;
 
+import com.ruoyi.system.domain.po.TDesktopLog;
 import com.ruoyi.system.domain.vo.DeviceInfoComponent;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import io.swagger.annotations.ApiModel;
@@ -16,10 +17,17 @@ public class DesktopRecordParam {
         private static final long serialVersionUID = 1L;
         @ApiModelProperty
         String recordUid;
+
         @ApiModelProperty
         String indexUid;
+        /** 操作时间 */
         @ApiModelProperty
-        String desktopDeviceUid;
+        private Date operTime;
+
+        /** 主机地址 */
+        @ApiModelProperty
+        private String operIp;
+
         @ApiModelProperty
         String functionGroupType;
         @ApiModelProperty
@@ -52,6 +60,8 @@ public class DesktopRecordParam {
         String operationType;
         @ApiModelProperty
         String tester;
+        @ApiModelProperty
+        private List<DesktopLogParam> desktopLogParams;
         @ApiModelProperty
         private DeviceInfoVo desktopDevice;
 }

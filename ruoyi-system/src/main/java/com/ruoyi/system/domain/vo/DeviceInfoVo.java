@@ -23,6 +23,8 @@ public class DeviceInfoVo
    private String carlineType;
    @ApiModelProperty("版本规范车族名称，对应devicesName")
    private String goldenCarName;
+   @ApiModelProperty
+   private String versionCode;
    private String deviceName;
    @ApiModelProperty("版本名称，如cl34，cl37等")
    private String clusterName;
@@ -44,6 +46,7 @@ public class DeviceInfoVo
    private String clusterLastUpdateName;
    @ApiModelProperty("basicType")
    private String basicType;
+
 
    @ApiModelProperty("设备组件列表")
    private List<DeviceInfoComponent> deviceInfoComponents;
