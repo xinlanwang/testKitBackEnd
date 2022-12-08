@@ -23,9 +23,9 @@ public interface DeviceListService
 
     public AjaxResult compareComponent(DeviceCompareParam deviceCompareParam);
 
-    public int insertDeviceInfo(DeviceInfoVo deviceInfoVo);
+    public Long insertDeviceInfo(DeviceInfoVo deviceInfoVo);
 
-    public int updateDeviceInfo(DeviceInfoVo deviceInfoVo);
+    public Long updateDeviceInfo(DeviceInfoVo deviceInfoVo);
 
     public int deleteTCarlineByUids(Long[] carlineInfoUids);
 

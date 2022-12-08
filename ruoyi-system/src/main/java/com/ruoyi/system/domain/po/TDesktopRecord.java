@@ -32,7 +32,7 @@ public class TDesktopRecord
 
     /** 操作数据id */
     @Excel(name = "操作数据id")
-    private String dataUid;
+    private Long carlineInfoUid;
 
     /** 方法名称(1为创建，2为修改，3为删除） */
     @Excel(name = "方法名称(1为创建，2为修改，3为删除）")

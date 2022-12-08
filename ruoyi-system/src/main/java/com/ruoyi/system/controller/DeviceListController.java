@@ -85,13 +85,13 @@ public class DeviceListController extends BaseController
     @PostMapping("/save")
     @ApiOperation("新增车型详细信息")
     public AjaxResult save(@Validated @RequestBody  DeviceInfoVo deviceInfoVo){
-        return toAjax(deviceListService.insertDeviceInfo(deviceInfoVo));
+        return toAjax(Math.toIntExact(deviceListService.insertDeviceInfo(deviceInfoVo)));
     }
 
     @PutMapping("/update")
     @ApiOperation("修改车型详细信息")
     public R<String> update(@RequestBody DeviceInfoVo deviceInfoVo){
-        int i = deviceListService.updateDeviceInfo(deviceInfoVo);
+        Long i = deviceListService.updateDeviceInfo(deviceInfoVo);
         if (i <= 0){
             return R.fail("该车型不存在");
         }

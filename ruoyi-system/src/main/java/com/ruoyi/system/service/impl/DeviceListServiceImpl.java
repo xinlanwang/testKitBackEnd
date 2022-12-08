@@ -77,15 +77,15 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     @Override
     @Transactional
-    public int updateDeviceInfo(DeviceInfoVo deviceInfoVo) {
+    public Long updateDeviceInfo(DeviceInfoVo deviceInfoVo) {
         if (deviceInfoVo == null || deviceInfoVo.getCarlineInfoUid() == null){
-            return -1;
+            return -1L;
         }
         //相关表字段获取
         Long carlineInfoUid = deviceInfoVo.getCarlineInfoUid();
         TCarlineInfo tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
         if (tCarlineInfo == null){
-            return -1;
+            return -1L;
         }
         Long clusterUid = tCarlineInfo.getClusterUid();
         TCluster tCluster = tClusterMapper.selectById(clusterUid);
@@ -99,7 +99,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 .eq("cluster_name",tCluster.getClusterName())
                 .orderByDesc("car_num"));
         if (tClusters == null && tClusters.size() < 0) {
-            return -1;
+            return -1L;
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
         Integer deviceNum = tClusters.get(0).getCarNum();//从0开始到9循环，总计保存共10副本
@@ -122,7 +122,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
 
         //保存
-        return 1;
+        return tCarlineInfo.getCarlineInfoUid();
     }
 
     @Override
@@ -756,9 +756,9 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     @Override
     @Transactional
-    public int insertDeviceInfo(DeviceInfoVo deviceInfoVo) {
+    public Long insertDeviceInfo(DeviceInfoVo deviceInfoVo) {
         if (deviceInfoVo == null){
-            return -1;
+            return -1L;
         }
         //deviceName不得重复
         /*QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
@@ -791,7 +791,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         //t_component_data与其连接表的保存
         buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
         //保存
-        return 1;
+        return tCarlineInfo.getCarlineInfoUid();
     }
 
 

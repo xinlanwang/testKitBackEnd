@@ -40,20 +40,14 @@ public class DeviceInfoVo
    private String vinCode;
    @ApiModelProperty("数据库版本")
    private String dbVersion;
-   @ApiModelProperty("lashUpdated")
+   @ApiModelProperty("clusterLastUpdateName")
    private String clusterLastUpdateName;
-   @ApiModelProperty("record")
+   @ApiModelProperty("basicType")
    private String basicType;
 
    @ApiModelProperty("设备组件列表")
    private List<DeviceInfoComponent> deviceInfoComponents;
    private Map<String,DeviceInfoComponent> deviceInfoComponentMap;
 
-   public Map<String, DeviceInfoComponent> getDeviceInfoComponentMap() {
-      return deviceInfoComponentMap;
-   }
 
-   public void setDeviceInfoComponentMap(Map<String, DeviceInfoComponent> deviceInfoComponentMap) {
-      this.deviceInfoComponentMap = deviceInfoComponentMap;
-   }
 }

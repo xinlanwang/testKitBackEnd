@@ -18,5 +18,4 @@ public class DeviceInfoComponent {
     private String wareType;
     private String zdcName;
     private String zdcVersion;
-
 }
