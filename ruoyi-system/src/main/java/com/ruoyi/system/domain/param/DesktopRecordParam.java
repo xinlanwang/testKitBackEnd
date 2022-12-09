@@ -1,7 +1,6 @@
 package com.ruoyi.system.domain.param;
 
-import com.ruoyi.system.domain.po.TDesktopLog;
-import com.ruoyi.system.domain.vo.DeviceInfoComponent;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,7 +8,6 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @ApiModel(value = "DesktopRecordParam",description = "桌面云端同步参数")
 @Data
@@ -17,20 +15,16 @@ public class DesktopRecordParam {
         private static final long serialVersionUID = 1L;
         @ApiModelProperty
         String recordUid;
-
         @ApiModelProperty
         String indexUid;
         /** 操作时间 */
         @ApiModelProperty
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         private Date operTime;
-
-        /** 主机地址 */
-        @ApiModelProperty
-        private String operIp;
-
         @ApiModelProperty
         String functionGroupType;
         @ApiModelProperty
+        @JsonFormat(pattern = "yyyy-MM-dd")
         Date testDate;
         @ApiModelProperty
         String taskType;

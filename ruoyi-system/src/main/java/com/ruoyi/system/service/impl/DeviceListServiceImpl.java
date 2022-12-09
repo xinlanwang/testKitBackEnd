@@ -69,9 +69,6 @@ public class DeviceListServiceImpl implements DeviceListService {
      */
     @Override
     public List queryDeviceList(DeviceListParam deviceListParam) {
-        /*if (deviceListParam == null){
-            return tCarlineInfoMapper.selectList(new QueryWrapper<>());
-        }*/
         List<DeviceListVo> deviceListVos = tCarlineInfoMapper.queryDeviceList(deviceListParam);
         return deviceListVos;
     }
@@ -390,7 +387,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
             }
         }
-        return AjaxResult.success("");
+        return AjaxResult.success("SUCCESS~！");
     }
 
 
@@ -503,7 +500,6 @@ public class DeviceListServiceImpl implements DeviceListService {
                     tCluster.setDeviceType(DEVICE_TYPE_BENCH);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getDeviceName())){
-//                    tCarline.setgoldenCarName(importDeviceDTO.getDeviceName());
                     tCarlineInfo.setDeviceName(importDeviceDTO.getDeviceName());
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getCLU())){
@@ -548,6 +544,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
                 String versionCode = DateUtil.format(new Date(), "yyMMddHHmmss");
                 tCarlineInfo.setVersionCode(versionCode);
+                tCarlineInfo.setBasicType(BASIC_TYPE_WEB_DEVICE);
                 tCarlineMapper.insert(tCarline);
                 tCluster.setCarlineUid(tCarline.getUid());
                 tClusterMapper.insert(tCluster);
@@ -810,9 +807,19 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     private static void buildTCarlineInfoPO(DeviceInfoVo deviceInfoVo, TCarlineInfo tCarlineInfo) {
-        tCarlineInfo.setBasicType(deviceInfoVo.getBasicType());
-        String versionCode = DateUtil.format(new Date(), "yyMMddHHmmss");
+        String versionCode = deviceInfoVo.getVersionCode();
+        if (StringUtils.isEmpty(deviceInfoVo.getVersionCode())) {
+            versionCode = DateUtil.format(new Date(), "yyMMddHHmmss");
+        }
         tCarlineInfo.setVersionCode(versionCode);
+        String basicType = deviceInfoVo.getBasicType();
+        if (StringUtils.isEmpty(basicType)){
+            tCarlineInfo.setBasicType(BASIC_TYPE_WEB_DEVICE);
+        }
+        tCarlineInfo.setBasicType(basicType);
+        if (deviceInfoVo.getOriginalCarlineInfoUid() != null) {
+            tCarlineInfo.setOriginalCarlineInfoUid(deviceInfoVo.getOriginalCarlineInfoUid());
+        }
         tCarlineInfo.setPlatformType(deviceInfoVo.getPlatformType());
         tCarlineInfo.setMarketType(deviceInfoVo.getMarketType());
         tCarlineInfo.setVinCode(deviceInfoVo.getVinCode());

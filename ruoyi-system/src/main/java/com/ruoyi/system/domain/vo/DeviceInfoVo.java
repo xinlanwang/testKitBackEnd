@@ -19,6 +19,7 @@ public class DeviceInfoVo
    private static final long serialVersionUID = 1L;
    @ApiModelProperty("当前设备uid，新增不填，修改必填")
    private Long carlineInfoUid;
+   private Long originalCarlineInfoUid;
    @ApiModelProperty("设备类型：bc代表bench，car代表car，gd代表目标goldeninfo")
    private String carlineType;
    @ApiModelProperty("版本规范车族名称，对应devicesName")

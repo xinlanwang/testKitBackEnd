@@ -47,6 +47,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         left join t_cluster tc on tc.uid = tci.cluster_uid
         left join t_carline t on t.uid = tc.carline_uid
         where 1= 1
+        and tci.basic_type = '1'
         <if test="componentType != null  and componentType != '' and wareType != null  and wareType != '' and componentModel != null  and componentModel != ''">
         and  tci.carline_info_uid in (select tcc.carline_info_uid
         from t_carline_component tcc

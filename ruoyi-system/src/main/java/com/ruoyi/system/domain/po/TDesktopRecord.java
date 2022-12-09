@@ -1,6 +1,9 @@
 package com.ruoyi.system.domain.po;
 
 import java.util.Date;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -20,6 +23,8 @@ public class TDesktopRecord
     private static final long serialVersionUID = 1L;
 
     /** auto_increment */
+    @Excel(name = "自增唯一值")
+    @TableId(type = IdType.AUTO)
     private Long uid;
 
     /** 登录人员id */
@@ -32,11 +37,7 @@ public class TDesktopRecord
 
     /** 操作数据id */
     @Excel(name = "操作数据id")
-    private Long carlineInfoUid;
-
-    /** 方法名称(1为创建，2为修改，3为删除） */
-    @Excel(name = "方法名称(1为创建，2为修改，3为删除）")
-    private String operationType;
+    private Long dataUid;
 
     /** 操作时间 */
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -54,10 +55,6 @@ public class TDesktopRecord
     /** 操作地点 */
     @Excel(name = "操作地点")
     private String operLocation;
-
-    /** 错误消息 */
-    @Excel(name = "错误消息")
-    private String errorMsg;
 
     /** functionGroupType */
     @Excel(name = "functionGroupType")
@@ -110,9 +107,5 @@ public class TDesktopRecord
     /** comment */
     @Excel(name = "comment")
     private String comment;
-
-    /** operationType */
-    @Excel(name = "operationType")
-    private String operationtype;
 
 }
