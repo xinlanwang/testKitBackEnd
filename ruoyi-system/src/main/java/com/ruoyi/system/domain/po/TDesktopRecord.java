@@ -26,6 +26,7 @@ public class TDesktopRecord
     @Excel(name = "自增唯一值")
     @TableId(type = IdType.AUTO)
     private Long uid;
+    private String localHostAcoount;
 
     /** 登录人员id */
     @Excel(name = "登录人员id")

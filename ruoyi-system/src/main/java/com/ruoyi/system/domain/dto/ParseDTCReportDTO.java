@@ -12,6 +12,9 @@ public class ParseDTCReportDTO {
     private String SWVersion;
     private String HWVersion;
     private String HWTeilenummer;
-    private String ZDVersion;
-    private String ZDName;
+    private String SubtName;
+    private String ZdcName;
+    private String ZdcVersion;
+    private String Market;
+
 }

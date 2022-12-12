@@ -24,6 +24,8 @@ public class TDTCReport
     /** 唯一uid */
     @TableId(type = IdType.AUTO)
     private Long uid;
+    private String level;
+    private String selectCondition;
     @TableField("Adresse")
     private String Adresse;
     @TableField("ecu_id")
@@ -32,4 +34,5 @@ public class TDTCReport
     private String componentName;
     private String variant;
     private String componentType;
+    private String selectValue;
 }

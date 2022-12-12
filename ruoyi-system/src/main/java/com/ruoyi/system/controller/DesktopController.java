@@ -8,7 +8,10 @@ import com.ruoyi.system.service.DeviceListService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * `devicelist`Controller
@@ -28,7 +31,7 @@ public class DesktopController extends BaseController
 
     @PostMapping("/submit")
     @ApiOperation("提交")
-    public AjaxResult submit( @RequestBody DesktopSubmitParam desktopSubmitParam) throws Exception {
+    public AjaxResult submit(@Validated @RequestBody DesktopSubmitParam desktopSubmitParam) throws Exception {
         String message = desktopService.submit(desktopSubmitParam);
         return success(message);
     }

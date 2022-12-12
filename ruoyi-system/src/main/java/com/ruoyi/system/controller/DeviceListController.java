@@ -59,6 +59,9 @@ public class DeviceListController extends BaseController
     @ApiOperation("导入DTC报告")
     public AjaxResult importDTCReport(MultipartFile file) throws Exception{
         String operName = "user";
+        if(file == null){
+            return null;
+        }
         return deviceListService.importDTCReport(file, true, operName);
     }
 

@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -16,10 +17,12 @@ public class DesktopRecordParam {
         @ApiModelProperty
         String recordUid;
         @ApiModelProperty
+        @NotNull
         String indexUid;
         /** 操作时间 */
         @ApiModelProperty
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @NotNull
         private Date operTime;
         @ApiModelProperty
         String functionGroupType;
@@ -55,7 +58,9 @@ public class DesktopRecordParam {
         @ApiModelProperty
         String tester;
         @ApiModelProperty
+        @NotNull
         private List<DesktopLogParam> desktopLogParams;
         @ApiModelProperty
+        @NotNull
         private DeviceInfoVo desktopDevice;
 }

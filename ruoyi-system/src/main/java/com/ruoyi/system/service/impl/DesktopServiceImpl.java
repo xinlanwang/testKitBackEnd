@@ -70,11 +70,11 @@ public class DesktopServiceImpl implements DesktopService {
         List<Long> deleteDesktopRecordUids = new ArrayList<Long>();
         for (DesktopRecordParam desktopRecordParam : desktopRecordParams) {
             TDesktopRecord tDesktopRecord = new TDesktopRecord();
-            buildDesktopRecord(tDesktopRecord, LocalHostUserId, desktopRecordParam);
+            buildDesktopRecord(tDesktopRecord, LocalHostUserId,desktopSubmitParam.getLocalHostAcoount(),desktopRecordParam);
             String indexUid = desktopRecordParam.getIndexUid();
             desktopRecordParamHashMap.put(indexUid,desktopRecordParam);
             DeviceInfoVo desktopDevice = desktopRecordParam.getDesktopDevice();
-            if (StringUtils.isEmpty(indexUid) || desktopDevice == null || desktopDevice.getCarlineInfoUid() == null) {
+            if (StringUtils.isEmpty(indexUid) || desktopDevice == null || desktopDevice.getCarlineInfoUid() == null|| desktopDevice.getVersionCode() == null) {
                 continue;
             }
             if (OPERATION_TYPE_INSERT.equals(desktopRecordParam.getOperationType())) {
@@ -108,7 +108,7 @@ public class DesktopServiceImpl implements DesktopService {
         for (TDataLog tDataLog :allDesktopLogs){
             desktopLogMapper.insert(tDataLog);
         }
-        if(deleteDesktopRecordUids != null && deleteDesktopRecordUids.size() >0) {
+        if(deleteDesktopRecordUids != null && deleteDesktopRecordUids.size() > 0) {
             tDesktopRecordMapper.deleteTDesktopRecordByUids(deleteDesktopRecordUids.toArray(new Long[deleteDesktopRecordUids.size()]));
         }
         return "success~!";
@@ -164,7 +164,7 @@ public class DesktopServiceImpl implements DesktopService {
     }
 
 
-    private static void buildDesktopRecord(TDesktopRecord tDesktopRecord, String LocalHostUserId, DesktopRecordParam desktopRecordParam) {
+    private static void buildDesktopRecord(TDesktopRecord tDesktopRecord, String LocalHostUserId, String localHostAcoount,DesktopRecordParam desktopRecordParam) {
         if (desktopRecordParam.getRecordUid() != null && OPERATION_TYPE_UPDATE.equals(desktopRecordParam.getOperationType())){
             tDesktopRecord.setUid(Long.valueOf(desktopRecordParam.getRecordUid()));
         }
@@ -173,6 +173,7 @@ public class DesktopServiceImpl implements DesktopService {
         tDesktopRecord.setOperLocation("there");
         tDesktopRecord.setStatus(1);
         tDesktopRecord.setOperIp("192.168.0.1");
+        tDesktopRecord.setLocalHostAcoount(localHostAcoount);
         tDesktopRecord.setOperTime(desktopRecordParam.getTestDate());
         tDesktopRecord.setFunctionGroupType(desktopRecordParam.getFunctionGroupType());
         tDesktopRecord.setTaskType(desktopRecordParam.getTaskType());
@@ -184,7 +185,6 @@ public class DesktopServiceImpl implements DesktopService {
         tDesktopRecord.setNaviReset(desktopRecordParam.getNaviReset());
         tDesktopRecord.setBlackMap(desktopRecordParam.getBlackMap());
         tDesktopRecord.setInitializingOccurred(desktopRecordParam.getInitializingOccurred());
-        tDesktopRecord.setFunctionGroupType(desktopRecordParam.getFallBackScreen());
         tDesktopRecord.setBussleep(desktopRecordParam.getBussleep());
         tDesktopRecord.setPlannedTicket(desktopRecordParam.getPlannedTicket());
         tDesktopRecord.setComment(desktopRecordParam.getComment());
