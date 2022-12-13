@@ -25,15 +25,12 @@ import javax.validation.Valid;
 public class DesktopController extends BaseController
 {
     @Autowired
-    private DeviceListService deviceListService;
-    @Autowired
     private DesktopService desktopService;
 
     @PostMapping("/submit")
     @ApiOperation("提交")
     public AjaxResult submit(@Validated @RequestBody DesktopSubmitParam desktopSubmitParam) throws Exception {
-        String message = desktopService.submit(desktopSubmitParam);
-        return success(message);
+        return desktopService.submit(desktopSubmitParam);
     }
 
 

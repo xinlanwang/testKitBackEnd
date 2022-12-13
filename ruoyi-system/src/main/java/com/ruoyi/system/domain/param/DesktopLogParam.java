@@ -36,5 +36,8 @@ public class DesktopLogParam
     @ApiModelProperty
     private String afterOperationValue;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date operTime;
+
 
 }

@@ -2,6 +2,9 @@ package com.ruoyi.system.service.impl;
 
 import java.util.List;
 
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson2.JSON;
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.system.domain.param.*;
 
@@ -51,17 +54,17 @@ public class DesktopServiceImpl implements DesktopService {
 
 
     @Override
-    public String submit(DesktopSubmitParam desktopSubmitParam) {
+    public AjaxResult submit(DesktopSubmitParam desktopSubmitParam) {
         List<DesktopRecordParam> desktopRecordParams = desktopSubmitParam.getDesktopRecordParams();
         List<TDataLog> allDesktopLogs = new ArrayList<>();
         if (desktopRecordParams == null || desktopRecordParams.size() == 0 || StringUtils.isEmpty(desktopSubmitParam.getLocalHostAcoount()) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostPassword())) {
-            return "用户或者参数列表为空";
+            return AjaxResult.error("用户或者参数列表为空");
         }
         String localHostAcoount = desktopSubmitParam.getLocalHostAcoount();
         SysUser sysUser = sysUserMapper.selectUserByUserName(localHostAcoount);
         String localHostPassword = desktopSubmitParam.getLocalHostPassword();
         if (sysUser == null || StringUtils.isEmpty(localHostPassword) || !sysUser.getPassword().equals(localHostPassword)) {
-            return "用户信息错误";
+            return AjaxResult.error("用户信息错误");
         }
         String LocalHostUserId = sysUser.getUserId().toString();
         Map<String, TDesktopRecord> insertDesktopRecords = new HashMap<>();
@@ -81,6 +84,9 @@ public class DesktopServiceImpl implements DesktopService {
                 autoInstertDesktopDevice(tDesktopRecord, desktopDevice);
                 insertDesktopRecords.put(indexUid, tDesktopRecord);
             } else if (OPERATION_TYPE_UPDATE.equals(desktopRecordParam.getOperationType())) {
+                if (StringUtils.isEmpty(desktopRecordParam.getRecordUid())){
+                    return AjaxResult.error("编辑时RecordUid不得为空");
+                }
                 autoInstertDesktopDevice(tDesktopRecord, desktopDevice);
                 updateDesktopRecords.put(indexUid, tDesktopRecord);
             } else if (OPERATION_TYPE_DELETE.equals(desktopRecordParam.getOperationType())) {
@@ -111,7 +117,7 @@ public class DesktopServiceImpl implements DesktopService {
         if(deleteDesktopRecordUids != null && deleteDesktopRecordUids.size() > 0) {
             tDesktopRecordMapper.deleteTDesktopRecordByUids(deleteDesktopRecordUids.toArray(new Long[deleteDesktopRecordUids.size()]));
         }
-        return "success~!";
+        return AjaxResult.success(insertDesktopRecords);
     }
 
     private Integer getRecordIndex(TDesktopRecord tDesktopRecord) {
@@ -165,7 +171,7 @@ public class DesktopServiceImpl implements DesktopService {
 
 
     private static void buildDesktopRecord(TDesktopRecord tDesktopRecord, String LocalHostUserId, String localHostAcoount,DesktopRecordParam desktopRecordParam) {
-        if (desktopRecordParam.getRecordUid() != null && OPERATION_TYPE_UPDATE.equals(desktopRecordParam.getOperationType())){
+        if (StringUtils.isNotEmpty(desktopRecordParam.getRecordUid()) && OPERATION_TYPE_UPDATE.equals(desktopRecordParam.getOperationType())){
             tDesktopRecord.setUid(Long.valueOf(desktopRecordParam.getRecordUid()));
         }
         tDesktopRecord.setLocalhostUserId(LocalHostUserId);

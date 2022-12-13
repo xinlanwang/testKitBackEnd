@@ -41,6 +41,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.github.pagehelper.page.PageMethod.offsetPage;
 import static com.ruoyi.common.constant.TestKitConstants.*;
 import static com.ruoyi.common.utils.PageUtils.startPage;
 
@@ -145,12 +146,13 @@ public class DeviceListServiceImpl implements DeviceListService {
                 "    \"HWTeilenummer\": null\n" +
                 "}");
         JSONObject jsonObject = JSON.parseObject(str);
-        ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>(){});
+        ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>() {
+        });
 //        System.out.println(parseObject);
-        if (StringUtils.isNotEmpty(parseObject.getVariant())){
-            Map parse = (Map)JSON.parse(parseObject.getVariant());
-            Map<String,String> o2 = (Map)parse.get("");
-            for (String str2:o2.keySet()){
+        if (StringUtils.isNotEmpty(parseObject.getVariant())) {
+            Map parse = (Map) JSON.parse(parseObject.getVariant());
+            Map<String, String> o2 = (Map) parse.get("");
+            for (String str2 : o2.keySet()) {
 //                System.out.println(str2);
 //                System.out.println(o2.get(str2));
             }
@@ -158,12 +160,12 @@ public class DeviceListServiceImpl implements DeviceListService {
         //以属性名进行反射，若值为空则直接取标签值，不为空则进行正则
         for (Field field : declaredFields) {
             String fieldName = field.getName();
-            if (jsonObject.containsKey(fieldName) && ReflectUtils.invokeGetter(parseObject, fieldName) == null){
+            if (jsonObject.containsKey(fieldName) && ReflectUtils.invokeGetter(parseObject, fieldName) == null) {
                 System.out.println(fieldName);
-            }else if (jsonObject.containsKey(fieldName) && ReflectUtils.invokeGetter(parseObject, fieldName) != null){
-                Map parse = (Map)JSON.parse(ReflectUtils.invokeGetter(parseObject,fieldName));
-                Map<String,String> o2 = (Map)parse.get("");
-                for (String str2:o2.keySet()){
+            } else if (jsonObject.containsKey(fieldName) && ReflectUtils.invokeGetter(parseObject, fieldName) != null) {
+                Map parse = (Map) JSON.parse(ReflectUtils.invokeGetter(parseObject, fieldName));
+                Map<String, String> o2 = (Map) parse.get("");
+                for (String str2 : o2.keySet()) {
                     System.out.println(str2);
                     System.out.println(o2.get(str2));
                 }
@@ -179,267 +181,205 @@ public class DeviceListServiceImpl implements DeviceListService {
                 "    \"SearchedOdxFileVersion\": \"EV_(HCP5|[^_]+?(?=AU|MEB|UNECE)|[^_]+)[\\\\S ]*?\"\n" +
                 "}");
         JSONObject jsonObject = JSON.parseObject(str);
-        Map<String,String> parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<Map>(){});
-        for (String str2:parseObject.keySet()){
+        Map<String, String> parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<Map>() {
+        });
+        for (String str2 : parseObject.keySet()) {
             System.out.println(parseObject.get(str2));
         }
     }
 
     static String PARSE_DTC_REPORT_DTO_PATH = "com.ruoyi.system.domain.dto.ParseDTCReportDTO";
     static String T_DTC_REPORT_PATH = "com.ruoyi.system.domain.po.TDTCReport";
+
     @Override
     public AjaxResult importDTCReport(MultipartFile file, boolean b, String operName) {
         try {
             List<Object> tdtcReportDTOS = new ArrayList<>();
+            Map<String,Map> reportMapVO = new HashMap<>();
             Document docResult = XmlUtil.readXML(file.getInputStream());
             Field[] parseDTCReportDTOFields = Class.forName(PARSE_DTC_REPORT_DTO_PATH).getDeclaredFields();
-            Map<String,List<TDTCReport>> dtcReportMaps = new HashMap<>();
-            for (TDTCReport tdtcReport:tdtcReportMapper.selectList(new QueryWrapper<>())){
+            Map<String, List<TDTCReport>> dtcReportMaps = new HashMap<>();
+            for (TDTCReport tdtcReport : tdtcReportMapper.selectList(new QueryWrapper<>())) {
                 List<TDTCReport> tempReports;
-                if (dtcReportMaps.get(tdtcReport.getLevel()) == null){
+                if (dtcReportMaps.get(tdtcReport.getLevel()) == null) {
                     tempReports = new ArrayList<>();
-                }else {
+                } else {
                     tempReports = dtcReportMaps.get(tdtcReport.getLevel());
                 }
                 tempReports.add(tdtcReport);
-                dtcReportMaps.put(tdtcReport.getLevel(),tempReports);
+                dtcReportMaps.put(tdtcReport.getLevel(), tempReports);
             }
-            for (String level:dtcReportMaps.keySet()){
-                if (level.equals("//")){
+            for (String level : dtcReportMaps.keySet()) {
+                if (level.equals("//")) {
                     continue;
                 }
                 List<TDTCReport> dtcReports = dtcReportMaps.get(level);
                 NodeList nodeListByXPath = XmlUtil.getNodeListByXPath(level, docResult);
-                for (TDTCReport tdtcReport:dtcReports){
+                for (TDTCReport tdtcReport : dtcReports) {
                     String conditions = tdtcReport.getSelectCondition();
-                    Map<String,String> conditionMap = JSON.parseObject(JSON.parseObject(conditions).toJSONString(), new TypeReference<Map>(){});
+                    Map<String, String> conditionMap = JSON.parseObject(JSON.parseObject(conditions).toJSONString(), new TypeReference<Map>() {
+                    });
                     for (int i = 0; i < nodeListByXPath.getLength(); i++) {
                         Node item = nodeListByXPath.item(i);
                         TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
                         if (reportDTO == null) {
                             continue;
                         }
-                        for (String condition:conditionMap.keySet()){
+                        for (String condition : conditionMap.keySet()) {
                             String conditionValue = conditionMap.get(condition);
                             String dtcValue = ReflectUtils.invokeGetter(reportDTO, condition).toString();
-                            if (dtcValue.equals(conditionValue) || dtcValue.contains(conditionValue)){
+                            if (dtcValue.equals(conditionValue) || dtcValue.contains(conditionValue)) {
                                 Map<String, String> componentMap = new HashMap<>();
                                 JSONObject jsonObject = JSON.parseObject(tdtcReport.getSelectValue());
-                                ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>(){});
+                                ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>() {
+                                });
                                 for (Field field : parseDTCReportDTOFields) {
                                     String fieldName = field.getName();
                                     Object invokeGetter = ReflectUtils.invokeGetter(parseObject, fieldName);
-                                    if (jsonObject.containsKey(fieldName) && invokeGetter == null){
-                                        componentMap.put(fieldName,ReflectUtils.getFieldValue(reportDTO,fieldName));
-                                    }else if (jsonObject.containsKey(fieldName) && invokeGetter != null){
+                                    if (jsonObject.containsKey(fieldName) && invokeGetter == null) {
+                                        componentMap.put(fieldName, ReflectUtils.getFieldValue(reportDTO, fieldName));
+                                    } else if (jsonObject.containsKey(fieldName) && invokeGetter != null) {
                                         regionRegexValue(reportDTO, componentMap, fieldName, invokeGetter.toString());
                                     }
                                 }
                                 String componentName = tdtcReport.getComponentName();
-                                if (StringUtils.isEmpty(componentName)){
+                                if (StringUtils.isEmpty(componentName)) {
                                     componentMap.put("componentName", tdtcReport.getComponentType());
-                                }else {
+                                } else {
                                     regionRegexValue(reportDTO, componentMap, "componentName", componentName);
                                 }
                                 componentMap.put("ecuId", tdtcReport.getEcuId());
                                 componentMap.put("componentType", tdtcReport.getComponentType());
-                                if("005F".equals(tdtcReport.getEcuId())){
-                                        //VIN
-                                        String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
-                                        Map<Object, Object> basicInfo = new HashMap<>();
-                                        basicInfo.put("VIN", VIN);
-                                        String projectType = "HCP3";
-                                        //MIB3
-                                        //SWVERSION START
-                                        String variant = componentMap.get("variant");
-                                        if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)) {
-                                            projectType = "MIB3";
-                                            String swVersion = componentMap.get("SWVersion");
-                                            char[] chars = swVersion.toUpperCase().toCharArray();
-                                            Boolean isPureNum = true;
-                                            for (int j = 0; j < chars.length; j++) {
-                                                if (chars[j] < 48 && chars[j] > 57) {
-                                                    isPureNum = false;
-                                                }
+                                if ("005F".equals(tdtcReport.getEcuId())) {
+                                    //VIN
+                                    String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
+                                    Map<Object, Object> basicInfo = new HashMap<>();
+                                    basicInfo.put("VIN", VIN);
+                                    String projectType = "HCP3";
+                                    //MIB3
+                                    //SWVERSION variant
+                                    String variant = componentMap.get("variant");
+                                    String swVersion = componentMap.get("SWVersion");
+                                    if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)) {
+                                        projectType = "MIB3";
+                                        char[] chars = swVersion.toUpperCase().toCharArray();
+                                        Boolean isPureNum = true;
+                                        for (int j = 0; j < chars.length; j++) {
+                                            if (chars[j] < 48 && chars[j] > 57) {
+                                                isPureNum = false;
                                             }
-                                            if (isPureNum) {
-                                                componentMap.put("SWVersion", new String("P" + swVersion));
-                                            } else {
-                                                if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 && chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
-                                                    if (chars[1] >= 53) {
-                                                        componentMap.put("SWVersion", new String("E3" + chars[1] + chars[2] + chars[3]));
-                                                    } else {
-                                                        componentMap.put("SWVersion", new String("E4" + chars[1] + chars[2] + chars[3]));
-                                                    }
+                                        }
+                                        if (isPureNum) {
+                                            swVersion = "P" + swVersion;
+                                        } else {
+                                            if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 && chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
+                                                if (chars[1] >= 53) {
+                                                    swVersion ="E3" + chars[1] + chars[2] + chars[3];
+                                                } else {
+                                                    swVersion ="E4" + chars[1] + chars[2] + chars[3];
                                                 }
                                             }
                                         }
-                                        //SWVERSION END
-                                    basicInfo.put("projectType",projectType);
-                                    String carline = XmlUtil.getNodeListByXPath("//UserProjekt", docResult).item(0).getTextContent();
-                                    if ("LFV".equals(VIN.substring(0,3))){//todo:前三位部位这两种情况怎么办？
-                                        basicInfo.put("carline",carline + " " + "A");
-                                    }else if ("LSV".equals(VIN.substring(0,3))){
-                                        basicInfo.put("carline",carline + " " + "A+");
-                                    }else {
-                                        basicInfo.put("carline",carline);
+                                        componentMap.put("SWVersion", swVersion);
                                     }
-                                    if ("P".equals(variant)){
-                                        basicInfo.put("Variant","Premium");
-                                    }else if ("H".equals(variant)){
-                                        basicInfo.put("Variant","High");
-                                    }else if ("B".equals(variant)){
-                                        basicInfo.put("Variant","Basic");
+                                    //carline
+                                    String carline = XmlUtil.getNodeListByXPath("//UserProjekt", docResult).item(0).getTextContent();
+                                    if (carline.contains("AU316/x")) {
+                                        if ("LFV".equals(VIN.substring(0, 3))) {//todo:前三位部位这两种情况怎么办？
+                                            carline = carline + " " + "A";
+                                        } else if ("LSV".equals(VIN.substring(0, 3))) {
+                                            carline = carline + " " + "A+";
+                                        }
+                                    }
+                                    if (carline.contains("AU38X-PA A3 (AB4)") || carline.equals("AU38X-PA A3 (AB4)")){
+                                        carline = "AU38X A3 (AB4)";
+                                    }
+                                    if (carline.contains("AU416/2 eQ5 SUV (only COP Audi)") || carline.equals("AU416/2 eQ5 SUV (only COP Audi)")){
+                                        carline = "AU416/x eQ5 (Q6 etron)";
+                                    }
+                                    basicInfo.put("carline",carline);
+                                    //CLUSTER
+                                    String tempCluNumber = swVersion;
+                                    Pattern pattern = Pattern.compile("[pePE]\\d{4}");
+                                    Matcher matcher = pattern.matcher(tempCluNumber);
+                                    String clusterName = "-";
+                                    if (matcher.find()) {
+                                        tempCluNumber = matcher.group(0);
+                                        clusterName = tempCluNumber.substring(1, 3);
+                                        String trainNum = tempCluNumber.substring(1, 5);
+                                        if ("36".equals(clusterName)){
+                                            if ("_AS_AUASUV_".equals(carline)){
+                                                clusterName = "35.2";
+                                            }else {
+                                                clusterName = "35";
+                                            }
+                                        }else if ("38".equals(clusterName)){
+                                            if (Long.valueOf(trainNum) < 3853){
+                                                clusterName = "37";
+                                            }else if ("3853".equals(trainNum)){
+                                                clusterName = "35";
+                                            }
+                                        }else if ("40".equals(clusterName)){
+                                            if (Long.valueOf(trainNum) < 4051){
+                                                clusterName = "39";
+                                            }else{
+                                                clusterName = "3A";
+                                            }
+                                        }
+                                    }
+                                    /*if ("E".equals(swVersion.substring(0,1).toUpperCase()) || "P".equals(swVersion.substring(0,1).toUpperCase())){
+                                        tempCluNumber = swVersion.substring(1,5);
+                                    }else {
+                                        tempCluNumber = swVersion.substring(0,4);
+                                    }
+                                    String subtempCluNmber = tempCluNumber.substring(0, 2);
+                                    if ("34".equals(subtempCluNmber)){
+                                        clusterName = "CLU33+";
+                                    }else if ("36".equals(subtempCluNmber)){
+                                        if ("3600".equals(tempCluNumber) || "3606".equals(tempCluNumber) || "3611".equals(tempCluNumber) || "3612".equals(tempCluNumber)){
+                                            clusterName = "CLU35";
+                                        }else {
+                                            clusterName = "CLU35.2";
+                                        }
+                                    }else if ("38".equals(subtempCluNmber)){
+                                        clusterName = "CLU37";
+                                    }else if ("40".equals(subtempCluNmber)){
+                                        clusterName = "CLU3A";
+                                    }else {
+                                        clusterName = "CLU" + subtempCluNmber;
+                                    }*/
+                                    basicInfo.put("MUSW", swVersion);
+                                    basicInfo.put("clusterName", clusterName);
+                                    //CLUSTER END
+                                    basicInfo.put("projectType", projectType);
+
+                                    //variant
+                                    if ("P".equals(variant)) {
+                                        basicInfo.put("Variant", "Premium");
+                                    } else if ("H".equals(variant)) {
+                                        basicInfo.put("Variant", "High");
+                                    } else if ("B".equals(variant)) {
+                                        basicInfo.put("Variant", "Basic");
                                     }
                                     //market
                                     String market = regexStr(reportDTO.getSystembezeichnung(), "[ ]*\\S*-([^-]*)[ ]*");
-                                    basicInfo.put("market",market);
+                                    basicInfo.put("market", market);
                                     //cluster
-                                    if ("HCP3".equals(projectType)){
-                                        basicInfo.put("clusterName","cluster43");
-                                    }else if ("Mib3".equals(projectType)){
+                                    if ("HCP3".equals(projectType)) {
+                                        basicInfo.put("clusterName", "cluster43");
+                                    } else if ("Mib3".equals(projectType)) {
 
                                     }
-                                    tdtcReportDTOS.add(basicInfo);
+//                                    tdtcReportDTOS.add(basicInfo);
+                                    reportMapVO.put("basicInfo",basicInfo);
                                 }
-                                tdtcReportDTOS.add(componentMap);
+                                reportMapVO.put(componentMap.get("ecuId"),componentMap);
                             }
                         }
                     }
                 }
             }
-
-/*
-            String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
-            Map<Object, Object> VINMap = new HashMap<>();
-            VINMap.put("ecuId", "Vehicle");
-            VINMap.put("VIN", VIN);
-            tdtcReportDTOS.add(VINMap);
-            NodeList nodeListByXPath = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock", docResult);
-            for (int i = 0; i < nodeListByXPath.getLength(); i++) {
-                Node item = nodeListByXPath.item(i);
-                TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
-                if (reportDTO == null) {
-                    continue;
-                }
-                String adresse = reportDTO.getAdresse();
-                TDTCReport tdtcReport = tdtcReportMapper.selectOne(new QueryWrapper<TDTCReport>().eq("adresse", adresse));
-                Map<String, String> componentMap = new HashMap<>();
-
-//                componentMap.put("SWVersion", reportDTO.getSWVersion());
-//                componentMap.put("HWVersion", reportDTO.getHWVersion());
-//                componentMap.put("PN", reportDTO.getHWTeilenummer());
-                if (tdtcReport != null) {
-                    //
-                    JSONObject jsonObject = JSON.parseObject(tdtcReport.getSelectValue());
-                    ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>(){});
-                    for (Field field : parseDTCReportDTOFields) {
-                        String fieldName = field.getName();
-                        if (jsonObject.containsKey(fieldName) && ReflectUtils.invokeGetter(parseObject, fieldName) == null){
-                            componentMap.put(fieldName,ReflectUtils.getFieldValue(reportDTO,fieldName));
-                        }else if (jsonObject.containsKey(fieldName) && ReflectUtils.invokeGetter(parseObject, fieldName) != null){
-                            Map parse = (Map)JSON.parse(ReflectUtils.invokeGetter(parseObject,fieldName));
-                            Map<String,String> o2 = (Map)parse.get("");
-                            for (String str2:o2.keySet()){
-                                if (StringUtils.isNotEmpty(tdtcReport.getVariant())) {
-                                    String s = regexStr(tdtcReport.getVariant(), o2.get(str2));
-                                    if (StringUtils.isNotEmpty(s)) {
-                                        componentMap.put("variant111", s);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //
-                    componentMap.put("ecuId", tdtcReport.getEcuId());
-                    String componentName = tdtcReport.getComponentName();
-                    if (StringUtils.isEmpty(componentName)){
-                        componentName = tdtcReport.getComponentType();
-                    }else {
-                        Map<String,String> componentNameMap = JSON.parseObject(JSON.parseObject(componentName).toJSONString(), new TypeReference<Map>(){});
-                        for (String str2:componentNameMap.keySet()){
-                            componentName = regexStr(ReflectUtils.invokeGetter(reportDTO, str2).toString(), componentNameMap.get(str2));
-                        }
-                    }
-                   *//* if (StringUtils.isNotEmpty(componentName) && componentName.contains("::")) {
-                        for (String s : componentName.split(",,")) {
-                            String[] split = s.split("::");
-                            if (split != null && split.length >= 2) {
-                                componentName = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
-                            }
-                        }
-                    }*//*
-                    componentMap.put("componentName", componentName);
-                    componentMap.put("componentType", tdtcReport.getComponentType());
-                    reportDTO.setComponentType(componentName);
-                    if (StringUtils.isNotEmpty(tdtcReport.getVariant())) {
-                        String variant = null;
-                        for (String s : tdtcReport.getVariant().split(",,")) {
-                            String[] split = s.split("::");
-                            if (split != null && split.length >= 2) {
-                                variant = regexStr(ReflectUtils.invokeGetter(reportDTO, split[0]).toString(), split[1]);
-                            }
-                        }
-                        if (StringUtils.isNotEmpty(variant)) {
-                            //MIB3
-                            if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)) {
-                                String swVersion = componentMap.get("SWVersion");
-                                char[] chars = swVersion.toUpperCase().toCharArray();
-                                Boolean isPureNum = true;
-                                for (int j = 0; j < chars.length; j++) {
-                                    if (chars[j] < 48 && chars[j] > 57) {
-                                        isPureNum = false;
-                                    }
-                                }
-                                if (isPureNum) {
-                                    componentMap.put("SWVersion", new String("P" + swVersion));
-                                } else {
-                                    if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 && chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
-                                        if (chars[1] >= 53) {
-                                            componentMap.put("SWVersion", new String("E3" + chars[1] + chars[2] + chars[3]));
-                                        } else {
-                                            componentMap.put("SWVersion", new String("E4" + chars[1] + chars[2] + chars[3]));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if ("005F".equals(adresse)) {
-                        Map<String, String> zdcMap = new HashMap<>();
-                        zdcMap.put("componentName", componentName);
-                        zdcMap.put("componentType", componentName);
-                        zdcMap.put("zdcName", reportDTO.getZdcName());
-                        zdcMap.put("zdcVersion", reportDTO.getZdcVersion());
-                        zdcMap.put("ecuId", "005F-ZDC");
-                        tdtcReportDTOS.add(zdcMap);
-                    }
-                    tdtcReportDTOS.add(componentMap);
-                }
-            }
-            NodeList nodeListByXPath1 = XmlUtil.getNodeListByXPath("//Diagnosebloecke/Diagnoseblock/SubTeilnehmer/Sub", docResult);
-            for (int j = 0; j < nodeListByXPath1.getLength(); j++) {
-                Node item = nodeListByXPath1.item(j);
-                TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
-                if (StringUtils.isNotEmpty(reportDTO.getSystembezeichnung()) && reportDTO.getSystembezeichnung().contains("AED")) {
-                    reportDTO = XmlUtil.xmlToBean(nodeListByXPath1.item(j), TDTCReportDTO.class);
-                    Map<String, String> aedMap = new HashMap<>();
-                    aedMap.put("ecuId", "005F-AED");
-                    aedMap.put("componentName", "AED");
-                    aedMap.put("componentType", "AED");
-                    aedMap.put("SWVersion", reportDTO.getSWVersion());
-                    aedMap.put("HWVersion", reportDTO.getHWVersion());
-                    aedMap.put("PN", reportDTO.getHWTeilenummer());
-                    tdtcReportDTOS.add(aedMap);
-                }
-                if ("Data Medium".equals(reportDTO.getSubtName())) {
-                    Map<String, String> aedMap = new HashMap<>();
-                    aedMap.put("ecuId", "005F-Data Medium");
-                    aedMap.put("DBVersion", reportDTO.getSWVersion());
-                    tdtcReportDTOS.add(aedMap);
-                }
-            }*/
-            return AjaxResult.success(tdtcReportDTOS);
+            return AjaxResult.success(reportMapVO);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
@@ -448,16 +388,26 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     @Test
-    public void test222(){
-        String str = "dfjfwiowjf";
-        System.out.println(str.substring(0,3));
+    public void test222() {
+        String tempCluNumber = "P3667";
+        Pattern pattern = Pattern.compile("[pePE]\\d{4}");
+        Matcher matcher = pattern.matcher(tempCluNumber);
+        if (matcher.find()) {
+            tempCluNumber = matcher.group(0);
+        }
+        String clusterName = tempCluNumber.substring(1, 3);
+        String trainNum = tempCluNumber.substring(1, 5);
+        System.out.println(clusterName);
+        System.out.println(trainNum);
     }
+
     private static String regionRegexValue(TDTCReportDTO reportDTO, Map<String, String> componentMap, String fieldName, String filedValue) {
-        Map<String,String> componentNameMap = JSON.parseObject(JSON.parseObject(filedValue).toJSONString(), new TypeReference<Map>(){});
-        for (String key:componentNameMap.keySet()){
+        Map<String, String> componentNameMap = JSON.parseObject(JSON.parseObject(filedValue).toJSONString(), new TypeReference<Map>() {
+        });
+        for (String key : componentNameMap.keySet()) {
             String var = regexStr(ReflectUtils.invokeGetter(reportDTO, key).toString(), componentNameMap.get(key));
-            if (StringUtils.isNotEmpty(var)){
-                componentMap.put(fieldName,var);
+            if (StringUtils.isNotEmpty(var)) {
+                componentMap.put(fieldName, var);
                 return var;
             }
         }
