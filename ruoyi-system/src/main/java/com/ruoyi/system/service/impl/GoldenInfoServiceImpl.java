@@ -204,6 +204,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     tCarlineInfo.setResp(notesComments);
                 }
                 tCarlineInfo.setClusterUid(tCluster.getUid());
+                tCarlineInfo.setBasicType("0");
                 tCarlineInfoMapper.insert(tCarlineInfo);
                 Long carlineInfoUid = tCarlineInfo.getCarlineInfoUid();
                 for (ImportPartComponentDTO importPartComponentDTO:importPartComponentDTOS) {

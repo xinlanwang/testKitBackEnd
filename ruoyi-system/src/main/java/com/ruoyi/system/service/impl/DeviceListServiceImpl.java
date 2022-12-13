@@ -1043,7 +1043,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCarlineInfo.setVersionCode(versionCode);
         String basicType = deviceInfoVo.getBasicType();
         if (StringUtils.isEmpty(basicType)) {
-            tCarlineInfo.setBasicType(BASIC_TYPE_WEB_DEVICE);
+            basicType = BASIC_TYPE_WEB_DEVICE;
         }
         tCarlineInfo.setBasicType(basicType);
         if (deviceInfoVo.getOriginalCarlineInfoUid() != null) {
