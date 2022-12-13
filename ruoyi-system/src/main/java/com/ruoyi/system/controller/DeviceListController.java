@@ -62,7 +62,7 @@ public class DeviceListController extends BaseController
         if(file == null){
             return null;
         }
-        return deviceListService.importDTCReport(file, true, operName);
+        return deviceListService.importDTCReport(file.getInputStream(), true, operName);
     }
 
 

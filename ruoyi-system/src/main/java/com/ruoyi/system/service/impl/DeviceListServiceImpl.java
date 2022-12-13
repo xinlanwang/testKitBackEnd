@@ -1,10 +1,16 @@
 package com.ruoyi.system.service.impl;
 
+import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.util.Date;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.ReUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
@@ -36,7 +42,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.*;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -192,11 +197,10 @@ public class DeviceListServiceImpl implements DeviceListService {
     static String T_DTC_REPORT_PATH = "com.ruoyi.system.domain.po.TDTCReport";
 
     @Override
-    public AjaxResult importDTCReport(MultipartFile file, boolean b, String operName) {
+    public AjaxResult importDTCReport(InputStream IN, boolean b, String operName) {
         try {
-            List<Object> tdtcReportDTOS = new ArrayList<>();
             Map<String,Map> reportMapVO = new HashMap<>();
-            Document docResult = XmlUtil.readXML(file.getInputStream());
+            Document docResult = XmlUtil.readXML(IN);
             Field[] parseDTCReportDTOFields = Class.forName(PARSE_DTC_REPORT_DTO_PATH).getDeclaredFields();
             Map<String, List<TDTCReport>> dtcReportMaps = new HashMap<>();
             for (TDTCReport tdtcReport : tdtcReportMapper.selectList(new QueryWrapper<>())) {
@@ -251,126 +255,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                                 componentMap.put("ecuId", tdtcReport.getEcuId());
                                 componentMap.put("componentType", tdtcReport.getComponentType());
                                 if ("005F".equals(tdtcReport.getEcuId())) {
-                                    //VIN
-                                    String VIN = XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent();
-                                    Map<Object, Object> basicInfo = new HashMap<>();
-                                    basicInfo.put("VIN", VIN);
-                                    String projectType = "HCP3";
-                                    //MIB3
-                                    //SWVERSION variant
-                                    String variant = componentMap.get("variant");
-                                    String swVersion = componentMap.get("SWVersion");
-                                    if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)) {
-                                        projectType = "MIB3";
-                                        char[] chars = swVersion.toUpperCase().toCharArray();
-                                        Boolean isPureNum = true;
-                                        for (int j = 0; j < chars.length; j++) {
-                                            if (chars[j] < 48 && chars[j] > 57) {
-                                                isPureNum = false;
-                                            }
-                                        }
-                                        if (isPureNum) {
-                                            swVersion = "P" + swVersion;
-                                        } else {
-                                            if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 && chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
-                                                if (chars[1] >= 53) {
-                                                    swVersion ="E3" + chars[1] + chars[2] + chars[3];
-                                                } else {
-                                                    swVersion ="E4" + chars[1] + chars[2] + chars[3];
-                                                }
-                                            }
-                                        }
-                                        componentMap.put("SWVersion", swVersion);
-                                    }
-                                    //carline
-                                    String carline = XmlUtil.getNodeListByXPath("//UserProjekt", docResult).item(0).getTextContent();
-                                    if (carline.contains("AU316/x")) {
-                                        if ("LFV".equals(VIN.substring(0, 3))) {//todo:前三位部位这两种情况怎么办？
-                                            carline = carline + " " + "A";
-                                        } else if ("LSV".equals(VIN.substring(0, 3))) {
-                                            carline = carline + " " + "A+";
-                                        }
-                                    }
-                                    if (carline.contains("AU38X-PA A3 (AB4)") || carline.equals("AU38X-PA A3 (AB4)")){
-                                        carline = "AU38X A3 (AB4)";
-                                    }
-                                    if (carline.contains("AU416/2 eQ5 SUV (only COP Audi)") || carline.equals("AU416/2 eQ5 SUV (only COP Audi)")){
-                                        carline = "AU416/x eQ5 (Q6 etron)";
-                                    }
-                                    basicInfo.put("carline",carline);
-                                    //CLUSTER
-                                    String tempCluNumber = swVersion;
-                                    Pattern pattern = Pattern.compile("[pePE]\\d{4}");
-                                    Matcher matcher = pattern.matcher(tempCluNumber);
-                                    String clusterName = "-";
-                                    if (matcher.find()) {
-                                        tempCluNumber = matcher.group(0);
-                                        clusterName = tempCluNumber.substring(1, 3);
-                                        String trainNum = tempCluNumber.substring(1, 5);
-                                        if ("36".equals(clusterName)){
-                                            if ("_AS_AUASUV_".equals(carline)){
-                                                clusterName = "35.2";
-                                            }else {
-                                                clusterName = "35";
-                                            }
-                                        }else if ("38".equals(clusterName)){
-                                            if (Long.valueOf(trainNum) < 3853){
-                                                clusterName = "37";
-                                            }else if ("3853".equals(trainNum)){
-                                                clusterName = "35";
-                                            }
-                                        }else if ("40".equals(clusterName)){
-                                            if (Long.valueOf(trainNum) < 4051){
-                                                clusterName = "39";
-                                            }else{
-                                                clusterName = "3A";
-                                            }
-                                        }
-                                    }
-                                    /*if ("E".equals(swVersion.substring(0,1).toUpperCase()) || "P".equals(swVersion.substring(0,1).toUpperCase())){
-                                        tempCluNumber = swVersion.substring(1,5);
-                                    }else {
-                                        tempCluNumber = swVersion.substring(0,4);
-                                    }
-                                    String subtempCluNmber = tempCluNumber.substring(0, 2);
-                                    if ("34".equals(subtempCluNmber)){
-                                        clusterName = "CLU33+";
-                                    }else if ("36".equals(subtempCluNmber)){
-                                        if ("3600".equals(tempCluNumber) || "3606".equals(tempCluNumber) || "3611".equals(tempCluNumber) || "3612".equals(tempCluNumber)){
-                                            clusterName = "CLU35";
-                                        }else {
-                                            clusterName = "CLU35.2";
-                                        }
-                                    }else if ("38".equals(subtempCluNmber)){
-                                        clusterName = "CLU37";
-                                    }else if ("40".equals(subtempCluNmber)){
-                                        clusterName = "CLU3A";
-                                    }else {
-                                        clusterName = "CLU" + subtempCluNmber;
-                                    }*/
-                                    basicInfo.put("MUSW", swVersion);
-                                    basicInfo.put("clusterName", clusterName);
-                                    //CLUSTER END
-                                    basicInfo.put("projectType", projectType);
-
-                                    //variant
-                                    if ("P".equals(variant)) {
-                                        basicInfo.put("Variant", "Premium");
-                                    } else if ("H".equals(variant)) {
-                                        basicInfo.put("Variant", "High");
-                                    } else if ("B".equals(variant)) {
-                                        basicInfo.put("Variant", "Basic");
-                                    }
-                                    //market
-                                    String market = regexStr(reportDTO.getSystembezeichnung(), "[ ]*\\S*-([^-]*)[ ]*");
-                                    basicInfo.put("market", market);
-                                    //cluster
-                                    if ("HCP3".equals(projectType)) {
-                                        basicInfo.put("clusterName", "cluster43");
-                                    } else if ("Mib3".equals(projectType)) {
-
-                                    }
-//                                    tdtcReportDTOS.add(basicInfo);
+                                    Map<String, String> basicInfo = getbasicInfo(docResult, reportDTO, componentMap);
                                     reportMapVO.put("basicInfo",basicInfo);
                                 }
                                 reportMapVO.put(componentMap.get("ecuId"),componentMap);
@@ -380,25 +265,150 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
             }
             return AjaxResult.success(reportMapVO);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @Test
-    public void test222() {
-        String tempCluNumber = "P3667";
-        Pattern pattern = Pattern.compile("[pePE]\\d{4}");
-        Matcher matcher = pattern.matcher(tempCluNumber);
-        if (matcher.find()) {
-            tempCluNumber = matcher.group(0);
+    private Map<String, String> getbasicInfo(Document docResult, TDTCReportDTO reportDTO, Map<String, String> componentMap) {
+        Map<String, String> basicInfo = new HashMap<>();
+        String[] dictTypes = new String[]{"clusterName", "projectType", "platformType", "marketType", "functionGroupType", "variantType", "taskType", "carlineModelType", "goldenCarType", "goldenClusterNameType"};
+        Map<String, Map<String, String>> dictMap = getDictMap(dictTypes);
+
+        //VIN
+        String VIN = StrUtil.trimEnd(XmlUtil.getNodeListByXPath("//Fahrgestellnummer", docResult).item(0).getTextContent());
+        basicInfo.put("VIN", VIN);
+        String projectName = "HCP3";
+        //MIB3
+        //SWVERSION variant
+        String variant = StrUtil.trimEnd(componentMap.get("variant"));
+        String swVersion = StrUtil.trimEnd(componentMap.get("SWVersion"));
+        if ("B".equals(variant) || "H".equals(variant) || "P".equals(variant)) {
+            projectName = "MIB3";
+            char[] chars = swVersion.toUpperCase().toCharArray();
+            Boolean isPureNum = true;
+            for (int j = 0; j < chars.length; j++) {
+                if (chars[j] < 48 && chars[j] > 57) {
+                    isPureNum = false;
+                }
+            }
+            if (isPureNum) {
+                swVersion = "P" + swVersion;
+            } else {
+                if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 && chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
+                    if (chars[1] >= 53) {
+                        swVersion ="E3" + chars[1] + chars[2] + chars[3];
+                    } else {
+                        swVersion ="E4" + chars[1] + chars[2] + chars[3];
+                    }
+                }
+            }
+            componentMap.put("SWVersion", swVersion);
         }
-        String clusterName = tempCluNumber.substring(1, 3);
-        String trainNum = tempCluNumber.substring(1, 5);
-        System.out.println(clusterName);
-        System.out.println(trainNum);
+
+        //carline
+        String carline = StrUtil.trimEnd(XmlUtil.getNodeListByXPath("//UserProjekt", docResult).item(0).getTextContent());
+        if (carline.contains("AU316/x")) {
+            if ("LFV".equals(VIN.substring(0, 3))) {//todo:前三位部位这两种情况怎么办？
+                carline = carline + " " + "A";
+            } else if ("LSV".equals(VIN.substring(0, 3))) {
+                carline = carline + " " + "A+";
+            }
+        }
+        if (carline.contains("AU38X-PA A3 (AB4)") || carline.equals("AU38X-PA A3 (AB4)")){
+            carline = "AU38X A3 (AB4)";
+        }
+        if (carline.contains("AU416/2 eQ5 SUV (only COP Audi)") || carline.equals("AU416/2 eQ5 SUV (only COP Audi)")){
+            carline = "AU416/x eQ5 (Q6 etron)";
+        }
+        basicInfo.put("carline",carline);
+        String carlineModelType = getDictValue("carlineModelType", dictMap, carline, "0");
+        basicInfo.put("carlineModelType",carlineModelType);
+        //CLUSTER
+        String clusterNum = "-";
+        String clusterName = "-";
+        if ("HCP3".equals(projectName)) {
+            clusterNum = "cluster43";
+        } else if ("MIB3".equals(projectName)) {
+            String tempCluNumber = swVersion;
+            Pattern pattern = Pattern.compile("[pePE]\\d{4}");
+            Matcher matcher = pattern.matcher(tempCluNumber);
+            if (matcher.find()) {
+                tempCluNumber = matcher.group(0);
+                clusterNum = tempCluNumber.substring(1, 3);
+                String trainNum = tempCluNumber.substring(1, 5);
+                if ("36".equals(clusterNum)){
+                    if ("_AS_AUASUV_".equals(carline)){
+                        clusterNum = "35.2";
+                    }else {
+                        clusterNum = "35";
+                    }
+                }else if ("38".equals(clusterNum)){
+                    if (Long.valueOf(trainNum) < 3853){
+                        clusterNum = "37";
+                    }else if ("3853".equals(trainNum)){
+                        clusterNum = "35";
+                    }
+                }else if ("40".equals(clusterNum)){
+                    if (Long.valueOf(trainNum) < 4051){
+                        clusterNum = "39";
+                    }else{
+                        clusterNum = "3A";
+                    }
+                }
+            }
+        }
+        basicInfo.put("MUSW", swVersion);
+        basicInfo.put("clusterNum", clusterNum);
+        if (!"-".equals(clusterNum) && StringUtils.isNotEmpty(clusterNum)){
+            clusterName = getDictValue("clusterName", dictMap, "CLU" + clusterNum, "0");
+        }
+        basicInfo.put("clusterName", clusterName);
+
+        //CLUSTER END
+        basicInfo.put("projectName", projectName);
+        if (!"-".equals(projectName) && StringUtils.isNotEmpty(projectName)){
+            String projectType = getDictValue("projectType", dictMap, projectName, "0");
+            basicInfo.put("projectType", projectType);
+        }
+
+        //variant
+        variant = StrUtil.trimEnd(variant);
+        if ("P".equals(variant)) {
+            variant = "Premium";
+        } else if ("H".equals(variant)) {
+            variant = "High";
+        } else if ("B".equals(variant)) {
+            variant = "Basic";
+        }
+        basicInfo.put("Variant", variant);
+        if (!"-".equals(variant) && StringUtils.isNotEmpty(variant)){
+            String variantType = getDictValue("variantType", dictMap, variant, "0");
+            basicInfo.put("variantType", variantType);
+        }
+
+        //market
+        String market = StrUtil.trimEnd(regexStr(reportDTO.getSystembezeichnung(), "[ ]*\\S*-([^-]*)[ ]*"));
+        basicInfo.put("market", market);
+        if (!"-".equals(market) && StringUtils.isNotEmpty(market)){
+            String marketType = getDictValue("marketType", dictMap, market, "0");
+            basicInfo.put("marketType", marketType);
+        }
+        return basicInfo;
+    }
+
+    private String IMPORT_DTC_REPORT_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
+    @Override
+    public void quarzImportDTCReport(){
+        List<File> files = FileUtil.loopFiles(IMPORT_DTC_REPORT_PATH);
+        System.out.println("总共大小为：" + files.size());
+        for (File file:files){
+            if (FileNameUtil.isType(file.getName(),"xml")){
+                InputStream fileInputStream = IoUtil.toStream(file);
+                AjaxResult operName = importDTCReport(fileInputStream, true, "operName");
+                System.out.println(operName);
+            }
+        }
     }
 
     private static String regionRegexValue(TDTCReportDTO reportDTO, Map<String, String> componentMap, String fieldName, String filedValue) {

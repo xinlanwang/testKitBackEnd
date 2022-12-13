@@ -8,6 +8,7 @@ import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -33,5 +34,6 @@ public interface DeviceListService
 
     public String importDevice(Map<String,List<ImportDeviceDTO>> deviceInfoVoList, boolean b, String operName);
 
-    public AjaxResult importDTCReport(MultipartFile file, boolean b, String operName);
+    public AjaxResult importDTCReport(InputStream io, boolean b, String operName);
+    public void quarzImportDTCReport();
 }
