@@ -45,4 +45,12 @@ public class TestKitConstants
     public static final String DEVICE_TYPE_CAR = "2";
     public static final String DEVICE_TYPE_GOLDENCAR = "3";
 
+
+    /**
+     * 用户权限
+     */
+    public static final String SYS_ROLE_ADMIN = "1";//超管
+    public static final String SYS_ROLE_MANAGER = "2";//普通管理员
+    public static final String SYS_ROLE_NORMAL = "3";//普通用户
+
 }

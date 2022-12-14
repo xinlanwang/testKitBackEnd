@@ -19,7 +19,7 @@ public interface SysUserMapper extends BaseMapper<SysUser>
      * @param sysUser 用户信息
      * @return 用户信息集合信息
      */
-    public List<SysUser> selectUserList(SysUser sysUser);
+    public List<SysUser> selectConrrentUserList(SysUser sysUser);
 
     /**
      * 根据条件分页查询已配用户角色列表

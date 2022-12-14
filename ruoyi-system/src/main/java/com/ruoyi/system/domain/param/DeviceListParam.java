@@ -11,8 +11,6 @@ import lombok.Data;
 @Data
 public class DeviceListParam extends BaseEntity {
         private static final long serialVersionUID = 1L;
-
-
         @ApiModelProperty("设备类型：bc代表bench，car代表car，gd代表目标goldeninfo")
         private String carlineType;
 

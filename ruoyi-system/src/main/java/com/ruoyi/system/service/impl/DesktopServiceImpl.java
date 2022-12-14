@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.param.*;
 
 import java.util.Map;
@@ -61,7 +62,7 @@ public class DesktopServiceImpl implements DesktopService {
         String localHostAcoount = desktopSubmitParam.getLocalHostAcoount();
         SysUser sysUser = sysUserMapper.selectUserByUserName(localHostAcoount);
         String localHostPassword = desktopSubmitParam.getLocalHostPassword();
-        if (sysUser == null || StringUtils.isEmpty(localHostPassword) || !sysUser.getPassword().equals(localHostPassword)) {
+        if (sysUser == null || StringUtils.isEmpty(localHostPassword) || !SecurityUtils.matchesPassword(localHostPassword, sysUser.getPassword())) {
             return AjaxResult.error("用户信息错误");
         }
         String LocalHostUserId = sysUser.getUserId().toString();
@@ -116,6 +117,11 @@ public class DesktopServiceImpl implements DesktopService {
             tDesktopRecordMapper.deleteTDesktopRecordByUids(deleteDesktopRecordUids.toArray(new Long[deleteDesktopRecordUids.size()]));
         }
         return AjaxResult.success(insertDesktopRecords);
+    }
+
+    @Override
+    public AjaxResult login(DesktopLoginParam desktopLoginParam) {
+        return null;
     }
 
     private Integer getRecordIndex(TDesktopRecord tDesktopRecord) {

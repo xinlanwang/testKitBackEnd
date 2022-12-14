@@ -14,8 +14,8 @@ public class DeviceInfoComponent {
     private String partNumber;
     private String hwVersion;
     private String swVersion;
+    private String otherVersion;
     private String componentVersion;
     private String wareType;
-    private String zdcName;
-    private String zdcVersion;
+    private String ecuId;
 }

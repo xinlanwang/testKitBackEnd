@@ -51,7 +51,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="componentType != null  and componentType != '' and wareType != null  and wareType != '' and componentModel != null  and componentModel != ''">
         and  tci.carline_info_uid in (select tcc.carline_info_uid
         from t_carline_component tcc
-        left join t_component_data tcd on (tcc.sw_version_uid = tcd.uid or tcc.hw_version_uid = tcd.uid)
+        left join t_component_data tcd on (tcc.sw_version_uid = tcd.uid or tcc.hw_version_uid = tcd.uid or tcd.uid = tcc.other_version_uid)
         where 1 = 1
 
         and tcd.ware_type = #{wareType}

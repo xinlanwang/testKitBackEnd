@@ -37,11 +37,12 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     /**
      * 设备详情B配件基本信息
      */
-    String queryDeviceComponentSql = "select tci.carline_info_uid as carlineInfoUid,tcd.component_type as componentType,tcc.zdc_name as zdcName,tcc.zdc_version as zdcVersion,\n" +
-            "            tcd.component_version as componentVersion,tcd.ware_type as wareType,tcd.part_number as partNumber,tcd.component_name as componentName\n" +
-            "                        from t_carline_info tci \n" +
-            "                        left join t_carline_component tcc on tci.carline_info_uid = tcc.carline_info_uid \n" +
-            "                        left join t_component_data tcd on (tcd.uid = tcc.hw_version_uid or tcd.uid = tcc.sw_version_uid)" +
+    String queryDeviceComponentSql = "select tci.carline_info_uid as carlineInfoUid,tcd.component_type as componentType,tcc.zdc_name as zdcName,tcc.zdc_version as zdcVersion,tdr.ecu_id as ecuId,\n" +
+            "                        tcd.component_version as componentVersion,tcd.ware_type as wareType,tcd.part_number as partNumber,tcd.component_name as componentName\n" +
+            "                                    from t_carline_info tci \n" +
+            "                                    left join t_carline_component tcc on tci.carline_info_uid = tcc.carline_info_uid \n" +
+            "                                    left join t_component_data tcd on (tcd.uid = tcc.hw_version_uid or tcd.uid = tcc.sw_version_uid or tcd.uid = tcc.other_version_uid)\n" +
+            "left join t_dtc_report tdr on tcd.component_type = tdr.component_type" +
             "            where tci.carline_info_uid = #{carlineInfoUid}";
     @Select(queryDeviceComponentSql)
     List<DeviceInfoComponent> queryDeviceComponent(@Param("carlineInfoUid") Long carlineInfoUid);
@@ -67,7 +68,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "               tcs.cluster_name as clusterName,cd.component_version as componentVersion,cd.ware_type as wareType,tcc.temporary_variable as temporaryVariable,\n" +
             "                   cd.component_version as componentModel,cd.ware_type as wareType,tcc.minimal_hw as minimalHW\n" +
             "            from t_component_data cd\n" +
-            "            left join t_carline_component tcc on  (cd.uid = tcc.hw_version_uid or cd.uid = tcc.sw_version_uid)\n" +
+            "            left join t_carline_component tcc on  (cd.uid = tcc.hw_version_uid or cd.uid = tcc.sw_version_uid or cd.uid = tcc.other_version_uid)\n" +
             "            left join t_carline_info tci on tci.carline_info_uid = tcc.carline_info_uid\n" +
             "            left join t_cluster tcs on tci.cluster_uid = tcs.uid\n" +
             "            left join t_carline tcl on tcl.uid = tcs.carline_uid\n" +
@@ -153,7 +154,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     String selectGoldenCarlineInfoSql = "select tcd.component_type as componentType,tcd.component_version as componentVersion,tcd.part_number as partNumber,\n" +
             "       tcc.temporary_variable as temporaryVariable,tcc.minimal_hw as minimalHW\n" +
             "            from t_component_data tcd\n" +
-            "            left join t_carline_component tcc on (tcd.uid = tcc.sw_version_uid or tcd.uid = tcc.hw_version_uid)\n" +
+            "            left join t_carline_component tcc on (tcd.uid = tcc.sw_version_uid or tcd.uid = tcc.hw_version_uid or tcd.uid = tcc.other_version_uid)\n" +
             "            left join t_carline_info tci on tci.carline_info_uid = tcc.carline_info_uid\n" +
             "            left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
             "            left join t_carline tca on tc.carline_uid = tca.uid\n" +

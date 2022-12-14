@@ -2,7 +2,13 @@ package com.ruoyi.common.core.domain.entity;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import javax.validation.constraints.*;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ruoyi.common.core.domain.LocalBaseEntity;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -17,13 +23,18 @@ import com.ruoyi.common.xss.Xss;
  * 
  * @author ruoyi
  */
-public class SysUser extends BaseEntity
+
+
+
+public class SysUser extends LocalBaseEntity
 {
     private static final long serialVersionUID = 1L;
 
     /** 用户ID */
     @Excel(name = "用户序号", cellType = ColumnType.NUMERIC, prompt = "用户编号")
+    @TableId(type = IdType.AUTO)
     private Long userId;
+
 
     /** 部门ID */
     @Excel(name = "部门编号", type = Type.IMPORT)
@@ -88,6 +99,65 @@ public class SysUser extends BaseEntity
 
     /** 角色ID */
     private Long roleId;
+    private Long testGroupId;
+    private String createBy;
+
+    /** 创建时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date createTime;
+
+    /** 更新者 */
+    private String updateBy;
+
+    /** 更新时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date updateTime;
+
+    private String remark;
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
+
+    @Override
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    @Override
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
+
+    public String getUpdateBy() {
+        return updateBy;
+    }
+
+    public void setUpdateBy(String updateBy) {
+        this.updateBy = updateBy;
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    @Override
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+    }
 
     public SysUser()
     {
@@ -97,6 +167,14 @@ public class SysUser extends BaseEntity
     public SysUser(Long userId)
     {
         this.userId = userId;
+    }
+
+    public Long getTestGroupId() {
+        return testGroupId;
+    }
+
+    public void setTestGroupId(Long testGroupId) {
+        this.testGroupId = testGroupId;
     }
 
     public Long getUserId()

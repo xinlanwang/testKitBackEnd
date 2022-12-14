@@ -409,13 +409,18 @@ public class DeviceListServiceImpl implements DeviceListService {
                 System.out.println(operName);
             }
         }
+
     }
 
     private static String regionRegexValue(TDTCReportDTO reportDTO, Map<String, String> componentMap, String fieldName, String filedValue) {
         Map<String, String> componentNameMap = JSON.parseObject(JSON.parseObject(filedValue).toJSONString(), new TypeReference<Map>() {
         });
         for (String key : componentNameMap.keySet()) {
-            String var = regexStr(ReflectUtils.invokeGetter(reportDTO, key).toString(), componentNameMap.get(key));
+            Object o = ReflectUtils.invokeGetter(reportDTO, key);
+            if (o == null){
+                continue;
+            }
+            String var = regexStr(o.toString(), componentNameMap.get(key));
             if (StringUtils.isNotEmpty(var)) {
                 componentMap.put(fieldName, var);
                 return var;
@@ -494,6 +499,9 @@ public class DeviceListServiceImpl implements DeviceListService {
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentType())) {
                 deviceMap.setComponentType(deviceInfoComponent.getComponentType());
             }
+            if (StringUtils.isNotEmpty(deviceInfoComponent.getEcuId())) {
+                deviceMap.setEcuId(deviceInfoComponent.getEcuId());
+            }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentName())) {
                 deviceMap.setComponentName(deviceInfoComponent.getComponentName());
             }
@@ -507,12 +515,9 @@ public class DeviceListServiceImpl implements DeviceListService {
                 if ("HW".equals(deviceInfoComponent.getWareType())) {
                     deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());
                 }
-            }
-            if (StringUtils.isNotEmpty(deviceInfoComponent.getZdcName())) {
-                deviceMap.setZdcName(deviceInfoComponent.getZdcName());
-            }
-            if (StringUtils.isNotEmpty(deviceInfoComponent.getZdcVersion())) {
-                deviceMap.setZdcVersion(deviceInfoComponent.getZdcVersion());
+                if ("OT".equals(deviceInfoComponent.getWareType())) {
+                    deviceMap.setOtherVersion(deviceInfoComponent.getComponentVersion());
+                }
             }
             deviceInfoComponentMap.put(componentType, deviceMap);
         }
@@ -778,6 +783,9 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     private void buildImportComponent(Long carlineInfoUid, String componentType, String hwVersion, String swVersion) {
+        if (StringUtils.isEmpty(hwVersion) && StringUtils.isEmpty(swVersion)) {
+            return;
+        }
         TComponentData componentData = new TComponentData();
         componentData.setComponentType(componentType);
         componentData.setComponentName(componentType);
@@ -810,6 +818,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                 tCarlineComponent.setSwVersionUid(tComponentData.getUid());
             } else if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)) {
                 tCarlineComponent.setHwVersionUid(tComponentData.getUid());
+            }else if (StringUtils.isNotEmpty(wareType) && "OT".equals(wareType)) {
+                tCarlineComponent.setOtherVersionUid(tComponentData.getUid());
             }
         } else {
             componentData.setUid(null);
@@ -819,6 +829,9 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
             if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)) {
                 tCarlineComponent.setHwVersionUid(componentData.getUid());
+            }
+            if (StringUtils.isNotEmpty(wareType) && "OT".equals(wareType)) {
+                tCarlineComponent.setOtherVersionUid(componentData.getUid());
             }
         }
 
@@ -834,8 +847,6 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentData.setPartNumber(deviceInfoComponent.getPartNumber());
                 componentData.setSort(0);
                 TCarlineComponent tCarlineComponent = new TCarlineComponent();
-                tCarlineComponent.setZdcName(deviceInfoComponent.getZdcName());
-                tCarlineComponent.setZdcVersion(deviceInfoComponent.getZdcVersion());
                 tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
                 if (StringUtils.isNotEmpty(deviceInfoComponent.getHwVersion())) {
                     String wareType = "HW";
@@ -847,6 +858,12 @@ public class DeviceListServiceImpl implements DeviceListService {
                     componentData.setWareType("SW");
                     String wareType = "SW";
                     componentData.setComponentVersion(deviceInfoComponent.getSwVersion());
+                    insertComponent(tCarlineComponent, wareType, componentData);
+                }
+                if (StringUtils.isNotEmpty(deviceInfoComponent.getOtherVersion())){
+                    String wareType = "OT";
+                    componentData.setWareType("OT");
+                    componentData.setComponentVersion(deviceInfoComponent.getOtherVersion());
                     insertComponent(tCarlineComponent, wareType, componentData);
                 }
                 tCarlineComponentMapper.insert(tCarlineComponent);
@@ -936,6 +953,10 @@ public class DeviceListServiceImpl implements DeviceListService {
                 List<TCarlineComponent> ifDeleteTCarlineHWComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>().eq("hw_version_uid", tCarlineComponent.getHwVersionUid()));
                 if (ifDeleteTCarlineHWComponents != null && ifDeleteTCarlineHWComponents.size() == 1) {
                     tComponentDataMapper.deleteById(ifDeleteTCarlineHWComponents.get(0).getHwVersionUid());
+                }
+                List<TCarlineComponent> ifDeleteTCarlineOTComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>().eq("other_version_uid", tCarlineComponent.getHwVersionUid()));
+                if (ifDeleteTCarlineOTComponents != null && ifDeleteTCarlineOTComponents.size() == 1) {
+                    tComponentDataMapper.deleteById(ifDeleteTCarlineOTComponents.get(0).getOtherVersionUid());
                 }
             }
         }

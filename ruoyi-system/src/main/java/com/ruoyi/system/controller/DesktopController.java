@@ -2,6 +2,7 @@ package com.ruoyi.system.controller;
 
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.system.domain.param.DesktopLoginParam;
 import com.ruoyi.system.domain.param.DesktopSubmitParam;
 import com.ruoyi.system.service.DesktopService;
 import com.ruoyi.system.service.DeviceListService;
@@ -34,7 +35,11 @@ public class DesktopController extends BaseController
     }
 
 
-
+    @PostMapping("/login")
+    @ApiOperation("提交")
+    public AjaxResult login(@Validated @RequestBody DesktopLoginParam desktopLoginParam) throws Exception {
+        return desktopService.login(desktopLoginParam);
+    }
 
 
 
