@@ -37,7 +37,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     /**
      * 设备详情B配件基本信息
      */
-    String queryDeviceComponentSql = "select tci.carline_info_uid as carlineInfoUid,tcd.component_type as componentType,tcc.zdc_name as zdcName,tcc.zdc_version as zdcVersion,tdr.ecu_id as ecuId,\n" +
+    String queryDeviceComponentSql = "select tci.carline_info_uid as carlineInfoUid,tcd.component_type as componentType,tdr.ecu_id as ecuId,tcd.component_instance_name as componentInstanceName,\n" +
             "                        tcd.component_version as componentVersion,tcd.ware_type as wareType,tcd.part_number as partNumber,tcd.component_name as componentName\n" +
             "                                    from t_carline_info tci \n" +
             "                                    left join t_carline_component tcc on tci.carline_info_uid = tcc.carline_info_uid \n" +

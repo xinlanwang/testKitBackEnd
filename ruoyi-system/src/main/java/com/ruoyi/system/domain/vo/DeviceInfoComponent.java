@@ -18,4 +18,5 @@ public class DeviceInfoComponent {
     private String componentVersion;
     private String wareType;
     private String ecuId;
+    private String componentInstanceName;
 }

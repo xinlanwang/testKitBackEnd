@@ -367,8 +367,9 @@ public class DeviceListServiceImpl implements DeviceListService {
 
         //CLUSTER END
         basicInfo.put("projectName", projectName);
+        String projectType = null;
         if (!"-".equals(projectName) && StringUtils.isNotEmpty(projectName)){
-            String projectType = getDictValue("projectType", dictMap, projectName, "0");
+            projectType = getDictValue("projectType", dictMap, projectName, "0");
             basicInfo.put("projectType", projectType);
         }
 
@@ -382,18 +383,45 @@ public class DeviceListServiceImpl implements DeviceListService {
             variant = "Basic";
         }
         basicInfo.put("Variant", variant);
+        String variantType = null;
         if (!"-".equals(variant) && StringUtils.isNotEmpty(variant)){
-            String variantType = getDictValue("variantType", dictMap, variant, "0");
+            variantType = getDictValue("variantType", dictMap, variant, "0");
             basicInfo.put("variantType", variantType);
         }
 
         //market
         String market = StrUtil.trimEnd(regexStr(reportDTO.getSystembezeichnung(), "[ ]*\\S*-([^-]*)[ ]*"));
         basicInfo.put("market", market);
+        String marketType = null;
         if (!"-".equals(market) && StringUtils.isNotEmpty(market)){
-            String marketType = getDictValue("marketType", dictMap, market, "0");
+            marketType = getDictValue("marketType", dictMap, market, "0");
             basicInfo.put("marketType", marketType);
         }
+
+        //platform
+        QueryWrapper<TMatrix> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("cluster_name",clusterName);
+        queryWrapper.eq("project_type",projectType);
+        queryWrapper.eq("carline_model_type",carlineModelType);
+        queryWrapper.eq("variant_type",variantType);
+        List<TMatrix> tMatrixs = tMatrixMapper.selectList(queryWrapper);
+        if (StringUtils.isNotEmpty(tMatrixs) && StringUtils.isNotEmpty(marketType)){
+            for (TMatrix tMatrix:tMatrixs){
+                if (StringUtils.isEmpty(tMatrix.getMarketTypes())){
+                    continue;
+                }
+                for (String marketStr : tMatrix.getMarketTypes().split(",")) {
+                    if (marketType.equals(marketStr)){
+                        basicInfo.put("platformType",tMatrix.getPlatformType());
+                        SysDictData sysDictData = dictDataMapper.selectOne(new QueryWrapper<SysDictData>().eq("dict_type", "platformType").eq("dict_value", tMatrix.getPlatformType()));
+                        basicInfo.put("platformName",sysDictData.getDictLabel());
+
+                    }
+                    break;
+                }
+            }
+        }
+
         return basicInfo;
     }
 
@@ -501,6 +529,9 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getEcuId())) {
                 deviceMap.setEcuId(deviceInfoComponent.getEcuId());
+            }
+            if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentInstanceName())){
+                deviceMap.setComponentInstanceName(deviceInfoComponent.getComponentInstanceName());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentName())) {
                 deviceMap.setComponentName(deviceInfoComponent.getComponentName());
@@ -844,6 +875,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentData.setComponentType(deviceInfoComponent.getComponentType());
                 componentData.setComponentName(deviceInfoComponent.getComponentName());
                 componentData.setIsAvaliabel(1);
+                componentData.setComponentInstanceName(deviceInfoComponent.getComponentInstanceName());
                 componentData.setPartNumber(deviceInfoComponent.getPartNumber());
                 componentData.setSort(0);
                 TCarlineComponent tCarlineComponent = new TCarlineComponent();
@@ -972,12 +1004,12 @@ public class DeviceListServiceImpl implements DeviceListService {
             return -1L;
         }
         //deviceName不得重复
-        /*QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
+        QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
         tcarlineWrapper.eq("device_name", deviceInfoVo.getGoldenCarName());
         List<TCarlineInfo> tCarlineInfos = tCarlineInfoMapper.selectList(tcarlineWrapper);
-        if (null != tCarlineInfos) {
-            return -1;
-        }*/
+        if (StringUtils.isNotEmpty(tCarlineInfos)) {
+            return -1L;
+        }
         //创建tcarline
         TCarline tCarline = new TCarline();
         tCarline.setCreateTime(new Date());

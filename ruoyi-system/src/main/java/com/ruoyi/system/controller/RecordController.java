@@ -40,15 +40,11 @@ public class RecordController extends BaseController
     }
 
     @ApiOperation("查询记录历史列表")
-    @GetMapping("/historyList/{recordUid}")
-    public TableDataInfo historyList(@PathVariable("recordUid") Long recordUid) {
+    @GetMapping("/historyList/{operationUid}")
+    public TableDataInfo historyList(@PathVariable("operationUid") Long operationUid) {
         startPage();
-        List list = recordService.historyList(recordUid);
-        if (list != null && list.size() > 0) {
-            return getDataTable(list);
-        }else {
-            return null;
-        }
+        List list = recordService.historyList(operationUid);
+        return getDataTable(list);
     }
 
 

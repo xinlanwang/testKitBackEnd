@@ -26,7 +26,7 @@ public class TComponentData extends LocalBaseEntity
     @Excel(name = "自增唯一值")
     @TableId(type = IdType.AUTO)
     private Long uid;
-
+    private String componentInstanceName;
     private String partNumber;
     private Integer isAvaliabel;
     private String wareType;
@@ -46,83 +46,4 @@ public class TComponentData extends LocalBaseEntity
     private String updateByUid;
 
 
-    public Long getUid() {
-        return uid;
-    }
-
-    public void setUid(Long uid) {
-        this.uid = uid;
-    }
-
-    public String getPartNumber() {
-        return partNumber;
-    }
-
-    public void setPartNumber(String partNumber) {
-        this.partNumber = partNumber;
-    }
-
-    public Integer getIsAvaliabel() {
-        return isAvaliabel;
-    }
-
-    public void setIsAvaliabel(Integer isAvaliabel) {
-        this.isAvaliabel = isAvaliabel;
-    }
-
-    public String getWareType() {
-        return wareType;
-    }
-
-    public void setWareType(String wareType) {
-        this.wareType = wareType;
-    }
-
-    public String getComponentVersion() {
-        return componentVersion;
-    }
-
-    public void setComponentVersion(String componentVersion) {
-        this.componentVersion = componentVersion;
-    }
-
-    public String getComponentType() {
-        return componentType;
-    }
-
-    public void setComponentType(String componentType) {
-        this.componentType = componentType;
-    }
-
-    public String getComponentName() {
-        return componentName;
-    }
-
-    public void setComponentName(String componentName) {
-        this.componentName = componentName;
-    }
-
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
-
-    public String getCreateByUid() {
-        return createByUid;
-    }
-
-    public void setCreateByUid(String createByUid) {
-        this.createByUid = createByUid;
-    }
-
-    public String getUpdateByUid() {
-        return updateByUid;
-    }
-
-    public void setUpdateByUid(String updateByUid) {
-        this.updateByUid = updateByUid;
-    }
 }

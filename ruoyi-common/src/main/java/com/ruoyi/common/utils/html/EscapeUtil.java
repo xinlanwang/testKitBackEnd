@@ -153,7 +153,7 @@ public class EscapeUtil
         return tmp.toString();
     }
 
-    public static void main(String[] args)
+    /*public static void main(String[] args)
     {
         String html = "<script>alert(1);</script>";
         String escape = EscapeUtil.escape(html);
@@ -163,5 +163,5 @@ public class EscapeUtil
         System.out.println("clean: " + EscapeUtil.clean(html));
         System.out.println("escape: " + escape);
         System.out.println("unescape: " + EscapeUtil.unescape(escape));
-    }
+    }*/
 }
