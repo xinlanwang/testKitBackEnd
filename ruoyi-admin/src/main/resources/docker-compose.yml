@@ -1,0 +1,55 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+
+version: '3.7'
+
+# Define services
+services:
+  # App backend service
+  app-server:
+    # Configuration for building the docker image for the backend service
+    build:
+      context: . # Use an image built from the specified dockerfile in the `springboot-app-server` directory.
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8082" # Forward the exposed port 4000 on the container to port 4000 on the host machine
+    restart: always
+    volumes:
+      - /home/data/testKit/data:/var/lib/mysql
+      #- /home/data/testKit/my.cnf:/etc/mysql/my.cnf
+    depends_on:
+      - testkit-mysql # This service depends on mysql. Start that first.
+    environment: # Pass environment variables to the service
+      SPRING_DATASOURCE_URL: jdbc:mysql://testkit-mysql:3306/testkit?useUnicode=true&useSSL=false&serverTimezone=GMT%2B8&useLegacyDatetimeCode=false&zeroDateTimeBehavior=convertToNull&characterEncoding=utf8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 12345678
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+
+  # Database Service (Mysql)
+  testkit-mysql:
+    image: mysql:5.7
+    ports:
+      - "3308:3306"
+    restart: always
+    hostname: testkit-mysql
+    environment:
+      MYSQL_DATABASE: testkit
+      MYSQL_USER: testkit_admin
+      MYSQL_PASSWORD: 12345678
+      MYSQL_ROOT_PASSWORD: 12345678
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - backend
+
+# Volumes
+volumes:
+  db-data: {}
+
+# Networks to be created to facilitate communication between containers
+networks:
+  backend:
+    external:
+      name: digilab_default
+  digilab_default:
+    external: true

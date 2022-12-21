@@ -171,7 +171,7 @@ public class SysConfigServiceImpl implements ISysConfigService
         List<SysConfig> configsList = configMapper.selectConfigList(new SysConfig());
         for (SysConfig config : configsList)
         {
-            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+//            redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
         }
     }
 

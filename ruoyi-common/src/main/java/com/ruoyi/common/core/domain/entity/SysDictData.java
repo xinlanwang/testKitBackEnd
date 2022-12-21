@@ -2,6 +2,8 @@ package com.ruoyi.common.core.domain.entity;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.ruoyi.common.core.domain.LocalBaseEntity;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -9,6 +11,7 @@ import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.annotation.Excel.ColumnType;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.core.domain.BaseEntity;
+import org.springframework.data.annotation.Id;
 
 /**
  * 字典数据表 sys_dict_data
@@ -23,6 +26,7 @@ public class SysDictData extends BaseEntity
 
     /** 字典编码 */
     @Excel(name = "字典编码", cellType = ColumnType.NUMERIC)
+    @TableId
     private Long dictCode;
 
     /** 字典排序 */

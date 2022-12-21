@@ -1,7 +1,9 @@
 package com.ruoyi.system.domain;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.springframework.data.annotation.Id;
 
 /**
  * 用户和角色关联 sys_user_role
@@ -11,9 +13,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class SysUserRole
 {
     /** 用户ID */
+//    @TableId
     private Long userId;
     
     /** 角色ID */
+    @TableId
     private Long roleId;
 
     public Long getUserId()
