@@ -13,18 +13,17 @@ import com.ruoyi.system.domain.po.TCarlineInfo;
 import com.ruoyi.system.domain.po.TDataLog;
 import com.ruoyi.system.domain.po.TDesktopRecord;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
+import com.ruoyi.system.domain.vo.UserListVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.token.TokenService;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.ruoyi.common.constant.TestKitConstants.*;
 
@@ -106,6 +105,11 @@ public class UserServiceImpl implements UserService {
         return AjaxResult.success(user.getUserId());
     }
 
+    @Override
+    public List queryUserList() {
+        return userMapper.selectWebUserList();
+    }
+
     private static void buildRegisterUser(DesktopRegisterParam desktopRegisterParam, SysUser user) {
         user.setTestGroupId(desktopRegisterParam.getTestGroupId());
         user.setUserName(desktopRegisterParam.getUserName());
@@ -116,6 +120,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(desktopRegisterParam.getPassword());
         user.setStatus("0");
         user.setLoginIp(desktopRegisterParam.getLoginIp());
+        user.setCreateTime(new Date());
     }
 }
 

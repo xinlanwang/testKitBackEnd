@@ -15,6 +15,7 @@ public class GoldenListPlatfromVO {
     private String goldenCarType;
     private String carlineModelType;
     private Integer marketType;
+    private Long clusterUid;
     private LinkedHashSet<Integer> marketTypes;
 
 }

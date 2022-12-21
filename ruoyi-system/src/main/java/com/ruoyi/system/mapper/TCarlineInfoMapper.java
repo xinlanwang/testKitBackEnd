@@ -51,7 +51,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
      * GoldenInfo设备详情基本信息
      */
     String queryGoldenInfoListSql = "select tc.golden_car_name as carlineModelType,tci.carline_info_uid as carlineInfoUid,tci.market_type as marketType,\n" +
-            "       tl.cluster_name as clusterName\n" +
+            "       tl.cluster_name as clusterName ,tl.uid as clusterUid\n" +
             "from t_carline tc\n" +
             "left join t_cluster tl on tl.carline_uid = tc.uid\n" +
             "left join t_carline_info tci on tci.cluster_uid = tl.uid\n" +
@@ -130,7 +130,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     public int deleteTCarlineInfoByUids(String[] uids);
 
 
-    String selectDeviceComponentsListSql = "select distinct tci.market_type as marketType,tci.db_version as dbVersion,tci.carline_info_uid as tCarlineInfoUid\n" +
+    String selectDeviceComponentsListSql = "select tci.market_type as marketType,tci.db_version as dbVersion,tci.carline_info_uid as tCarlineInfoUid\n" +
             "            from t_carline_info tci\n" +
             "            left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "            left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
@@ -144,8 +144,8 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "            )\n" +
             "and tc.cluster_name = #{clusterName} \n" +
             "            and tcl.golden_car_name = #{carlineModelType} \n" +
-            "            and tc.device_type = '3'\n" +
-            "group by market_type";
+            "            and tc.device_type = '3'\n" ;
+//            "group by market_type";
     @Select(selectDeviceComponentsListSql)
     public List<GoldenInfoVO> selectDeviceComponentsList(@Param("clusterName") String clusterName, @Param("carlineModelType") String carlineModelType);
 

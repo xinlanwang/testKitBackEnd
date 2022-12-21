@@ -276,7 +276,7 @@ public class TMatrixServiceImpl implements ITMatrixService
         }else {
             //假如存在则刷为将状态刷为0
             dictValue = dictLabelMap.get(dictLabel);
-            dictDataMapper.updateDictDataStatus(dictTypeName,dictLabel,dictValue,DICT_STATUS_NORMAL);
+            dictDataMapper.updateDictDataStatus(dictTypeName,dictLabel,dictValue,DICT_STATUS_NORMAL,matrixType);
         }
         return dictValue;
     }

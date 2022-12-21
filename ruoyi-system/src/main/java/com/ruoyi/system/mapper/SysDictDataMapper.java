@@ -131,5 +131,5 @@ public interface SysDictDataMapper extends BaseMapper<SysDictData>
      * @param dictValue
      * @return
      */
-    public int updateDictDataStatus(@Param("dictTypeName") String dictTypeName, @Param("dictLabel") String dictLabel, @Param("dictValue") String dictValue, @Param("status") String status);
+    public int updateDictDataStatus(@Param("dictTypeName") String dictTypeName, @Param("dictLabel") String dictLabel, @Param("dictValue") String dictValue, @Param("status") String status,@Param("matrixType") String matrixType);
 }

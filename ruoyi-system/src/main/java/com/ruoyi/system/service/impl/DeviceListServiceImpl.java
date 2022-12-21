@@ -943,7 +943,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         } else {
             //假如存在则刷为将状态刷为0
             dictValue = dictLabelMap.get(dictLabel);
-            dictDataMapper.updateDictDataStatus(dictTypeName, dictLabel, dictValue, "0");
+            dictDataMapper.updateDictDataStatus(dictTypeName, dictLabel, dictValue, "0",matrixType);
         }
         return dictValue;
     }

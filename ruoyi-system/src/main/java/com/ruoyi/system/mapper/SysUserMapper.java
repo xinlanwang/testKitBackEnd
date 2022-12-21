@@ -3,8 +3,11 @@ package com.ruoyi.system.mapper;
 import java.util.List;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.system.domain.vo.GoldenInfoVO;
+import com.ruoyi.system.domain.vo.UserListVO;
 import org.apache.ibatis.annotations.Param;
 import com.ruoyi.common.core.domain.entity.SysUser;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 用户表 数据层
@@ -126,4 +129,12 @@ public interface SysUserMapper extends BaseMapper<SysUser>
      * @return 结果
      */
     public SysUser checkEmailUnique(String email);
+
+
+    String selectWebUserList = "select su.email as email,sr.role_name as roleName,sr.role_id as roleId,su.test_group_id as testGroupId,su.create_time as userCreateTime\n" +
+            "from sys_user su\n" +
+            "     join sys_user_role ur on ur.user_id = su.user_id\n" +
+            " join sys_role sr on ur.role_id = sr.role_id\n" ;
+    @Select(selectWebUserList)
+    public List<UserListVO> selectWebUserList();
 }

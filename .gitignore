@@ -10,6 +10,8 @@
 **/out/### Example user template template
 ### Example user template
 
+**/target/### Example user template template
+
 # IntelliJ project files
 .idea
 *.iml
