@@ -13,10 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,6 +24,11 @@ public class UserController extends BaseController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/cntest")
+    @ApiOperation("提交")
+    public AjaxResult voidTest() throws Exception {
+        return AjaxResult.success("这是一句中文测试");
+    }
     @PostMapping("/getRoles")
     @ApiOperation("提交")
     public AjaxResult getRoles(@Validated @RequestBody DesktopLoginParam desktopLoginParam) throws Exception {
