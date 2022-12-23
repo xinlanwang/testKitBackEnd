@@ -8,14 +8,17 @@ import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.SysUserRole;
+import com.ruoyi.system.domain.dto.UserInfoDTO;
 import com.ruoyi.system.domain.param.*;
 import com.ruoyi.system.domain.po.TCarlineInfo;
 import com.ruoyi.system.domain.po.TDataLog;
 import com.ruoyi.system.domain.po.TDesktopRecord;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
+import com.ruoyi.system.domain.vo.UserInfoVO;
 import com.ruoyi.system.domain.vo.UserListVO;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.token.TokenService;
@@ -108,6 +111,58 @@ public class UserServiceImpl implements UserService {
     @Override
     public List queryUserList() {
         return userMapper.selectWebUserList();
+    }
+
+    @Override
+    public Long updateUser(DesktopRegisterParam desktopRegisterParam) {
+        if (desktopRegisterParam == null || desktopRegisterParam.getUserId() == null){
+            return -1L;
+        }
+        SysUser user = new SysUser();
+        desktopRegisterParam.setPassword(SecurityUtils.encryptPassword(desktopRegisterParam.getPassword()));
+        buildRegisterUser(desktopRegisterParam, user);
+        user.setUserId(desktopRegisterParam.getUserId());
+        userMapper.updateUser(user);
+        userRoleMapper.deleteUserRoleByUserId(desktopRegisterParam.getUserId());
+        if (StringUtils.isNotEmpty(desktopRegisterParam.getRoleIds())){
+            for (Long roleId : desktopRegisterParam.getRoleIds()) {
+                SysUserRole sysUserRole = new SysUserRole();
+                sysUserRole.setUserId(desktopRegisterParam.getUserId());
+                sysUserRole.setRoleId(roleId);
+                userRoleMapper.insert(sysUserRole);
+            }
+        }
+        return 1L;
+    }
+
+    @Override
+    public int deleteUsersByUserIds(Long[] uids) {
+        if (StringUtils.isEmpty(uids)){
+            return -1;
+        }
+        for (Long uid : uids){
+            userRoleMapper.deleteUserRoleByUserId(uid);
+           userMapper.deleteById(uid);
+        }
+        return 1;
+    }
+
+    @Override
+    public UserInfoVO selectByUserId(Long userId) {
+        List<UserInfoDTO> userListVOS = userMapper.selectUserInfoByUserId(userId);
+        if (StringUtils.isEmpty(userListVOS)){
+            return null;
+        }
+        UserInfoVO userInfoVO = new UserInfoVO();
+        List<Long> roleIds = new ArrayList<>();
+        for (int i = 0;i < userListVOS.size();i++){
+            if (i == 0){
+                BeanUtils.copyProperties(userListVOS.get(0),userInfoVO);
+            }
+            roleIds.add(userListVOS.get(i).getRoleId());
+        }
+        userInfoVO.setRoleIds(roleIds.toArray(new Long[roleIds.size()]));
+        return userInfoVO;
     }
 
     private static void buildRegisterUser(DesktopRegisterParam desktopRegisterParam, SysUser user) {

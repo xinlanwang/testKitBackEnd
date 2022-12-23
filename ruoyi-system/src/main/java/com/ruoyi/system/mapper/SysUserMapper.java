@@ -3,7 +3,10 @@ package com.ruoyi.system.mapper;
 import java.util.List;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.system.domain.dto.UserInfoDTO;
+import com.ruoyi.system.domain.param.DesktopRegisterParam;
 import com.ruoyi.system.domain.vo.GoldenInfoVO;
+import com.ruoyi.system.domain.vo.UserInfoVO;
 import com.ruoyi.system.domain.vo.UserListVO;
 import org.apache.ibatis.annotations.Param;
 import com.ruoyi.common.core.domain.entity.SysUser;
@@ -131,10 +134,18 @@ public interface SysUserMapper extends BaseMapper<SysUser>
     public SysUser checkEmailUnique(String email);
 
 
-    String selectWebUserList = "select su.email as email,sr.role_name as roleName,sr.role_id as roleId,su.test_group_id as testGroupId,su.create_time as userCreateTime\n" +
+    String selectWebUserList = "select su.user_id as userId,su.email as email,sr.role_name as roleName,sr.role_id as roleId,su.test_group_id as testGroupId,su.create_time as userCreateTime\n" +
             "from sys_user su\n" +
             "     join sys_user_role ur on ur.user_id = su.user_id\n" +
             " join sys_role sr on ur.role_id = sr.role_id\n" ;
     @Select(selectWebUserList)
     public List<UserListVO> selectWebUserList();
+
+
+    String selectUserInfoByUserId = "select su.user_id,su.test_group_id,su.user_name,su.nick_name,su.email,su.phonenumber,su.sex,su.login_ip,sr.role_id\n" +
+            "from sys_user_role sr\n" +
+            "right join sys_user su on su.user_id = sr.user_id\n" +
+            "where sr.user_id = #{userId};" ;
+    @Select(selectUserInfoByUserId)
+    List<UserInfoDTO> selectUserInfoByUserId(@Param("userId") Long userId);
 }
