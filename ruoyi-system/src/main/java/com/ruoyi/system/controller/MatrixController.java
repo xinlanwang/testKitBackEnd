@@ -96,7 +96,7 @@ public class MatrixController extends BaseController {
         if (itMatrixService.updateTMatrix(tMatrix) > 0){
             return R.ok();
         }else {
-            return R.fail("Id不存在");
+            return R.fail("Id不存在或者系统里已存在该映射关系");
         }
     }
 

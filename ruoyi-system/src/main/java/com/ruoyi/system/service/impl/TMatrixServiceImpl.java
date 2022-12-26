@@ -347,6 +347,61 @@ public class TMatrixServiceImpl implements ITMatrixService
     @Override
     public int updateTMatrix(TMatrix tMatrix)
     {
+        //查重
+        /*
+        market_types
+        */
+        QueryWrapper<TMatrix> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isNotEmpty(tMatrix.getMatrixType())){
+            queryWrapper.eq("matrix_type",tMatrix.getMatrixType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getGoldenCarType())){
+            queryWrapper.eq("golden_car_type",tMatrix.getGoldenCarType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getGoldenClusterNameType())){
+            queryWrapper.eq("golden_cluster_name_type",tMatrix.getGoldenClusterNameType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getCarlineModelType())){
+            queryWrapper.eq("carline_model_type",tMatrix.getCarlineModelType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getClusterName())){
+            queryWrapper.eq("cluster_name",tMatrix.getClusterName());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getPlatformType())){
+            queryWrapper.eq("platform_type",tMatrix.getPlatformType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getProjectType())){
+            queryWrapper.eq("project_type",tMatrix.getProjectType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getVariantType())){
+            queryWrapper.eq("variant_type",tMatrix.getVariantType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getOcuCboxType())){
+            queryWrapper.eq("ocu_cbox_type",tMatrix.getOcuCboxType());
+        }
+        if (StringUtils.isNotEmpty(tMatrix.getGatewayType())){
+            queryWrapper.eq("gateway_type",tMatrix.getGatewayType());
+        }
+        List<TMatrix> tMatrixList = tMatrixMapper.selectList(queryWrapper);
+        if (StringUtils.isNotEmpty(tMatrixList) && "2".equals(tMatrix.getMatrixType())){
+            return -1;
+        }
+        if (StringUtils.isNotEmpty(tMatrixList) && "1".equals(tMatrix.getMatrixType())){
+            for (TMatrix tMatrixPO:tMatrixList){
+                if (StringUtils.isNotEmpty(tMatrixPO.getMatrixType())){
+                    for (String str : tMatrixPO.getMarketTypes().split(",")) {
+                        if (str.equals(tMatrix.getMatrixType())){
+                            return -1;
+                        }
+                    }
+                }else {
+                    if (StringUtils.isEmpty(tMatrix.getMarketTypes())){
+                        return -1;
+                    }
+                }
+            }
+        }
+        //
         tMatrix.setUpdateTime(DateUtils.getNowDate());
         return tMatrixMapper.updateTMatrix(tMatrix);
     }
