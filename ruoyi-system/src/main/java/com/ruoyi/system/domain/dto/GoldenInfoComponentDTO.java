@@ -28,5 +28,8 @@ public class GoldenInfoComponentDTO {
     private String componentModel;
 
     private String wareType;
+    private Integer sort;
+    private Integer hwSort;
+    private Integer swSort;
 
 }

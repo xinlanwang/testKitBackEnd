@@ -8,4 +8,5 @@ public class DeviceCompareVO {
     private Integer compareNum;
     private String currentVersion;
     private String minimalHW;
+    private Integer sort;
 }

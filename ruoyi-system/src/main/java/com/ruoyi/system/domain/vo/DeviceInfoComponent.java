@@ -17,6 +17,9 @@ public class DeviceInfoComponent {
     private String partNumber;
     private String hwVersion;
     private String swVersion;
+    private Integer hwSort;
+    private Integer swSort;
+    private Integer sort;
     private String otherVersion;
     private String componentVersion;
     private String wareType;
