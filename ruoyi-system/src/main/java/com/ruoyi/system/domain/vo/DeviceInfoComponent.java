@@ -1,8 +1,11 @@
 package com.ruoyi.system.domain.vo;
 
+import com.ruoyi.system.domain.DeviceCompareVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Map;
 
 @ApiModel
 @Data
@@ -19,4 +22,5 @@ public class DeviceInfoComponent {
     private String wareType;
     private String ecuId;
     private String componentInstanceName;
+    private Map<String, DeviceCompareVO> deviceCompareVOMap;
 }

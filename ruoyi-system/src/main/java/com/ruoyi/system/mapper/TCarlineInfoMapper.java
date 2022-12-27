@@ -151,7 +151,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
 
 
 
-    String selectGoldenCarlineInfoSql = "select tcd.component_type as componentType,tcd.component_version as componentVersion,tcd.part_number as partNumber,\n" +
+    String selectGoldenCarlineInfoSql = "select tcd.component_type as componentType,tcd.component_version as componentVersion,tcd.ware_type as wareType,tcd.part_number as partNumber,\n" +
             "       tcc.temporary_variable as temporaryVariable,tcc.minimal_hw as minimalHW\n" +
             "            from t_component_data tcd\n" +
             "            left join t_carline_component tcc on (tcd.uid = tcc.sw_version_uid or tcd.uid = tcc.hw_version_uid or tcd.uid = tcc.other_version_uid)\n" +

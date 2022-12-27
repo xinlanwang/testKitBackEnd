@@ -2,18 +2,15 @@ package com.ruoyi.system.service.impl;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.util.Date;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.file.FileNameUtil;
-import cn.hutool.core.util.ReUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -40,7 +37,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.*;
 
 import java.util.*;
@@ -510,6 +506,12 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (deviceInfoComponents == null || deviceInfoComponents.size() == 0) {
             return null;
         }
+        Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap = null;
+        if (deviceInfoVo != null && StringUtils.isNotEmpty(deviceInfoVo.getCarlineType()) &&
+                StringUtils.isNotEmpty(deviceInfoVo.getClusterName()) && StringUtils.isNotEmpty(deviceInfoVo.getMarketType())) {
+            List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(deviceInfoVo.getCarlineModelType(), deviceInfoVo.getClusterName(), deviceInfoVo.getMarketType());
+            goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
+        }
         Map<String, DeviceInfoComponent> deviceInfoComponentMap = new HashMap<>();
         for (DeviceInfoComponent deviceInfoComponent : deviceInfoComponents) {
             String componentType = deviceInfoComponent.getComponentType();
@@ -543,9 +545,31 @@ public class DeviceListServiceImpl implements DeviceListService {
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentVersion()) && StringUtils.isNotEmpty(deviceInfoComponent.getWareType())) {
                 if ("SW".equals(deviceInfoComponent.getWareType())) {
                     deviceMap.setSwVersion(deviceInfoComponent.getComponentVersion());
+                    if (goldenInfoComponentDTOMap != null){
+                        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(componentType,"SW", deviceInfoComponent.getComponentVersion(), goldenInfoComponentDTOMap);
+                        Map<String, DeviceCompareVO> deviceCompareVOMap;
+                        if (deviceMap.getDeviceCompareVOMap() == null){
+                            deviceCompareVOMap = new HashMap<>();
+                        }else {
+                            deviceCompareVOMap = deviceMap.getDeviceCompareVOMap();
+                        }
+                        deviceCompareVOMap.put(deviceInfoComponent.getWareType(),deviceCompareVO);
+                        deviceMap.setDeviceCompareVOMap(deviceCompareVOMap);
+                    }
                 }
                 if ("HW".equals(deviceInfoComponent.getWareType())) {
                     deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());
+                    if (goldenInfoComponentDTOMap != null){
+                        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(componentType,"HW", deviceInfoComponent.getComponentVersion(), goldenInfoComponentDTOMap);
+                        Map<String, DeviceCompareVO> deviceCompareVOMap;
+                        if (deviceMap.getDeviceCompareVOMap() == null){
+                            deviceCompareVOMap = new HashMap<>();
+                        }else {
+                            deviceCompareVOMap = deviceMap.getDeviceCompareVOMap();
+                        }
+                        deviceCompareVOMap.put(deviceInfoComponent.getWareType(),deviceCompareVO);
+                        deviceMap.setDeviceCompareVOMap(deviceCompareVOMap);
+                    }
                 }
                 if ("OT".equals(deviceInfoComponent.getWareType())) {
                     deviceMap.setOtherVersion(deviceInfoComponent.getComponentVersion());
@@ -578,10 +602,9 @@ public class DeviceListServiceImpl implements DeviceListService {
         String clusterName = deviceCompareParam.getClusterName();
         String marketType = deviceCompareParam.getMarketType();
         String componentType = deviceCompareParam.getComponentType();
-        String swVersion = deviceCompareParam.getSwVersion();
-        String hwVersion = deviceCompareParam.getHwVersion();
-        String partNumber = deviceCompareParam.getPartNumber();
-        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) || StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(hwVersion) || StringUtils.isNotEmpty(swVersion))) {
+        String wareType = deviceCompareParam.getWareType();
+        String componentVersion = deviceCompareParam.getComponentVersion();
+        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) || StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(wareType) || StringUtils.isNotEmpty(componentVersion))) {
             return AjaxResult.error("参数不得为空");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
@@ -589,43 +612,58 @@ public class DeviceListServiceImpl implements DeviceListService {
             return AjaxResult.error("GoldenInfo里并没有对应取值");
         }
         Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
+        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(componentType, wareType, componentVersion, goldenInfoComponentDTOMap);
+        if (deviceCompareVO != null) {
+            return AjaxResult.success(deviceCompareVO);
+        }else {
+            return AjaxResult.error("GoldenInfo里没有对应配件");
+        }
+    }
+
+    private DeviceCompareVO getDeviceCompareVO(String componentType, String wareType, String componentVersion, Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap) {
         for (String goldenComponentType : goldenInfoComponentDTOMap.keySet()) {
+            if ("-".equals(goldenComponentType)){
+                continue;
+            }
             String cleanStr = cleanStr(goldenComponentType);
             componentType = new String(cleanStr(componentType));
             if (componentType.contains(cleanStr) || cleanStr.contains(componentType) || componentType.equals(cleanStr)) {
                 DeviceCompareVO deviceCompareVO = new DeviceCompareVO();
-                String componentModel = null;
-                if (StringUtils.isNotEmpty(hwVersion)) {
-                    componentModel = hwVersion;
-                    Integer compareNum = compareHWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
+                if (StringUtils.isNotEmpty(componentVersion) && "HW".equals(wareType)) {
+                    Integer compareNum = compareHWComponent(componentVersion, goldenInfoComponentDTOMap.get(goldenComponentType));
                     if (compareNum.equals(0)) {
                         continue;
                     }
                     deviceCompareVO.setCompareNum(compareNum);
                     deviceCompareVO.setMinimalHW(goldenInfoComponentDTOMap.get(goldenComponentType).getMinimalHW());
                     deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());
-                    return AjaxResult.success(deviceCompareVO);
-                } else {
-                    componentModel = swVersion;
-                    Integer compareNum = compareSWComponent(componentModel, goldenInfoComponentDTOMap.get(goldenComponentType));
+                    return deviceCompareVO;
+                }
+                if (StringUtils.isNotEmpty(componentVersion) && "SW".equals(wareType)) {
+                    Integer compareNum = compareSWComponent(componentVersion, goldenInfoComponentDTOMap.get(goldenComponentType));
                     if (compareNum.equals(0)) {
                         continue;
                     }
                     deviceCompareVO.setCompareNum(compareNum);
                     deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getSwComponentVersion());
-                    return AjaxResult.success(deviceCompareVO);
+                    return deviceCompareVO;
                 }
             }
         }
-        return AjaxResult.success("SUCCESS~！");
+        return null;
     }
 
 
     private int compareSWComponent(String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
-        if (StringUtils.isEmpty(goldenInfoComponentDTO.getSwComponentVersion())) {
+        String componentVersion = goldenInfoComponentDTO.getSwComponentVersion();
+        if (StringUtils.isEmpty(componentVersion)) {
             return 0;
         }
-        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getSwComponentVersion(), MIN);
+        if (componentVersion.contains("/")){//如：H16/17
+            String[] split = componentVersion.split("/");
+            componentVersion = split[split.length - 1];
+        }
+        Integer normalVersion = cleanNum(componentVersion, MIN);
         Integer correnVersion = cleanNum(componentModel, MIN);
         if (correnVersion >= normalVersion) {
             return 3;
@@ -635,14 +673,24 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     private int compareHWComponent(String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
-        if (StringUtils.isEmpty(goldenInfoComponentDTO.getHwComponentVersion())) {
+        String componentVersion = goldenInfoComponentDTO.getHwComponentVersion();
+        String minimalHW = goldenInfoComponentDTO.getMinimalHW();
+        if (StringUtils.isEmpty(componentVersion)) {
             return 0;
         }
-        Integer minimalVersion = 0;
-        if (StringUtils.isNotEmpty(goldenInfoComponentDTO.getMinimalHW())) {
-            minimalVersion = cleanNum(goldenInfoComponentDTO.getMinimalHW(), MIN);
+        if (componentVersion.contains("/")){//如：H16/17
+            String[] split = componentVersion.split("/");
+            componentVersion = split[split.length - 1];
         }
-        Integer normalVersion = cleanNum(goldenInfoComponentDTO.getHwComponentVersion(), MIN);
+        if (minimalHW.contains("/")){//如：H16/17
+            String[] split = minimalHW.split("/");
+            minimalHW = split[split.length - 1];
+        }
+        Integer minimalVersion = 0;
+        if (StringUtils.isNotEmpty(minimalHW)) {
+            minimalVersion = cleanNum(minimalHW, MIN);
+        }
+        Integer normalVersion = cleanNum(componentVersion, MIN);
         Integer correnVersion = cleanNum(componentModel, MIN);
         if (correnVersion >= normalVersion) {
             return 3;
@@ -694,7 +742,19 @@ public class DeviceListServiceImpl implements DeviceListService {
         Map<String, GoldenInfoComponentDTO> componentDTOMap = new HashMap<>();
         for (GoldenInfoComponentDTO goldenInfoComponentDTO : goldenInfoComponentDTOS) {
             String componentType = goldenInfoComponentDTO.getComponentType();
-            componentDTOMap.put(componentType, goldenInfoComponentDTO);
+            GoldenInfoComponentDTO tempComponentDTO = null;
+            if (componentDTOMap.get(componentType) != null){
+                tempComponentDTO = componentDTOMap.get(componentType);
+            }else {
+                tempComponentDTO = goldenInfoComponentDTO;
+            }
+            if ("HW".equals(goldenInfoComponentDTO.getWareType())){
+                tempComponentDTO.setHwComponentVersion(goldenInfoComponentDTO.getComponentVersion());
+            }
+            if ("SW".equals(goldenInfoComponentDTO.getWareType())){
+                tempComponentDTO.setSwComponentVersion(goldenInfoComponentDTO.getComponentVersion());
+            }
+            componentDTOMap.put(componentType, tempComponentDTO);
         }
         return componentDTOMap;
     }

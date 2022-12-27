@@ -238,7 +238,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getHWVERSION())){
                         String wareType = "HW";
                         componentData.setWareType("HW");
-                        componentData.setComponentVersion(importPartComponentDTO.getSWVERSION());
+                        componentData.setComponentVersion(importPartComponentDTO.getHWVERSION());
                         insertComponent(deviceInfoComponent, wareType, componentData);
                     }
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION())){
