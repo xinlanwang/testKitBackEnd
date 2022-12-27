@@ -64,7 +64,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     /**
      * GoldenInfo详情列表
      */
-    String queryGoldenInfoDetailSql = "select cd.component_type as componentType,cd.part_number as partNumber,\n" +
+    String queryGoldenInfoDetailSql = "select cd.component_name as componentType,cd.part_number as partNumber,\n" +
             "               tcs.cluster_name as clusterName,cd.component_version as componentVersion,cd.ware_type as wareType,tcc.temporary_variable as temporaryVariable,\n" +
             "                   cd.component_version as componentModel,cd.ware_type as wareType,tcc.minimal_hw as minimalHW\n" +
             "            from t_component_data cd\n" +

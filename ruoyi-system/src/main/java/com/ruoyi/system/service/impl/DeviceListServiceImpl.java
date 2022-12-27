@@ -26,6 +26,7 @@ import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.dto.ParseDTCReportDTO;
 import com.ruoyi.system.domain.dto.TDTCReportDTO;
+import com.ruoyi.system.domain.enums.ComponentTypeMapping;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.po.*;
@@ -838,6 +839,15 @@ public class DeviceListServiceImpl implements DeviceListService {
             insertComponent(tCarlineComponent, wareType, componentData);
         }
         tCarlineComponentMapper.insert(tCarlineComponent);
+    }
+
+    private String getComponentType(String componentName) {
+        for (ComponentTypeMapping typeMapping : ComponentTypeMapping.values()) {
+            if (componentName.toUpperCase().contains(typeMapping.getCode()) || componentName.equals(typeMapping.getCode())){
+                return typeMapping.getName();
+            }
+        }
+        return "-";
     }
 
 

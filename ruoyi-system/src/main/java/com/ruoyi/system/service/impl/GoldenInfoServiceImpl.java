@@ -10,6 +10,7 @@ import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportGoldenInfoDTO;
 import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
+import com.ruoyi.system.domain.enums.ComponentTypeMapping;
 import com.ruoyi.system.domain.po.*;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
@@ -214,8 +215,8 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                             && StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION()) && StringUtils.isNotEmpty(importPartComponentDTO.getMINIMALHW())) {
                     TComponentData componentData = new TComponentData();
                     TCarlineComponent deviceInfoComponent = new TCarlineComponent();
-                    componentData.setComponentType(importPartComponentDTO.getCOMPONENTS());
-                    componentData.setPartNumber(importPartComponentDTO.getPARTNUMBER());
+                    componentData.setComponentName(importPartComponentDTO.getCOMPONENTS());
+                    componentData.setComponentType(getComponentType(importPartComponentDTO.getCOMPONENTS()));
                     componentData.setPartNumber(importPartComponentDTO.getPARTNUMBER());
                     deviceInfoComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
                     String temporaryVariable = null;
@@ -255,6 +256,14 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         return null;
     }
 
+    private String getComponentType(String componentName) {
+        for (ComponentTypeMapping typeMapping : ComponentTypeMapping.values()) {
+            if (componentName.toUpperCase().contains(typeMapping.getCode()) || componentName.equals(typeMapping.getCode())){
+                return typeMapping.getName();
+            }
+        }
+        return "-";
+    }
 
 
     private void insertComponent(TCarlineComponent tCarlineComponent,String wareType, TComponentData componentData) {
