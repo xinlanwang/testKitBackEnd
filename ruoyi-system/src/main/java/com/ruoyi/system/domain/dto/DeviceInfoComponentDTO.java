@@ -16,7 +16,7 @@ public class DeviceInfoComponentDTO {
     @ApiModelProperty("最低配置")
     private String minimalHW;
 
-    private String componentModel;
+    private String componentName;
 
     private String wareType;
 

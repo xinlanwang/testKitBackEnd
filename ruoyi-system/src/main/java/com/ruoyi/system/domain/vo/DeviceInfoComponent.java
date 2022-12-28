@@ -25,5 +25,5 @@ public class DeviceInfoComponent {
     private String wareType;
     private String ecuId;
     private String componentInstanceName;
-    private Map<String, DeviceCompareVO> deviceCompareVOMap;
+    private Map<String, DeviceCompareVO> deviceCompareMap;
 }

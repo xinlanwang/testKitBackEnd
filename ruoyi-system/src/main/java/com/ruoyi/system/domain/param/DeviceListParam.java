@@ -1,8 +1,6 @@
 package com.ruoyi.system.domain.param;
 
-import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
-import com.ruoyi.system.domain.vo.DeviceInfoComponent;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -40,7 +38,7 @@ public class DeviceListParam extends BaseEntity {
         @ApiModelProperty("Component模糊搜索选填字段：硬件版本")
         private String hwVersion;
         private String wareType;
-        private String componentModel;
+        private String componentVersion;
         @ApiModelProperty("deviceName模糊搜索")
         private String deviceName;
         @ApiModelProperty("vin模糊搜索")

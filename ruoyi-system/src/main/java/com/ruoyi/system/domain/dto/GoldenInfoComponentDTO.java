@@ -22,10 +22,11 @@ public class GoldenInfoComponentDTO {
     private String clusterName;
     @ApiModelProperty("最低配置")
     private String minimalHW;
+    private String minimalVersion;
 
     private String componentType;
 
-    private String componentModel;
+    private String componentName;
 
     private String wareType;
     private Integer sort;

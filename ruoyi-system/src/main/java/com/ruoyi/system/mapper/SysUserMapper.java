@@ -137,7 +137,7 @@ public interface SysUserMapper extends BaseMapper<SysUser>
     String selectWebUserList = "select su.user_id as userId,su.email as email,sr.role_name as roleName,sr.role_id as roleId,su.test_group_id as testGroupId,su.create_time as userCreateTime\n" +
             "from sys_user su\n" +
             "     join sys_user_role ur on ur.user_id = su.user_id\n" +
-            " join sys_role sr on ur.role_id = sr.role_id\n" ;
+            " join sys_role sr on ur.role_id = sr.role_id\n where (sr.role_id = 2 or sr.role_id = 3) order by su.update_time desc" ;
     @Select(selectWebUserList)
     public List<UserListVO> selectWebUserList();
 

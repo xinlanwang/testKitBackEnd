@@ -544,38 +544,16 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentVersion()) && StringUtils.isNotEmpty(deviceInfoComponent.getWareType())) {
                 if ("SW".equals(deviceInfoComponent.getWareType())) {
-                    if (deviceInfoComponent.getSort() != null) {
-                        deviceMap.setSwSort(deviceInfoComponent.getSort());
-                    }
+                    deviceMap.setSwSort(deviceInfoComponent.getSort());
                     deviceMap.setSwVersion(deviceInfoComponent.getComponentVersion());
-                    if (goldenInfoComponentDTOMap != null){
-                        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceMap.getSwSort(),componentType,"SW", deviceInfoComponent.getComponentVersion(), goldenInfoComponentDTOMap);
-                        Map<String, DeviceCompareVO> deviceCompareVOMap;
-                        if (deviceMap.getDeviceCompareVOMap() == null){
-                            deviceCompareVOMap = new HashMap<>();
-                        }else {
-                            deviceCompareVOMap = deviceMap.getDeviceCompareVOMap();
-                        }
-                        deviceCompareVOMap.put(deviceInfoComponent.getWareType(),deviceCompareVO);
-                        deviceMap.setDeviceCompareVOMap(deviceCompareVOMap);
-                    }
+                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap("SW",goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
+                    deviceMap.setDeviceCompareMap(deviceCompareMap);
                 }
                 if ("HW".equals(deviceInfoComponent.getWareType())) {
-                    if (deviceInfoComponent.getSort() != null) {
-                        deviceMap.setHwSort(deviceInfoComponent.getSort());
-                    }
+                    deviceMap.setHwSort(deviceInfoComponent.getSort());
                     deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());
-                    if (goldenInfoComponentDTOMap != null){
-                        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceMap.getHwSort(),componentType,"HW", deviceInfoComponent.getComponentVersion(), goldenInfoComponentDTOMap);
-                        Map<String, DeviceCompareVO> deviceCompareVOMap;
-                        if (deviceMap.getDeviceCompareVOMap() == null){
-                            deviceCompareVOMap = new HashMap<>();
-                        }else {
-                            deviceCompareVOMap = deviceMap.getDeviceCompareVOMap();
-                        }
-                        deviceCompareVOMap.put(deviceInfoComponent.getWareType(),deviceCompareVO);
-                        deviceMap.setDeviceCompareVOMap(deviceCompareVOMap);
-                    }
+                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap("HW",goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
+                    deviceMap.setDeviceCompareMap(deviceCompareMap);
                 }
                 if ("OT".equals(deviceInfoComponent.getWareType())) {
                     deviceMap.setOtherVersion(deviceInfoComponent.getComponentVersion());
@@ -587,7 +565,19 @@ public class DeviceListServiceImpl implements DeviceListService {
         return deviceInfoVo;
     }
 
-
+    private Map<String, DeviceCompareVO> getDeviceCompareMap(String wareType,Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap, DeviceInfoComponent deviceInfoComponent, DeviceInfoComponent deviceMap) {
+        Map<String, DeviceCompareVO> deviceCompareVOMap = new HashMap<>();
+        if (goldenInfoComponentDTOMap != null){
+            DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceInfoComponent.getSort(), deviceInfoComponent.getComponentType(),wareType,deviceInfoComponent.getComponentVersion(), goldenInfoComponentDTOMap);
+            if (deviceMap.getDeviceCompareMap() == null){
+                deviceCompareVOMap = new HashMap<>();
+            }else {
+                deviceCompareVOMap = deviceMap.getDeviceCompareMap();
+            }
+            deviceCompareVOMap.put(deviceInfoComponent.getWareType(),deviceCompareVO);
+        }
+        return deviceCompareVOMap;
+    }
     public List<GoldenInfoComponentDTO> getGoldenInfoComponents(String carlineModelType, String ClusterNameType, String marketType) {
         //虽然都是CLU，但名称相同，映射的字典表不同，这里需要做个转换
         String goldenClusterNameType = tMatrixMapper.selectGoldenClusterNameType(ClusterNameType);
@@ -642,7 +632,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                     }
                     deviceCompareVO.setCompareNum(compareNum);
                     deviceCompareVO.setSort(goldenInfoComponentDTOMap.get(goldenComponentType).getHwSort());
-                    deviceCompareVO.setMinimalHW(goldenInfoComponentDTOMap.get(goldenComponentType).getMinimalHW());
+                    deviceCompareVO.setMinimal(goldenInfoComponentDTOMap.get(goldenComponentType).getMinimalHW());
                     deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());
                     return deviceCompareVO;
                 }
@@ -762,6 +752,9 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     private Map<String, GoldenInfoComponentDTO> buildCompareMap(List<GoldenInfoComponentDTO> goldenInfoComponentDTOS) {
         Map<String, GoldenInfoComponentDTO> componentDTOMap = new HashMap<>();
+        if (StringUtils.isEmpty(goldenInfoComponentDTOS)){
+            return null;
+        }
         for (GoldenInfoComponentDTO goldenInfoComponentDTO : goldenInfoComponentDTOS) {
             String componentType = goldenInfoComponentDTO.getComponentType();
             GoldenInfoComponentDTO tempComponentDTO = null;

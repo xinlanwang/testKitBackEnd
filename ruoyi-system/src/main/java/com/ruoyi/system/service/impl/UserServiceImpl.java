@@ -90,6 +90,7 @@ public class UserServiceImpl implements UserService {
         desktopRegisterParam.setPassword(SecurityUtils.encryptPassword(desktopRegisterParam.getPassword()));
         SysUser user = new SysUser();
         buildRegisterUser(desktopRegisterParam, user);
+        user.setCreateTime(new Date());
         userMapper.insert(user);
         Long[] roleIds = desktopRegisterParam.getRoleIds();
         if (StringUtils.isNotEmpty(roleIds))
@@ -119,7 +120,7 @@ public class UserServiceImpl implements UserService {
             return -1L;
         }
         SysUser user = new SysUser();
-        desktopRegisterParam.setPassword(SecurityUtils.encryptPassword(desktopRegisterParam.getPassword()));
+//        desktopRegisterParam.setPassword(SecurityUtils.encryptPassword(desktopRegisterParam.getPassword()));
         buildRegisterUser(desktopRegisterParam, user);
         user.setUserId(desktopRegisterParam.getUserId());
         userMapper.updateUser(user);
@@ -175,7 +176,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(desktopRegisterParam.getPassword());
         user.setStatus("0");
         user.setLoginIp(desktopRegisterParam.getLoginIp());
-        user.setCreateTime(new Date());
+        user.setUpdateTime(new Date());
     }
 }
 
