@@ -269,7 +269,8 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     private Map<String, String> getbasicInfo(Document docResult, TDTCReportDTO reportDTO, Map<String, String> componentMap) {
         Map<String, String> basicInfo = new HashMap<>();
-        String[] dictTypes = new String[]{"clusterName", "projectType", "platformType", "marketType", "functionGroupType", "variantType", "taskType", "carlineModelType", "goldenCarType", "goldenClusterNameType"};
+        String[] dictTypes = new String[]{"clusterName", "projectType", "platformType", "marketType",
+                "functionGroupType", "variantType", "taskType", "carlineModelType", "goldenCarType", "goldenClusterNameType"};
         Map<String, Map<String, String>> dictMap = getDictMap(dictTypes);
 
         //VIN
@@ -292,7 +293,8 @@ public class DeviceListServiceImpl implements DeviceListService {
             if (isPureNum) {
                 swVersion = "P" + swVersion;
             } else {
-                if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 && chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
+                if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 &&
+                        chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
                     if (chars[1] >= 53) {
                         swVersion ="E3" + chars[1] + chars[2] + chars[3];
                     } else {
@@ -410,7 +412,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                 for (String marketStr : tMatrix.getMarketTypes().split(",")) {
                     if (marketType.equals(marketStr)){
                         basicInfo.put("platformType",tMatrix.getPlatformType());
-                        SysDictData sysDictData = dictDataMapper.selectOne(new QueryWrapper<SysDictData>().eq("dict_type", "platformType").eq("dict_value", tMatrix.getPlatformType()));
+                        SysDictData sysDictData = dictDataMapper.selectOne(new QueryWrapper<SysDictData>()
+                                .eq("dict_type", "platformType").eq("dict_value", tMatrix.getPlatformType()));
                         basicInfo.put("platformName",sysDictData.getDictLabel());
 
                     }

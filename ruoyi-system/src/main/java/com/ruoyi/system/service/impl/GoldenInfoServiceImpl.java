@@ -160,7 +160,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         Map<String,Map<String, List<ImportPartComponentDTO>>> sheetMap = new HashMap<>();
         for (ImportGoldenInfoDTO importGoldenInfoDTO:importGoldenInfoDTOS) {
             List<ImportPartComponentDTO> componentDTOS = importGoldenInfoDTO.getComponentDTOS();
-            if (componentDTOS == null || componentDTOS.size() == 0 || StringUtils.isEmpty(importGoldenInfoDTO.getMarketDetail())|| StringUtils.isEmpty(importGoldenInfoDTO.getSheetName())){
+            if (componentDTOS == null || componentDTOS.size() <= 3. || StringUtils.isEmpty(importGoldenInfoDTO.getMarketDetail())|| StringUtils.isEmpty(importGoldenInfoDTO.getSheetName())){
                 continue;
             }
             if (sheetMap == null || sheetMap.get(importGoldenInfoDTO.getSheetName()) == null){
@@ -181,7 +181,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
             tCarline.setGoldenCarName(goldenCarTypeValue);
             tCarlineMapper.insert(tCarline);
             for (String marketType:regionMap.keySet()){
-                if (regionMap.get(marketType) == null || regionMap.get(marketType).size() == 0){
+                if (regionMap.get(marketType) == null || regionMap.get(marketType).size() == 0 ){
                     continue;
                 }
                 List<ImportPartComponentDTO> importPartComponentDTOS = regionMap.get(marketType);
@@ -211,8 +211,8 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     if (importPartComponentDTO == null) {
                         continue;
                     }
-                    if (StringUtils.isNotEmpty(importPartComponentDTO.getPARTNUMBER()) && StringUtils.isNotEmpty(importPartComponentDTO.getHWVERSION())
-                            && StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION()) && StringUtils.isNotEmpty(importPartComponentDTO.getMINIMALHW())) {
+                    if (StringUtils.isNotEmpty(importPartComponentDTO.getPARTNUMBER()) || StringUtils.isNotEmpty(importPartComponentDTO.getHWVERSION()) || StringUtils.isNotEmpty(importPartComponentDTO.getSOPCARLINE())
+                            || StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION()) || StringUtils.isNotEmpty(importPartComponentDTO.getMINIMALHW())) {
                     TComponentData componentData = new TComponentData();
                     TCarlineComponent deviceInfoComponent = new TCarlineComponent();
                     componentData.setComponentName(importPartComponentDTO.getCOMPONENTS());
@@ -235,18 +235,25 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     deviceInfoComponent.setCarlineInfoUid(carlineInfoUid);
                     deviceInfoComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
 
+                    String wareType = "HW";
+                    componentData.setWareType(wareType);
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getHWVERSION())){
-                        String wareType = "HW";
-                        componentData.setWareType("HW");
                         componentData.setComponentVersion(importPartComponentDTO.getHWVERSION());
-                        insertComponent(deviceInfoComponent, wareType, componentData);
+                    }else {
+                        componentData.setComponentVersion("");
                     }
+                    insertComponent(deviceInfoComponent, wareType, componentData);
+
+                    //SW
+                    wareType = "SW";
+                    componentData.setWareType(wareType);
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getSWVERSION())){
-                        componentData.setWareType("SW");
-                        String wareType = "SW";
                         componentData.setComponentVersion(importPartComponentDTO.getSWVERSION());
-                        insertComponent(deviceInfoComponent, wareType, componentData);
+                    }else {
+                        componentData.setComponentVersion("");
                     }
+                    insertComponent(deviceInfoComponent, wareType, componentData);
+
                     tCarlineComponentMapper.insert(deviceInfoComponent);
                 }
                     }

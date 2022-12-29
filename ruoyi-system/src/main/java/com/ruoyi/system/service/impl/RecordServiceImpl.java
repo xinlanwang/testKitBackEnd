@@ -44,7 +44,7 @@ public class RecordServiceImpl implements RecordService {
         Integer pageSize = 10;
 
         QueryWrapper<TDataLog> queryWrapper = new QueryWrapper<>();
-        queryWrapper.groupBy("oper_time");
+        queryWrapper.select("distinct oper_time");
         queryWrapper.eq("operation_uid",operationUid);
         Page<TDataLog> page = new Page<>(pageNum, pageSize);
         Page<TDataLog> tClusterPage = desktopLogMapper.selectPage(page, queryWrapper);

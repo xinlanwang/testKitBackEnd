@@ -379,6 +379,9 @@ public class DeviceExcelUtil<T> extends ExcelUtil<T>
                     continue;
                 }
                 ImportPartComponentDTO lastGoldenInfo = importPartComponentDTOS.get(i - 1);
+                if (i == 1 && StringUtils.isEmpty(lastGoldenInfo.getCOMPONENTS())){
+                    break;
+                }
                 if (nowGoldenInfo != null && StringUtils.isEmpty(nowGoldenInfo.getCOMPONENTS())){
                     nowGoldenInfo.setCOMPONENTS(lastGoldenInfo.getCOMPONENTS());
                 }
