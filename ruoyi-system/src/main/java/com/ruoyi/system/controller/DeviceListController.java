@@ -81,8 +81,8 @@ public class DeviceListController extends BaseController
     @ApiOperation("查询车型基本信息列表")
 //    @PreAuthorize("@ss.hasPermi('device:devicelist:list')")
     @PostMapping("/compare")
-    public AjaxResult compareComponent(@Validated @RequestBody DeviceCompareParam deviceCompareParam) {
-        return deviceListService.compareComponent(deviceCompareParam);
+    public AjaxResult compareOneComponent(@Validated @RequestBody DeviceCompareParam deviceCompareParam) {
+        return deviceListService.compareOneComponent(deviceCompareParam);
     }
 
     @PostMapping("/save")

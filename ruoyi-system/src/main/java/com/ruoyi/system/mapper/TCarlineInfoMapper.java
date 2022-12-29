@@ -163,5 +163,6 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "and tca.golden_car_name = #{goldenCarType}\n" +
             "and tci.market_type = #{marketType}";
     @Select(selectGoldenCarlineInfoSql)
-    List<GoldenInfoComponentDTO> selectGoldenCarlineInfo(String carlineModelType,  @Param("goldenClusterNameType") String goldenClusterNameType,  @Param("marketType") String marketType,  @Param("goldenCarType") Long goldenCarType);
+    List<GoldenInfoComponentDTO> selectGoldenCarlineInfo(String carlineModelType,  @Param("goldenClusterNameType") String goldenClusterNameType,
+                                                         @Param("marketType") String marketType,  @Param("goldenCarType") Long goldenCarType);
 }

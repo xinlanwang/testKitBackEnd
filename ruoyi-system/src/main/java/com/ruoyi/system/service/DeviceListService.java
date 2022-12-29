@@ -22,7 +22,7 @@ public interface DeviceListService
 
     public List queryDeviceList(DeviceListParam deviceListParam);
 
-    public AjaxResult compareComponent(DeviceCompareParam deviceCompareParam);
+    public AjaxResult compareOneComponent(DeviceCompareParam deviceCompareParam);
 
     public Long insertDeviceInfo(DeviceInfoVo deviceInfoVo);
 

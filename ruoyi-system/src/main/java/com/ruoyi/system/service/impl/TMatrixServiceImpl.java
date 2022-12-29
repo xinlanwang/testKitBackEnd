@@ -384,19 +384,19 @@ public class TMatrixServiceImpl implements ITMatrixService
         }
         List<TMatrix> tMatrixList = tMatrixMapper.selectList(queryWrapper);
         if (StringUtils.isNotEmpty(tMatrixList) && "2".equals(tMatrix.getMatrixType())){
-            return -1;
+//            return -1;
         }
         if (StringUtils.isNotEmpty(tMatrixList) && "1".equals(tMatrix.getMatrixType())){
             for (TMatrix tMatrixPO:tMatrixList){
                 if (StringUtils.isNotEmpty(tMatrixPO.getMatrixType())){
                     for (String str : tMatrixPO.getMarketTypes().split(",")) {
                         if (str.equals(tMatrix.getMatrixType())){
-                            return -1;
+//                            return -1;
                         }
                     }
                 }else {
                     if (StringUtils.isEmpty(tMatrix.getMarketTypes())){
-                        return -1;
+//                        return -1;
                     }
                 }
             }

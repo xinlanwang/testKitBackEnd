@@ -547,15 +547,15 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentVersion()) && StringUtils.isNotEmpty(deviceInfoComponent.getWareType())) {
                 if ("SW".equals(deviceInfoComponent.getWareType())) {
-                    deviceMap.setSwSort(deviceInfoComponent.getSort());
-                    deviceMap.setSwVersion(deviceInfoComponent.getComponentVersion());
-                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap("SW",goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
+                    deviceMap.setSwSort(deviceInfoComponent.getSort());//联调后删除
+                    deviceMap.setSwVersion(deviceInfoComponent.getComponentVersion());//联调后删除
+                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap(goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
                     deviceMap.setDeviceCompareMap(deviceCompareMap);
                 }
                 if ("HW".equals(deviceInfoComponent.getWareType())) {
-                    deviceMap.setHwSort(deviceInfoComponent.getSort());
-                    deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());
-                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap("HW",goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
+                    deviceMap.setHwSort(deviceInfoComponent.getSort());//联调后删除
+                    deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());//联调后删除
+                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap(goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
                     deviceMap.setDeviceCompareMap(deviceCompareMap);
                 }
                 if ("OT".equals(deviceInfoComponent.getWareType())) {
@@ -568,10 +568,10 @@ public class DeviceListServiceImpl implements DeviceListService {
         return deviceInfoVo;
     }
 
-    private Map<String, DeviceCompareVO> getDeviceCompareMap(String wareType,Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap, DeviceInfoComponent deviceInfoComponent, DeviceInfoComponent deviceMap) {
+    private Map<String, DeviceCompareVO> getDeviceCompareMap(Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap, DeviceInfoComponent deviceInfoComponent, DeviceInfoComponent deviceMap) {
         Map<String, DeviceCompareVO> deviceCompareVOMap = new HashMap<>();
         if (goldenInfoComponentDTOMap != null){
-            DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceInfoComponent.getSort(), deviceInfoComponent.getComponentType(),wareType,deviceInfoComponent.getComponentVersion(), goldenInfoComponentDTOMap);
+            DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceInfoComponent,goldenInfoComponentDTOMap);
             if (deviceMap.getDeviceCompareMap() == null){
                 deviceCompareVOMap = new HashMap<>();
             }else {
@@ -596,7 +596,8 @@ public class DeviceListServiceImpl implements DeviceListService {
         //结果：https://sumomoriaty.oss-cn-beijing.aliyuncs.com/zdcar/202212011422541.png
     }
 
-    public AjaxResult compareComponent(DeviceCompareParam deviceCompareParam) {
+    @Override
+    public AjaxResult compareOneComponent(DeviceCompareParam deviceCompareParam) {
         String carlineModelType = deviceCompareParam.getCarlineModelType();
         String clusterName = deviceCompareParam.getClusterName();
         String marketType = deviceCompareParam.getMarketType();
@@ -611,7 +612,12 @@ public class DeviceListServiceImpl implements DeviceListService {
             return AjaxResult.error("GoldenInfo里并没有对应取值");
         }
         Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
-        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(0,componentType, wareType, componentVersion, goldenInfoComponentDTOMap);
+        DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
+        deviceInfoComponent.setComponentVersion(componentVersion);
+        deviceInfoComponent.setComponentType(componentType);
+        deviceInfoComponent.setSort(0);
+        deviceInfoComponent.setWareType(wareType);
+        DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceInfoComponent, goldenInfoComponentDTOMap);
         if (deviceCompareVO != null) {
             return AjaxResult.success(deviceCompareVO);
         }else {
@@ -619,34 +625,37 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
     }
 
-    private DeviceCompareVO getDeviceCompareVO(Integer sort,String componentType, String wareType, String componentVersion, Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap) {
+    private DeviceCompareVO getDeviceCompareVO(DeviceInfoComponent deviceInfoComponent, Map<String, GoldenInfoComponentDTO> goldenInfoComponentDTOMap) {
         for (String goldenComponentType : goldenInfoComponentDTOMap.keySet()) {
             if ("-".equals(goldenComponentType)){
                 continue;
             }
             String cleanStr = cleanStr(goldenComponentType);
-            componentType = new String(cleanStr(componentType));
-            if (componentType.contains(cleanStr) || cleanStr.contains(componentType) || componentType.equals(cleanStr)) {
+            String deviceComponentType = deviceInfoComponent.getComponentType();
+            String deviceComponentVersion = deviceInfoComponent.getComponentVersion();
+            deviceComponentType = new String(cleanStr(deviceComponentType));
+            if ((deviceComponentType.contains(cleanStr) || cleanStr.contains(deviceComponentType) || deviceComponentType.equals(cleanStr)) && StringUtils.isNotEmpty(deviceComponentVersion)) {
                 DeviceCompareVO deviceCompareVO = new DeviceCompareVO();
-                if (StringUtils.isNotEmpty(componentVersion) && "HW".equals(wareType)) {
-                    Integer compareNum = compareHWComponent(sort,componentVersion, goldenInfoComponentDTOMap.get(goldenComponentType));
-                    if (compareNum.equals(0)) {
-                        continue;
-                    }
-                    deviceCompareVO.setCompareNum(compareNum);
-                    deviceCompareVO.setSort(goldenInfoComponentDTOMap.get(goldenComponentType).getHwSort());
+                Integer compareNum = compareComponent(deviceInfoComponent, goldenInfoComponentDTOMap.get(goldenComponentType));
+                if (compareNum.equals(0)) {
+                    continue;
+                }
+                deviceCompareVO.setCompareNum(compareNum);
+                if ("HW".equals(deviceInfoComponent.getWareType())) {
+                    deviceCompareVO.setDeviceSort(deviceInfoComponent.getSort());
+                    deviceCompareVO.setDeviceComponentVersion(deviceInfoComponent.getComponentVersion());
                     deviceCompareVO.setMinimal(goldenInfoComponentDTOMap.get(goldenComponentType).getMinimalHW());
-                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());
+                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());//将删
+                    deviceCompareVO.setGoldenSort(goldenInfoComponentDTOMap.get(goldenComponentType).getHwSort());
+                    deviceCompareVO.setGoldenVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getHwComponentVersion());
                     return deviceCompareVO;
                 }
-                if (StringUtils.isNotEmpty(componentVersion) && "SW".equals(wareType)) {
-                    Integer compareNum = compareSWComponent(sort,componentVersion, goldenInfoComponentDTOMap.get(goldenComponentType));
-                    if (compareNum.equals(0)) {
-                        continue;
-                    }
-                    deviceCompareVO.setSort(goldenInfoComponentDTOMap.get(goldenComponentType).getSwSort());
-                    deviceCompareVO.setCompareNum(compareNum);
+                if ("SW".equals(deviceInfoComponent.getWareType())) {
+                    deviceCompareVO.setDeviceSort(deviceInfoComponent.getSort());
+                    deviceCompareVO.setDeviceComponentVersion(deviceInfoComponent.getComponentVersion());
+                    deviceCompareVO.setGoldenSort(goldenInfoComponentDTOMap.get(goldenComponentType).getSwSort());
                     deviceCompareVO.setCurrentVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getSwComponentVersion());
+                    deviceCompareVO.setGoldenVersion(goldenInfoComponentDTOMap.get(goldenComponentType).getSwComponentVersion());//将删
                     return deviceCompareVO;
                 }
             }
@@ -654,66 +663,47 @@ public class DeviceListServiceImpl implements DeviceListService {
         return null;
     }
 
-
-    private int compareSWComponent(Integer sort,String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
-        String componentVersion = goldenInfoComponentDTO.getSwComponentVersion();
-        if (StringUtils.isEmpty(componentVersion)) {
+    private int compareComponent(DeviceInfoComponent deviceInfoComponent, GoldenInfoComponentDTO goldenInfoComponentDTO) {
+        String goldenComponentVersion;
+        Integer goldenComponentSort;
+        if ("SW".equals(deviceInfoComponent.getWareType())){
+            goldenComponentVersion = goldenInfoComponentDTO.getSwComponentVersion();
+            goldenComponentSort = goldenInfoComponentDTO.getSwSort();
+        }else {
+            goldenComponentVersion = goldenInfoComponentDTO.getHwComponentVersion();
+            goldenComponentSort = goldenInfoComponentDTO.getHwSort();
+        }
+        String minimal = goldenInfoComponentDTO.getMinimalVersion();
+        if (StringUtils.isEmpty(goldenComponentVersion)) {
             return 0;
         }
-        if (componentVersion.contains("/")){//如：H16/17
-            String[] split = componentVersion.split("/");
-            componentVersion = split[split.length - 1];
+        if (goldenComponentVersion.contains("/")){//如：H16/17
+            String[] split = goldenComponentVersion.split("/");
+            goldenComponentVersion = split[split.length - 1];
         }
-        Integer normalVersion = cleanNum(componentVersion, MIN);
-        Integer correnVersion = cleanNum(componentModel, MIN);
-        if (sort == null || sort == 0 || goldenInfoComponentDTO.getSwSort() == null|| sort == goldenInfoComponentDTO.getSwSort()){
-            if (correnVersion >= normalVersion) {
+        if (StringUtils.isNotEmpty(minimal) && minimal.contains("/")){//如：H16/17
+            String[] split = minimal.split("/");
+            minimal = split[0];
+        }
+        Integer minimalVersion = 999999;
+        if (StringUtils.isNotEmpty(minimal)) {
+            minimalVersion = cleanNum(minimal, MIN);
+        }
+        Integer goldenNormalVersionNum = cleanNum(goldenComponentVersion, MIN);
+        Integer deviceVersionNum = cleanNum(deviceInfoComponent.getComponentVersion(), MIN);
+        if (goldenComponentSort == null || goldenComponentSort == 0 || goldenInfoComponentDTO.getSort() == null || goldenComponentSort == goldenInfoComponentDTO.getSort()){
+            if (deviceVersionNum >= goldenNormalVersionNum) {
                 return 3;
-            } else {
-                return 1;
-            }
-        }else if (sort != 0 && sort > goldenInfoComponentDTO.getSwSort()){
-            return 3;
-        }else{
-            return 1;
-        }
-
-    }
-
-    private int compareHWComponent(Integer sort,String componentModel, GoldenInfoComponentDTO goldenInfoComponentDTO) {
-        String componentVersion = goldenInfoComponentDTO.getHwComponentVersion();
-        String minimalHW = goldenInfoComponentDTO.getMinimalHW();
-        if (StringUtils.isEmpty(componentVersion)) {
-            return 0;
-        }
-        if (componentVersion.contains("/")){//如：H16/17
-            String[] split = componentVersion.split("/");
-            componentVersion = split[split.length - 1];
-        }
-        if (minimalHW.contains("/")){//如：H16/17
-            String[] split = minimalHW.split("/");
-            minimalHW = split[0];
-        }
-        Integer minimalVersion = 0;
-        if (StringUtils.isNotEmpty(minimalHW)) {
-            minimalVersion = cleanNum(minimalHW, MIN);
-        }
-        Integer normalVersion = cleanNum(componentVersion, MIN);
-        Integer correnVersion = cleanNum(componentModel, MIN);
-        if (sort == null || sort == 0 || goldenInfoComponentDTO.getHwSort() == null || sort == goldenInfoComponentDTO.getHwSort()){
-            if (correnVersion >= normalVersion) {
-                return 3;
-            } else if (correnVersion >= minimalVersion) {
+            } else if (deviceVersionNum >= minimalVersion) {
                 return 2;
             } else {
                 return 1;
             }
-        }else if (sort != 0 && sort > goldenInfoComponentDTO.getHwSort()){
+        }else if (goldenComponentSort != 0 && goldenComponentSort > goldenInfoComponentDTO.getSort()){
             return 3;
         }else{
             return 1;
         }
-
     }
 
     Integer MIN = -1;
@@ -808,7 +798,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 TCluster tCluster = new TCluster();
                 TCarlineInfo tCarlineInfo = new TCarlineInfo();
                 if (key.equals("Devices")) {//这里的Device其实是Car
-                    tCluster.setDeviceType("2");
+                    tCluster.setDeviceType(DEVICE_TYPE_CAR);
                 } else {
                     tCluster.setDeviceType(DEVICE_TYPE_BENCH);
                 }
@@ -933,7 +923,9 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     private void insertComponent(TCarlineComponent tCarlineComponent, String wareType, TComponentData componentData) {
         tCarlineComponent.setUid(null);
-        TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>().eq("component_type", componentData.getComponentType()).eq("component_name", componentData.getComponentName()).eq("ware_type", componentData.getWareType()).eq("component_version", componentData.getComponentVersion()).eq("part_number", componentData.getPartNumber()));
+        TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
+                .eq("component_type", componentData.getComponentType()).eq("component_name", componentData.getComponentName())
+                .eq("ware_type", componentData.getWareType()).eq("component_version", componentData.getComponentVersion()).eq("part_number", componentData.getPartNumber()));
         if (tComponentData != null) {
             if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)) {
                 tCarlineComponent.setSwVersionUid(tComponentData.getUid());
