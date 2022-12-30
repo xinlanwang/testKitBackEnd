@@ -12,5 +12,6 @@ public class DeviceCompareVO {
     private Integer goldenSort;
     private String goldenVersion;
     private Integer deviceSort;
+    private String variantType;
     private String deviceComponentVersion;
 }
