@@ -957,7 +957,7 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     private void insertComponent(TCarlineComponent tCarlineComponent, String wareType, TComponentData componentData,Map<String,Long> componentBufferMap) {
         insertComponent(tCarlineComponent,wareType,componentData);
-        componentBufferMap.put(componentData.getComponentType(),componentData.getUid());
+        componentBufferMap.put(componentData.getComponentVersion(),componentData.getUid());
     }
 
     private void buildUpdateComponent(DeviceInfoVo deviceInfoVo, Long carlineInfoUid) {
@@ -992,7 +992,6 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
                 tCarlineComponentMapper.insert(tCarlineComponent);
             }
-
         }
     }
 
