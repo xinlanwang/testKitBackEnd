@@ -38,6 +38,7 @@ public class TCarlineComponent extends LocalBaseEntity
     /** 最低配置 */
     @Excel(name = "最低配置")
     private String minimalHw;
+    private String variantType;
 
     private String temporaryVariable;
 

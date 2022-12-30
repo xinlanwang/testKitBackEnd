@@ -20,6 +20,7 @@ public class DeviceCompareParam extends BaseEntity {
         String hwVersion;
         String wareType;
         String partNumber;
+        String variantType;
 
 
 }

@@ -521,48 +521,51 @@ public class DeviceListServiceImpl implements DeviceListService {
             if (StringUtils.isEmpty(componentType)) {
                 continue;
             }
-            DeviceInfoComponent deviceMap;
+            DeviceInfoComponent componentMap;
             if (deviceInfoComponentMap.get(componentType) == null) {
-                deviceMap = new DeviceInfoComponent();
+                componentMap = new DeviceInfoComponent();
             } else {
-                deviceMap = deviceInfoComponentMap.get(componentType);
+                componentMap = deviceInfoComponentMap.get(componentType);
             }
             if (deviceInfoComponent.getCarlineInfoUid() != null) {
-                deviceMap.setCarlineInfoUid(deviceInfoComponent.getCarlineInfoUid());
+                componentMap.setCarlineInfoUid(deviceInfoComponent.getCarlineInfoUid());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentType())) {
-                deviceMap.setComponentType(deviceInfoComponent.getComponentType());
+                componentMap.setComponentType(deviceInfoComponent.getComponentType());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getEcuId())) {
-                deviceMap.setEcuId(deviceInfoComponent.getEcuId());
+                componentMap.setEcuId(deviceInfoComponent.getEcuId());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentInstanceName())){
-                deviceMap.setComponentInstanceName(deviceInfoComponent.getComponentInstanceName());
+                componentMap.setComponentInstanceName(deviceInfoComponent.getComponentInstanceName());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentName())) {
-                deviceMap.setComponentName(deviceInfoComponent.getComponentName());
+                componentMap.setComponentName(deviceInfoComponent.getComponentName());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getPartNumber())) {
-                deviceMap.setPartNumber(deviceInfoComponent.getPartNumber());
+                componentMap.setPartNumber(deviceInfoComponent.getPartNumber());
+            }
+            if (StringUtils.isNotEmpty(deviceInfoComponent.getVariantType())){
+                componentMap.setVariantType(deviceInfoComponent.getVariantType());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentVersion()) && StringUtils.isNotEmpty(deviceInfoComponent.getWareType())) {
                 if ("SW".equals(deviceInfoComponent.getWareType())) {
-                    deviceMap.setSwSort(deviceInfoComponent.getSort());//联调后删除
-                    deviceMap.setSwVersion(deviceInfoComponent.getComponentVersion());//联调后删除
-                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap(goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
-                    deviceMap.setDeviceCompareMap(deviceCompareMap);
+                    componentMap.setSwSort(deviceInfoComponent.getSort());//联调后删除
+                    componentMap.setSwVersion(deviceInfoComponent.getComponentVersion());//联调后删除
+                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap(goldenInfoComponentDTOMap, deviceInfoComponent, componentMap);
+                    componentMap.setDeviceCompareMap(deviceCompareMap);
                 }
                 if ("HW".equals(deviceInfoComponent.getWareType())) {
-                    deviceMap.setHwSort(deviceInfoComponent.getSort());//联调后删除
-                    deviceMap.setHwVersion(deviceInfoComponent.getComponentVersion());//联调后删除
-                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap(goldenInfoComponentDTOMap, deviceInfoComponent, deviceMap);
-                    deviceMap.setDeviceCompareMap(deviceCompareMap);
+                    componentMap.setHwSort(deviceInfoComponent.getSort());//联调后删除
+                    componentMap.setHwVersion(deviceInfoComponent.getComponentVersion());//联调后删除
+                    Map<String, DeviceCompareVO> deviceCompareMap = getDeviceCompareMap(goldenInfoComponentDTOMap, deviceInfoComponent, componentMap);
+                    componentMap.setDeviceCompareMap(deviceCompareMap);
                 }
                 if ("OT".equals(deviceInfoComponent.getWareType())) {
-                    deviceMap.setOtherVersion(deviceInfoComponent.getComponentVersion());
+                    componentMap.setOtherVersion(deviceInfoComponent.getComponentVersion());
                 }
             }
-            deviceInfoComponentMap.put(componentType, deviceMap);
+            deviceInfoComponentMap.put(componentType, componentMap);
         }
         deviceInfoVo.setDeviceInfoComponentMap(deviceInfoComponentMap);
         return deviceInfoVo;
@@ -581,6 +584,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
         return deviceCompareVOMap;
     }
+
     public List<GoldenInfoComponentDTO> getGoldenInfoComponents(String carlineModelType, String ClusterNameType, String marketType) {
         //虽然都是CLU，但名称相同，映射的字典表不同，这里需要做个转换
         String goldenClusterNameType = tMatrixMapper.selectGoldenClusterNameType(ClusterNameType);
@@ -632,9 +636,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                 continue;
             }
             String cleanStr = cleanStr(goldenComponentType);
-            String deviceComponentType = deviceInfoComponent.getComponentType();
+            String deviceComponentType = cleanStr(deviceInfoComponent.getComponentType());
             String deviceComponentVersion = deviceInfoComponent.getComponentVersion();
-            deviceComponentType = new String(cleanStr(deviceComponentType));
             if ((deviceComponentType.contains(cleanStr) || cleanStr.contains(deviceComponentType) || deviceComponentType.equals(cleanStr)) && StringUtils.isNotEmpty(deviceComponentVersion)) {
                 DeviceCompareVO deviceCompareVO = new DeviceCompareVO();
                 Integer compareNum = compareComponent(deviceInfoComponent, goldenInfoComponentDTOMap.get(goldenComponentType));
@@ -674,28 +677,20 @@ public class DeviceListServiceImpl implements DeviceListService {
             goldenComponentVersion = goldenInfoComponentDTO.getHwComponentVersion();
             goldenComponentSort = goldenInfoComponentDTO.getHwSort();
         }
-        String minimal = goldenInfoComponentDTO.getMinimalVersion();
         if (StringUtils.isEmpty(goldenComponentVersion)) {
             return 0;
         }
-        if (goldenComponentVersion.contains("/")){//如：H16/17
-            String[] split = goldenComponentVersion.split("/");
-            goldenComponentVersion = split[split.length - 1];
-        }
-        if (StringUtils.isNotEmpty(minimal) && minimal.contains("/")){//如：H16/17
-            String[] split = minimal.split("/");
-            minimal = split[0];
-        }
-        Integer minimalVersion = 999999;
+        String minimal = goldenInfoComponentDTO.getMinimalVersion();
+        Integer minimalMinNum = 999999;
         if (StringUtils.isNotEmpty(minimal)) {
-            minimalVersion = cleanNum(minimal, MIN);
+            minimalMinNum = cleanNum(minimal, MIN);
         }
-        Integer goldenNormalVersionNum = cleanNum(goldenComponentVersion, MIN);
+        Integer goldenNormalVersionMinNum = cleanNum(goldenComponentVersion, MIN);
         Integer deviceVersionNum = cleanNum(deviceInfoComponent.getComponentVersion(), MIN);
         if (goldenComponentSort == null || goldenComponentSort == 0 || goldenInfoComponentDTO.getSort() == null || goldenComponentSort == goldenInfoComponentDTO.getSort()){
-            if (deviceVersionNum >= goldenNormalVersionNum) {
+            if (deviceVersionNum >= goldenNormalVersionMinNum) {
                 return 3;
-            } else if (deviceVersionNum >= minimalVersion) {
+            } else if (deviceVersionNum >= minimalMinNum) {
                 return 2;
             } else {
                 return 1;
@@ -972,6 +967,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentData.setSort(0);
                 TCarlineComponent tCarlineComponent = new TCarlineComponent();
                 tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
+                tCarlineComponent.setVariantType(deviceInfoVo.getVariantType());
                 if (StringUtils.isNotEmpty(deviceInfoComponent.getHwVersion())) {
                     String wareType = "HW";
                     componentData.setWareType("HW");

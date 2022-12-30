@@ -11,6 +11,7 @@ import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportGoldenInfoDTO;
 import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
 import com.ruoyi.system.domain.enums.ComponentTypeMapping;
+import com.ruoyi.system.domain.enums.VariantTypeMapping;
 import com.ruoyi.system.domain.po.*;
 import com.ruoyi.system.domain.vo.*;
 import com.ruoyi.system.mapper.*;
@@ -234,6 +235,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     //TCarlineComponent
                     deviceInfoComponent.setCarlineInfoUid(carlineInfoUid);
                     deviceInfoComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
+                    deviceInfoComponent.setVariantType(getVariantType(importPartComponentDTO.getCOMPONENTS(),dictMap));
 
                     String wareType = "HW";
                     componentData.setWareType(wareType);
@@ -267,6 +269,16 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         for (ComponentTypeMapping typeMapping : ComponentTypeMapping.values()) {
             if (componentName.toUpperCase().contains(typeMapping.getCode()) || componentName.equals(typeMapping.getCode())){
                 return typeMapping.getName();
+            }
+        }
+        return "-";
+    }
+
+    private String getVariantType(String componentName,Map dictMap) {
+        for (VariantTypeMapping typeMapping : VariantTypeMapping.values()) {
+            if (componentName.toUpperCase().contains(typeMapping.getCode()) || componentName.equals(typeMapping.getCode())){
+                String variantTypeValue = getUnsureValue("variantType",typeMapping.getName(), dictMap);
+                return variantTypeValue;
             }
         }
         return "-";

@@ -27,6 +27,7 @@ public class GoldenInfoComponentDTO {
     private String componentType;
 
     private String componentName;
+    private String variantType;
 
     private String wareType;
     private Integer sort;

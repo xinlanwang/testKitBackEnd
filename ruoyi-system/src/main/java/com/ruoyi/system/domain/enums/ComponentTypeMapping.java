@@ -11,8 +11,8 @@ public enum ComponentTypeMapping {
     ICAS1("GATEWAY", "Gateway"),
     CONBOX("CONBOX", "Conbox/OCU"),
     OCU("OCU", "Conbox/OCU"),
-    BCM1("BCM1", "BCM"),
-    BCM2("BCM2", "BCM"),
+    BCM1("BCM1", "BCM1"),
+    BCM2("BCM2", "BCM2"),
     BCM("BCM", "BCM"),
     ZDC("ZDC", "ZDC"),
     Asterix("Asterix", "Asterix");
