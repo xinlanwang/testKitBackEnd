@@ -604,7 +604,8 @@ public class DeviceListServiceImpl implements DeviceListService {
         String componentType = deviceCompareParam.getComponentType();
         String wareType = deviceCompareParam.getWareType();
         String componentVersion = deviceCompareParam.getComponentVersion();
-        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) || StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(wareType) || StringUtils.isNotEmpty(componentVersion))) {
+        if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) ||
+                StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(wareType) || StringUtils.isNotEmpty(componentVersion))) {
             return AjaxResult.error("参数不得为空");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
@@ -855,37 +856,40 @@ public class DeviceListServiceImpl implements DeviceListService {
                 tCarlineInfoMapper.insert(tCarlineInfo);
                 Long carlineInfoUid = tCarlineInfo.getCarlineInfoUid();
 
-                String componentType = "MU";
-                String hwVersion = importDeviceDTO.getMUHW();
-                String swVersion = importDeviceDTO.getMUSW();
-                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
 
-                componentType = new String("ASTERIX");
-                hwVersion = new String(importDeviceDTO.getAsterixHW());
-                swVersion = new String(importDeviceDTO.getAsterixSW());
-                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
-
-                componentType = new String("KOMBI");
-                hwVersion = new String(importDeviceDTO.getKombiHW());
-                swVersion = new String(importDeviceDTO.getKombiSW());
-                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
-
-                componentType = new String("GATEWAY");
-                hwVersion = new String(importDeviceDTO.getGatewayHW());
-                swVersion = new String(importDeviceDTO.getGatewaySW());
-                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
-
-                componentType = new String("CONBOX/OCU");
-                hwVersion = new String(importDeviceDTO.getConboxOCUHW());
-                swVersion = new String(importDeviceDTO.getConboxOCUSW());
-                buildImportComponent(carlineInfoUid, componentType, hwVersion, swVersion);
+                String[] componentTypes = {"MU","ASTERIX","KOMBI","GATEWAY","CONBOXOCU"};
+                for (String componentType:componentTypes){
+                    String hwProperty = componentType + "HW";
+                    String swProperty = componentType + "SW";
+                    if ("CONBOXOCU".equals(componentType)){
+                        componentType = "Conbox/OCU";
+                    }
+                    insertImportComponent(ReflectUtils.invokeGetter(importDeviceDTO,hwProperty),ReflectUtils.invokeGetter(importDeviceDTO,swProperty), carlineInfoUid, componentType);
+                }
             }
         }
         return "SUCCESS!";
     }
 
-    private void buildImportComponent(Long carlineInfoUid, String componentType, String hwVersion, String swVersion) {
-        if (StringUtils.isEmpty(hwVersion) && StringUtils.isEmpty(swVersion)) {
+    private void insertImportComponent(String hwVersion,String swVersion,Long carlineInfoUid, String componentType) {
+        Map hwComponentBuffer = new HashMap<String,Long>();
+        Map swComponentBuffer = new HashMap<String,Long>();
+        List<TComponentData> componentBufferList = tComponentDataMapper.selectList(new QueryWrapper<TComponentData>()
+                .eq("component_type", componentType));
+        for (TComponentData componentData:componentBufferList){
+            if ("HW".equals(componentData.getWareType())){
+                hwComponentBuffer.put(componentData.getComponentVersion(),componentData.getUid());
+            }
+            if ("SW".equals(componentData.getWareType())){
+                swComponentBuffer.put(componentData.getComponentVersion(),componentData.getUid());
+            }
+        }
+        buildImportComponent(carlineInfoUid, componentType, "HW", hwVersion,hwComponentBuffer);
+        buildImportComponent(carlineInfoUid, componentType, "SW", swVersion,hwComponentBuffer);
+    }
+
+    private void buildImportComponent(Long carlineInfoUid, String componentType, String wareType, String componentVersion,Map<String,Long> componentBufferMap) {
+        if (StringUtils.isEmpty(componentVersion) && StringUtils.isEmpty(wareType)) {
             return;
         }
         TComponentData componentData = new TComponentData();
@@ -896,16 +900,19 @@ public class DeviceListServiceImpl implements DeviceListService {
         componentData.setSort(0);
         TCarlineComponent tCarlineComponent = new TCarlineComponent();
         tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
-        if (StringUtils.isNotEmpty(hwVersion)) {
-            String wareType = "HW";
-            componentData.setWareType("HW");
-            componentData.setComponentVersion(hwVersion);
-            insertComponent(tCarlineComponent, wareType, componentData);
-        }
-        if (StringUtils.isNotEmpty(swVersion)) {
-            componentData.setWareType("SW");
-            String wareType = "SW";
-            componentData.setComponentVersion(swVersion);
+        componentData.setWareType(wareType);
+        componentData.setComponentVersion(componentVersion);
+        if (componentBufferMap.containsKey(componentVersion)){
+            if ("SW".equals(wareType)) {
+                tCarlineComponent.setSwVersionUid(componentBufferMap.get(componentVersion));
+            }
+            if ("HW".equals(wareType)) {
+                tCarlineComponent.setHwVersionUid(componentData.getUid());
+            }
+            if ("OT".equals(wareType)) {
+                tCarlineComponent.setOtherVersionUid(componentData.getUid());
+            }
+        }else {
             insertComponent(tCarlineComponent, wareType, componentData);
         }
         tCarlineComponentMapper.insert(tCarlineComponent);
@@ -926,24 +933,27 @@ public class DeviceListServiceImpl implements DeviceListService {
         TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
                 .eq("component_type", componentData.getComponentType()).eq("component_name", componentData.getComponentName())
                 .eq("ware_type", componentData.getWareType()).eq("component_version", componentData.getComponentVersion()).eq("part_number", componentData.getPartNumber()));
+        if (StringUtils.isEmpty(componentData.getWareType())){
+            return;
+        }
         if (tComponentData != null) {
-            if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)) {
+            if ( "SW".equals(wareType)) {
                 tCarlineComponent.setSwVersionUid(tComponentData.getUid());
-            } else if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)) {
+            } else if ("HW".equals(wareType)) {
                 tCarlineComponent.setHwVersionUid(tComponentData.getUid());
-            }else if (StringUtils.isNotEmpty(wareType) && "OT".equals(wareType)) {
+            }else if ("OT".equals(wareType)) {
                 tCarlineComponent.setOtherVersionUid(tComponentData.getUid());
             }
         } else {
             componentData.setUid(null);
             tComponentDataMapper.insert(componentData);
-            if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)) {
+            if ("SW".equals(wareType)) {
                 tCarlineComponent.setSwVersionUid(componentData.getUid());
             }
-            if (StringUtils.isNotEmpty(wareType) && "HW".equals(wareType)) {
+            if ("HW".equals(wareType)) {
                 tCarlineComponent.setHwVersionUid(componentData.getUid());
             }
-            if (StringUtils.isNotEmpty(wareType) && "OT".equals(wareType)) {
+            if ("OT".equals(wareType)) {
                 tCarlineComponent.setOtherVersionUid(componentData.getUid());
             }
         }

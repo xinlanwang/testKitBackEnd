@@ -34,21 +34,21 @@ public class ImportDeviceDTO {
     @Excel(name = "MU HW", type = Excel.Type.IMPORT)
     private String MUHW;
     @Excel(name = "Asterix SW", type = Excel.Type.IMPORT)
-    private String AsterixSW;
+    private String ASTERIXSW;
     @Excel(name = "Asterix HW", type = Excel.Type.IMPORT)
-    private String AsterixHW;
+    private String ASTERIXHW;
     @Excel(name = "Kombi SW", type = Excel.Type.IMPORT)
-    private String KombiSW;
+    private String KOMBISW;
     @Excel(name = "Kombi HW", type = Excel.Type.IMPORT)
-    private String KombiHW;
+    private String KOMBIHW;
     @Excel(name = "GatewayHW", type = Excel.Type.IMPORT)
-    private String GatewayHW;
+    private String GATEWAYHW;
     @Excel(name = "GatewaySW", type = Excel.Type.IMPORT)
-    private String GatewaySW;
+    private String GATEWAYSW;
     @Excel(name = "Conbox/OCUSW", type = Excel.Type.IMPORT)
-    private String ConboxOCUSW;
+    private String CONBOXOCUSW;
     @Excel(name = "Conbox/OCU HW", type = Excel.Type.IMPORT)
-    private String ConboxOCUHW;
+    private String CONBOXOCUHW;
     @Excel(name = "DB", type = Excel.Type.IMPORT)
     private String DB;
     @Excel(name = "Last Updated", type = Excel.Type.IMPORT)
