@@ -884,13 +884,20 @@ public class DeviceListServiceImpl implements DeviceListService {
                 swComponentBuffer.put(componentData.getComponentVersion(),componentData.getUid());
             }
         }
-        buildImportComponent(carlineInfoUid, componentType, "HW", hwVersion,hwComponentBuffer);
-        buildImportComponent(carlineInfoUid, componentType, "SW", swVersion,hwComponentBuffer);
+        Long hwUid = buildImportComponent(componentType, "HW", hwVersion, hwComponentBuffer);
+        Long swUid = buildImportComponent(componentType, "SW", swVersion, swComponentBuffer);
+        TCarlineComponent tCarlineComponent = new TCarlineComponent();
+        tCarlineComponent.setSwVersionUid(swUid);
+        tCarlineComponent.setHwVersionUid(hwUid);
+        tCarlineComponent.setCreateTime(new Date());
+        tCarlineComponent.setUpdateTime(new Date());
+        tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
+        tCarlineComponentMapper.insert(tCarlineComponent);
     }
 
-    private void buildImportComponent(Long carlineInfoUid, String componentType, String wareType, String componentVersion,Map<String,Long> componentBufferMap) {
+    private Long buildImportComponent(String componentType, String wareType, String componentVersion,Map<String,Long> componentBufferMap) {
         if (StringUtils.isEmpty(componentVersion) && StringUtils.isEmpty(wareType)) {
-            return;
+            return null;
         }
         TComponentData componentData = new TComponentData();
         componentData.setComponentType(componentType);
@@ -898,24 +905,14 @@ public class DeviceListServiceImpl implements DeviceListService {
         componentData.setIsAvaliabel(1);
         componentData.setPartNumber(null);
         componentData.setSort(0);
-        TCarlineComponent tCarlineComponent = new TCarlineComponent();
-        tCarlineComponent.setCarlineInfoUid(carlineInfoUid);
         componentData.setWareType(wareType);
         componentData.setComponentVersion(componentVersion);
         if (componentBufferMap.containsKey(componentVersion)){
-            if ("SW".equals(wareType)) {
-                tCarlineComponent.setSwVersionUid(componentBufferMap.get(componentVersion));
-            }
-            if ("HW".equals(wareType)) {
-                tCarlineComponent.setHwVersionUid(componentData.getUid());
-            }
-            if ("OT".equals(wareType)) {
-                tCarlineComponent.setOtherVersionUid(componentData.getUid());
-            }
+            return componentBufferMap.get(componentVersion);
         }else {
-            insertComponent(tCarlineComponent, wareType, componentData);
+            insertComponent(new TCarlineComponent(), wareType, componentData,componentBufferMap);
+            return componentData.getUid();
         }
-        tCarlineComponentMapper.insert(tCarlineComponent);
     }
 
     private String getComponentType(String componentName) {
@@ -927,8 +924,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         return "-";
     }
 
-
-    private void insertComponent(TCarlineComponent tCarlineComponent, String wareType, TComponentData componentData) {
+    private void insertComponent(TCarlineComponent tCarlineComponent, String wareType, TComponentData componentData){
         tCarlineComponent.setUid(null);
         TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
                 .eq("component_type", componentData.getComponentType()).eq("component_name", componentData.getComponentName())
@@ -957,7 +953,11 @@ public class DeviceListServiceImpl implements DeviceListService {
                 tCarlineComponent.setOtherVersionUid(componentData.getUid());
             }
         }
+    }
 
+    private void insertComponent(TCarlineComponent tCarlineComponent, String wareType, TComponentData componentData,Map<String,Long> componentBufferMap) {
+        insertComponent(tCarlineComponent,wareType,componentData);
+        componentBufferMap.put(componentData.getComponentType(),componentData.getUid());
     }
 
     private void buildUpdateComponent(DeviceInfoVo deviceInfoVo, Long carlineInfoUid) {
