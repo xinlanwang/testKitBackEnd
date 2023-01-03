@@ -133,6 +133,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                 GoldenInfoComponentVO newComponent = partTagComponents.get(goldenInfoComponent.getPartNumber());
                 //放置
                 String componentType = goldenInfoComponent.getComponentType();
+                if (StringUtils.isEmpty(componentType)){
+                    continue;
+                }
                 if (StringUtils.isNotEmpty(componentMap.get(componentType))) {
                     componentMap.get(componentType).add(newComponent);
                 } else {

@@ -72,12 +72,12 @@ public class GoldenInfoController extends BaseController
     @ApiOperation("获取车型基本数据详细信息")
 //    @ApiImplicitParam(name = "carlineId",value = "车型ID",required = true,dataType = "String",paramType = "path",dataTypeClass = String.class)
     @GetMapping("/Info")
-    public R<List<GoldenInfoVO>> getInfo(@RequestParam("clusterName") String clusterName,@RequestParam("carlineModelType") String carlineModelType) {
+    public AjaxResult getInfo(@RequestParam("clusterName") String clusterName,@RequestParam("carlineModelType") String carlineModelType) {
         List<GoldenInfoVO> goldenInfoVOS = goldenInfoService.queryClusterInfo(clusterName,carlineModelType);
         if (goldenInfoVOS!=null){
-            return R.ok(goldenInfoVOS);
+            return AjaxResult.success(goldenInfoVOS);
         }else {
-            return R.fail("该车型不存在");
+            return AjaxResult.error("该车型不存在");
         }
     }
 
