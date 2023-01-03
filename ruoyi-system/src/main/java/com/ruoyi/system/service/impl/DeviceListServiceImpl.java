@@ -286,14 +286,15 @@ public class DeviceListServiceImpl implements DeviceListService {
             char[] chars = swVersion.toUpperCase().toCharArray();
             Boolean isPureNum = true;
             for (int j = 0; j < chars.length; j++) {
-                if (chars[j] < 48 && chars[j] > 57) {
+                if (chars[j] <= 90 && chars[j] >= 65) {
                     isPureNum = false;
+                    break;
                 }
             }
             if (isPureNum) {
                 swVersion = "P" + swVersion;
             } else {
-                if (chars.length == 4 && "Z".equals(chars[0]) && chars[1] >= 48 &&
+                if (chars.length == 4 && chars[0] == 90 && chars[1] >= 48 &&
                         chars[1] <= 57 && chars[2] >= 48 && chars[2] <= 57 && chars[3] >= 48 && chars[3] <= 57) {
                     if (chars[1] >= 53) {
                         swVersion ="E3" + chars[1] + chars[2] + chars[3];
@@ -415,7 +416,6 @@ public class DeviceListServiceImpl implements DeviceListService {
                         SysDictData sysDictData = dictDataMapper.selectOne(new QueryWrapper<SysDictData>()
                                 .eq("dict_type", "platformType").eq("dict_value", tMatrix.getPlatformType()));
                         basicInfo.put("platformName",sysDictData.getDictLabel());
-
                     }
                     break;
                 }
