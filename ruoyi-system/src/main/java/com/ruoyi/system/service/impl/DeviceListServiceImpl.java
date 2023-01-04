@@ -1054,7 +1054,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (dictLabelMap == null) {
             dictLabelMap = new HashMap<String, String>();
         }
-        if (!"carlineModelType".equals(dictTypeName) || !"goldenCarType".equals(dictTypeName)){
+        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName))){
             dictLabel = StringUtils.getCleanStr(dictLabel);
         }else {
             dictLabel = dictLabel.toUpperCase();
