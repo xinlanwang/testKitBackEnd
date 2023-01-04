@@ -31,6 +31,7 @@ public class TestKitConstants
     /**
      * BasicType
      */
+    public static final String BASIC_TYPE_NORMAL = "1";
     public static final String BASIC_TYPE_WEB_DEVICE = "1";
     public static final String BASIC_TYPE_DESKTOP_DEVICE = "2";
 

@@ -3,6 +3,7 @@ import java.time.temporal.Temporal;
 import java.util.Date;
 import java.util.List;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.domain.entity.SysDictData;
@@ -21,9 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
+import static cn.hutool.core.text.StrPool.C_SPACE;
 import static com.ruoyi.common.constant.TestKitConstants.*;
 
 /**
@@ -59,34 +62,36 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
 
         //平台列表装配
         List<GoldenListVo> goldenListVos = new ArrayList<>();
-        if (StringUtils.isNotEmpty(tClusterPage)){
-            for (TCluster tCluster : tClusterPage) {
-                GoldenListVo goldenListVo = new GoldenListVo();
-                goldenListVo.setClusterName(tCluster.getClusterName());
-                //platformList start
-                Map<String,GoldenListPlatfromVO> plantForm = new HashMap<>();
-                for (GoldenListPlatfromVO goldenListPlatfromVO : tCarlineInfoMapper.queryGoldenInfoList(tCluster.getClusterName())) {
-                    goldenListVo.setClusterUid(goldenListPlatfromVO.getClusterUid());//这里的ClusterId已经失去当时语义失效，感觉没什么实际意义，但避免出错还是放着
-                    Integer marketType = goldenListPlatfromVO.getMarketType();
-                    String carlineModelType = goldenListPlatfromVO.getCarlineModelType();
-                    LinkedHashSet<Integer> marketTypes = null;
-                    if (plantForm.get(carlineModelType) != null){
-                        goldenListPlatfromVO = plantForm.get(carlineModelType);
-                        marketTypes = goldenListPlatfromVO.getMarketTypes();
-                    }else {
-                        marketTypes = new LinkedHashSet<Integer>();
-                    }
-                    marketTypes.add(marketType);
-                    goldenListPlatfromVO.setMarketTypes(marketTypes);
-                    plantForm.put(carlineModelType,goldenListPlatfromVO);
-                }
-                goldenListVo.setPlatfromList(plantForm);
-                //platformList end
-                goldenListVos.add(goldenListVo);
-            }
+        if (CollectionUtils.isEmpty(tClusterPage)){
+            result.put("total",0);
+            result.put("goldenListVos",goldenListVos);
+            return result;
         }
 
-
+        for (TCluster tCluster : tClusterPage) {
+            GoldenListVo goldenListVo = new GoldenListVo();
+            goldenListVo.setClusterName(tCluster.getClusterName());
+            //platformList start
+            Map<String,GoldenListPlatfromVO> plantForm = new HashMap<>();
+            for (GoldenListPlatfromVO goldenListPlatfromVO : tCarlineInfoMapper.queryGoldenInfoList(tCluster.getClusterName())) {
+                goldenListVo.setClusterUid(goldenListPlatfromVO.getClusterUid());//这里的ClusterId已经失去当时语义失效，感觉没什么实际意义，但避免出错还是放着
+                Integer marketType = goldenListPlatfromVO.getMarketType();
+                String carlineModelType = goldenListPlatfromVO.getCarlineModelType();
+                LinkedHashSet<Integer> marketTypes = null;
+                if (plantForm.get(carlineModelType) != null){
+                    goldenListPlatfromVO = plantForm.get(carlineModelType);
+                    marketTypes = goldenListPlatfromVO.getMarketTypes();
+                }else {
+                    marketTypes = new LinkedHashSet<Integer>();
+                }
+                marketTypes.add(marketType);
+                goldenListPlatfromVO.setMarketTypes(marketTypes);
+                plantForm.put(carlineModelType,goldenListPlatfromVO);
+            }
+            goldenListVo.setPlatfromList(plantForm);
+            //platformList end
+            goldenListVos.add(goldenListVo);
+        }
 
         //页码装配
         result.put("total",tClusterMapper.selectList(new QueryWrapper<TCluster>().select("distinct cluster_name").eq("device_type",DEVICE_TYPE_GOLDENCAR)).size());
@@ -121,7 +126,12 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     componentVO.setSwComponentVersion(goldenInfoComponent.getComponentVersion());
                 }
                 componentVO.setComponentType(goldenInfoComponent.getComponentType());
-                componentVO.setPartNumber(goldenInfoComponent.getPartNumber());
+                String partnumber = goldenInfoComponent.getPartNumber();
+                if (StringUtils.isNotEmpty(partnumber)){
+//                    partnumber.replaceAll("\\u00A0+", "");
+                    partnumber = StrUtil.removeAll(partnumber, C_SPACE);
+                }
+                componentVO.setPartNumber(partnumber);
                 componentVO.setClusterName(goldenInfoComponent.getTemporaryVariable());
                 componentVO.setMinimalHW(goldenInfoComponent.getMinimalHW());
                 partTagComponents.put(goldenInfoComponent.getPartNumber(), componentVO);
@@ -192,9 +202,10 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                 String marketTypeValue = getUnsureValue("marketType",marketType, dictMap);
                 TCluster tCluster = new TCluster();
                 TCarlineInfo tCarlineInfo = new TCarlineInfo();
-                tCluster.setDeviceType("3");
+                tCluster.setDeviceType(DEVICE_TYPE_GOLDENCAR);
                 tCluster.setClusterName(clusterNameValue);
                 tCluster.setCreateTime(new Date());
+                tCluster.setUpdateTime(new Date());
                 tCarlineInfo.setMarketType(marketTypeValue);
                 tCluster.setCarlineUid(tCarline.getUid());
                 tClusterMapper.insert(tCluster);
@@ -208,7 +219,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     tCarlineInfo.setResp(notesComments);
                 }
                 tCarlineInfo.setClusterUid(tCluster.getUid());
-                tCarlineInfo.setBasicType("0");
+                tCarlineInfo.setBasicType(BASIC_TYPE_NORMAL);
+                tCarlineInfo.setCreateTime(new Date());
+                tCarlineInfo.setUpdateTime(new Date());
                 tCarlineInfoMapper.insert(tCarlineInfo);
                 Long carlineInfoUid = tCarlineInfo.getCarlineInfoUid();
                 for (ImportPartComponentDTO importPartComponentDTO:importPartComponentDTOS) {
@@ -221,7 +234,12 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     TCarlineComponent deviceInfoComponent = new TCarlineComponent();
                     componentData.setComponentName(importPartComponentDTO.getCOMPONENTS());
                     componentData.setComponentType(getComponentType(importPartComponentDTO.getCOMPONENTS()));
-                    componentData.setPartNumber(importPartComponentDTO.getPARTNUMBER());
+                    String partnumber = importPartComponentDTO.getPARTNUMBER();
+                    if (StringUtils.isNotEmpty(partnumber)){
+//                        partnumber.replaceAll("\\u00A0+", "");
+                        partnumber = StrUtil.removeAll(partnumber, C_SPACE);
+                    }
+                    componentData.setPartNumber(partnumber);
                     deviceInfoComponent.setMinimalHw(importPartComponentDTO.getMINIMALHW());
                     String temporaryVariable = null;
                     if (StringUtils.isNotEmpty(importPartComponentDTO.getSOPCARLINE())) {

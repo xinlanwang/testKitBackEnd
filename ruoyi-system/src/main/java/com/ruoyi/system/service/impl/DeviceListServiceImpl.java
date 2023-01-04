@@ -43,6 +43,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static cn.hutool.core.text.StrPool.C_SPACE;
 import static com.github.pagehelper.page.PageMethod.offsetPage;
 import static com.ruoyi.common.constant.TestKitConstants.*;
 import static com.ruoyi.common.utils.PageUtils.startPage;
@@ -542,9 +543,12 @@ public class DeviceListServiceImpl implements DeviceListService {
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentName())) {
                 componentMap.setComponentName(deviceInfoComponent.getComponentName());
             }
-            if (StringUtils.isNotEmpty(deviceInfoComponent.getPartNumber())) {
-                componentMap.setPartNumber(deviceInfoComponent.getPartNumber());
+            String partnumber = deviceInfoComponent.getPartNumber();
+            if (StringUtils.isNotEmpty(partnumber)){
+//                partnumber.replaceAll("\\u00A0+", "");
+                partnumber = StrUtil.removeAll(partnumber, C_SPACE);
             }
+            componentMap.setPartNumber(partnumber);
             if (StringUtils.isNotEmpty(deviceInfoComponent.getVariantType())){
                 componentMap.setVariantType(deviceInfoComponent.getVariantType());
             }
@@ -923,7 +927,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         componentData.setComponentType(componentType);
         componentData.setComponentName(componentType);
         componentData.setIsAvaliabel(1);
-        componentData.setPartNumber(null);
+        componentData.setPartNumber(null);//导入不存在partNumber
         componentData.setSort(0);
         componentData.setWareType(wareType);
         componentData.setComponentVersion(componentVersion);
@@ -980,6 +984,16 @@ public class DeviceListServiceImpl implements DeviceListService {
         componentBufferMap.put(componentData.getComponentVersion(),componentData.getUid());
     }
 
+    @Test
+    public void test333(){
+        String partnumber = "wjii kdpowkp kdowpkpo ";
+        if (StringUtils.isNotEmpty(partnumber)){
+//            partnumber = partnumber.replaceAll("\\u00A0+", "");
+            partnumber = StrUtil.removeAll(partnumber, C_SPACE);
+        }
+        System.out.println(partnumber);
+    }
+
     private void buildUpdateComponent(DeviceInfoVo deviceInfoVo, Long carlineInfoUid) {
         if (null != deviceInfoVo.getDeviceInfoComponents() && deviceInfoVo.getDeviceInfoComponents().size() > 0) {
             for (DeviceInfoComponent deviceInfoComponent : deviceInfoVo.getDeviceInfoComponents()) {
@@ -988,7 +1002,12 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentData.setComponentName(deviceInfoComponent.getComponentName());
                 componentData.setIsAvaliabel(1);
                 componentData.setComponentInstanceName(deviceInfoComponent.getComponentInstanceName());
-                componentData.setPartNumber(deviceInfoComponent.getPartNumber());
+                String partnumber = deviceInfoComponent.getPartNumber();
+                if (StringUtils.isNotEmpty(partnumber)){
+//                    partnumber.replaceAll("\\u00A0+", "");
+                    partnumber = StrUtil.removeAll(partnumber, C_SPACE);
+                }
+                deviceInfoComponent.setPartNumber(partnumber);
                 componentData.setSort(0);
                 TCarlineComponent tCarlineComponent = new TCarlineComponent();
                 tCarlineComponent.setCarlineInfoUid(carlineInfoUid);

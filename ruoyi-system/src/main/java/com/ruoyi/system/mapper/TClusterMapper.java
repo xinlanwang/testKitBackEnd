@@ -72,7 +72,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
      */
     String queryGoldenInfoListSql = "select distinct cluster_name as clusterName\n" +
             "from t_cluster\n" +
-            "where uid in (select uid from t_cluster where device_type = '3' order by create_time desc)\n" ;
+            "where uid in (select uid from t_cluster where device_type = '3' order by create_time desc) \n" ;
     @Select(queryGoldenInfoListSql)
     List<TCluster> selectUniqueClusterNames();
 
