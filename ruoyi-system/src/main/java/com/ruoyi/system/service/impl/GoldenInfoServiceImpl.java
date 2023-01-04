@@ -409,7 +409,8 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         }
         dictValue = dictValueNum.toString();
         sysDictData.setDictValue(dictValue);
-        sysDictDataService.insertMatrixDictData(sysDictData);
+        dictDataMapper.insert(sysDictData);
+//        sysDictDataService.insertMatrixDictData(sysDictData);
         dictLabelMap.put(cleanOriginName,sysDictData.getDictValue());
         dictMap.put(dictTypeName,dictLabelMap);
         return dictValue;

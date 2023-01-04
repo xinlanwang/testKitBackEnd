@@ -322,6 +322,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (carline.contains("AU416/2 eQ5 SUV (only COP Audi)") || carline.equals("AU416/2 eQ5 SUV (only COP Audi)")){
             carline = "AU416/x eQ5 (Q6 etron)";
         }
+        carline = carline.toUpperCase();
         basicInfo.put("carline",carline);
         String carlineModelType = getDictValue("carlineModelType", dictMap, carline, "0");
         basicInfo.put("carlineModelType",carlineModelType);
@@ -329,7 +330,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         String clusterNum = "-";
         String clusterName = "-";
         if ("HCP3".equals(projectName)) {
-            clusterNum = "cluster43";
+            clusterNum = "CLU43";
         } else if ("MIB3".equals(projectName)) {
             String tempCluNumber = swVersion;
             Pattern pattern = Pattern.compile("[pePE]\\d{4}");
@@ -377,11 +378,11 @@ public class DeviceListServiceImpl implements DeviceListService {
         //variant
         variant = StrUtil.trimEnd(variant);
         if ("P".equals(variant)) {
-            variant = "Premium";
+            variant = "PREMIUM";
         } else if ("H".equals(variant)) {
-            variant = "High";
+            variant = "HIGH";
         } else if ("B".equals(variant)) {
-            variant = "Basic";
+            variant = "BASIC";
         }
         basicInfo.put("Variant", variant);
         String variantType = null;
@@ -392,7 +393,7 @@ public class DeviceListServiceImpl implements DeviceListService {
 
         //market
         String market = StrUtil.trimEnd(regexStr(reportDTO.getSystembezeichnung(), "[ ]*\\S*-([^-]*)[ ]*"));
-        basicInfo.put("market", market);
+        basicInfo.put("market", StringUtils.getCleanStr(market));
         String marketType = null;
         if (!"-".equals(market) && StringUtils.isNotEmpty(market)){
             marketType = getDictValue("marketType", dictMap, market, "0");
@@ -417,8 +418,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                         SysDictData sysDictData = dictDataMapper.selectOne(new QueryWrapper<SysDictData>()
                                 .eq("dict_type", "platformType").eq("dict_value", tMatrix.getPlatformType()));
                         basicInfo.put("platformName",sysDictData.getDictLabel());
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -1068,7 +1069,8 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
             dictValue = dictValueNum.toString();
             sysDictData.setDictValue(dictValue);
-            sysDictDataService.insertMatrixDictData(sysDictData);
+            dictDataMapper.insert(sysDictData);
+//            sysDictDataService.insertMatrixDictData(sysDictData);
             dictLabelMap.put(dictLabel, sysDictData.getDictValue());
             dictMap.put(dictTypeName, dictLabelMap);
         } else {

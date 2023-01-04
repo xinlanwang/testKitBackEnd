@@ -187,4 +187,5 @@ public class DictUtils
     {
         return CacheConstants.SYS_DICT_KEY + configKey;
     }
+
 }

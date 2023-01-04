@@ -606,4 +606,19 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
         }
         return sb.toString();
     }
+
+    public static final String getCleanStr(String dictLabel) {
+        if (StringUtils.isEmpty(dictLabel)){
+            return null;
+        }
+        char[] chars = dictLabel.toCharArray();
+        StringBuffer buffer=new StringBuffer();
+        for(int i = 0; i < chars.length; i ++) {
+            if((chars[i] >= 19968 && chars[i] <= 40869) || (chars[i] >= 97 && chars[i] <= 122)|| (chars[i] >= 48 && chars[i] <= 57) || (chars[i] >= 65 && chars[i] <= 90)) {
+                buffer.append(chars[i]);//去除特殊格式
+            }
+        }
+        String cleanOriginName = new String(buffer.toString().toUpperCase());
+        return cleanOriginName;
+    }
 }

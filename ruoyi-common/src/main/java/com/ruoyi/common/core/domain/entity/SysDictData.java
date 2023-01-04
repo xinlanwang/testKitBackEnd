@@ -18,7 +18,8 @@ import org.springframework.data.annotation.Id;
  * 
  * @author ruoyi
  */
-public class SysDictData extends BaseEntity
+
+public class SysDictData extends LocalBaseEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -58,6 +59,17 @@ public class SysDictData extends BaseEntity
     /** 状态（0正常 1停用） */
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
+
+
+    private String createBy;
+
+    public String getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(String createBy) {
+        this.createBy = createBy;
+    }
 
     public String getMatrixType() {
         return matrixType;
@@ -181,8 +193,8 @@ public class SysDictData extends BaseEntity
             .append("listClass", getListClass())
             .append("isDefault", getIsDefault())
             .append("status", getStatus())
-            .append("createTime", getCreateTime())
-            .append("updateTime", getUpdateTime())
+//            .append("createTime", getCreateTime())
+//            .append("updateTime", getUpdateTime())
             .toString();
     }
 }

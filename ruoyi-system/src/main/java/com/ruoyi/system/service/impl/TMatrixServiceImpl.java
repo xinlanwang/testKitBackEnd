@@ -2,6 +2,7 @@ package com.ruoyi.system.service.impl;
 
 import java.util.*;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDictData;
@@ -15,6 +16,7 @@ import com.ruoyi.system.domain.param.MatrixMappingParam;
 import com.ruoyi.system.domain.po.TMatrix;
 import com.ruoyi.system.mapper.SysDictDataMapper;
 import io.netty.util.internal.StringUtil;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.TMatrixMapper;
@@ -233,7 +235,12 @@ public class TMatrixServiceImpl implements ITMatrixService
             if ("marketType".equals(dictType) && MATRIXTYPE_MATRIX.equals(matrixType)){
                 continue;
             }
-            String dictValue = getDictValue(dictType, dictMap, ReflectUtils.invokeGetter(entity,dictType),matrixType);
+            Object getter = ReflectUtils.invokeGetter(entity, dictType);
+            String getterStr = null;
+            if (getter != null){
+                getterStr = getter.toString().toUpperCase();
+            }
+            String dictValue = getDictValue(dictType, dictMap,getterStr,matrixType);
             ReflectUtils.invokeSetter(newMatrixDO,dictType,dictValue);
         }
     }
@@ -246,17 +253,22 @@ public class TMatrixServiceImpl implements ITMatrixService
      * @param matrixType matrix类型
      * @return
      */
-    private String getDictValue(String dictTypeName, Map<String, Map<String,String>> dictMap, String dictLabel,String matrixType) {
+    private String getDictValue(String dictTypeName, Map<String, Map<String, String>> dictMap, String dictLabel, String matrixType) {
         String dictValue;
-        Map<String,String> dictLabelMap = dictMap.get(dictTypeName);
-        if (StringUtil.isNullOrEmpty(dictLabel)){
+        Map<String, String> dictLabelMap = dictMap.get(dictTypeName);
+        if (StringUtil.isNullOrEmpty(dictLabel)) {
             return null;
         }
-        if (dictLabelMap == null){
-            dictLabelMap = new HashMap<String,String>();
+        if (dictLabelMap == null) {
+            dictLabelMap = new HashMap<String, String>();
+        }
+        if (!"carlineModelType".equals(dictTypeName)){
+            dictLabel = StringUtils.getCleanStr(dictLabel);
+        }else {
+            dictLabel = dictLabel.toUpperCase();
         }
         //假设加入的值字典中不存在
-        if (StringUtil.isNullOrEmpty(dictLabelMap.get(dictLabel))){
+        if (StringUtil.isNullOrEmpty(dictLabelMap.get(dictLabel))) {
             SysDictData sysDictData = new SysDictData();
             sysDictData.setDictType(dictTypeName);
             sysDictData.setMatrixType(matrixType);
@@ -265,18 +277,19 @@ public class TMatrixServiceImpl implements ITMatrixService
             Integer dictValueNum;
             if (dictDataMapper.selectMaxDictType(dictTypeName) != null) {
                 dictValueNum = dictDataMapper.selectMaxDictType(dictTypeName) + 1;
-            }else {
+            } else {
                 dictValueNum = 1;
             }
             dictValue = dictValueNum.toString();
             sysDictData.setDictValue(dictValue);
-            sysDictDataService.insertMatrixDictData(sysDictData);
-            dictLabelMap.put(dictLabel,sysDictData.getDictValue());
-            dictMap.put(dictTypeName,dictLabelMap);
-        }else {
+            dictDataMapper.insert(sysDictData);
+//            sysDictDataService.insertMatrixDictData(sysDictData);
+            dictLabelMap.put(dictLabel, sysDictData.getDictValue());
+            dictMap.put(dictTypeName, dictLabelMap);
+        } else {
             //假如存在则刷为将状态刷为0
             dictValue = dictLabelMap.get(dictLabel);
-            dictDataMapper.updateDictDataStatus(dictTypeName,dictLabel,dictValue,DICT_STATUS_NORMAL,matrixType);
+            dictDataMapper.updateDictDataStatus(dictTypeName, dictLabel, dictValue, "0",matrixType);
         }
         return dictValue;
     }
