@@ -646,16 +646,17 @@ public class DeviceListServiceImpl implements DeviceListService {
             String cleanStr = cleanStr(goldenComponentType);
             String deviceComponentType = cleanStr(deviceInfoComponent.getComponentType());
             String deviceComponentVersion = deviceInfoComponent.getComponentVersion();
-            if ((deviceComponentType.contains(cleanStr) || cleanStr.contains(deviceComponentType) || deviceComponentType.equals(cleanStr)) && StringUtils.isNotEmpty(deviceComponentVersion)) {
+            if ((deviceComponentType.contains(cleanStr) || cleanStr.contains(deviceComponentType) || deviceComponentType.equals(cleanStr))
+                    && StringUtils.isNotEmpty(deviceComponentVersion)) {
                 GoldenInfoComponentDTO goldenInfoComponentDTO = null;
                 GoldenInfoComponentDTO remainComponentDTO = null;
-                    for (String partNumber:partComponentMap.keySet()){
-                        remainComponentDTO = partComponentMap.get(partNumber);
-                        if (StringUtils.isNotEmpty(deviceVariantType) && deviceVariantType.equals(partComponentMap.get(partNumber).getVariantType())){
-                            goldenInfoComponentDTO = partComponentMap.get(partNumber);
-                            break;
-                        }
+                for (String partNumber:partComponentMap.keySet()){
+                    remainComponentDTO = partComponentMap.get(partNumber);
+                    if (StringUtils.isNotEmpty(deviceVariantType) && deviceVariantType.equals(partComponentMap.get(partNumber).getVariantType())){
+                        goldenInfoComponentDTO = partComponentMap.get(partNumber);
+                        break;
                     }
+                }
                 if (goldenInfoComponentDTO == null){
                     goldenInfoComponentDTO = remainComponentDTO;
                 }
@@ -679,8 +680,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                     deviceCompareVO.setDeviceSort(deviceInfoComponent.getSort());
                     deviceCompareVO.setDeviceComponentVersion(deviceInfoComponent.getComponentVersion());
                     deviceCompareVO.setGoldenSort(goldenInfoComponentDTO.getSwSort());
-                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTO.getSwComponentVersion());
-                    deviceCompareVO.setGoldenVersion(goldenInfoComponentDTO.getSwComponentVersion());//将删
+                    deviceCompareVO.setCurrentVersion(goldenInfoComponentDTO.getSwComponentVersion());//将删
+                    deviceCompareVO.setGoldenVersion(goldenInfoComponentDTO.getSwComponentVersion());
                     return deviceCompareVO;
                 }
             }
@@ -708,7 +709,9 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
         Integer goldenNormalVersionMinNum = cleanNum(goldenComponentVersion, MIN);
         Integer deviceVersionNum = cleanNum(deviceInfoComponent.getComponentVersion(), MIN);
-        if (goldenComponentSort == null || goldenComponentSort == 0 || goldenInfoComponentDTO.getSort() == null || goldenComponentSort == goldenInfoComponentDTO.getSort()){
+        if (goldenComponentSort == null || goldenComponentSort == 0 ||
+                goldenInfoComponentDTO.getSort() == null || goldenInfoComponentDTO.getSort() == 0 ||
+                goldenComponentSort.equals(goldenInfoComponentDTO.getSort())){
             if (deviceVersionNum >= goldenNormalVersionMinNum) {
                 return 3;
             } else if (deviceVersionNum >= minimalMinNum) {
@@ -716,7 +719,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             } else {
                 return 1;
             }
-        }else if (goldenComponentSort != 0 && goldenComponentSort > goldenInfoComponentDTO.getSort()){
+        }else if (goldenComponentSort > goldenInfoComponentDTO.getSort()){
             return 3;
         }else{
             return 1;
@@ -742,6 +745,9 @@ public class DeviceListServiceImpl implements DeviceListService {
         char[] chars = deviceComponent.toCharArray();
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < chars.length; i++) {
+            if (i == 0 && chars[i] == 48){
+                continue;
+            }
             if ((chars[i] >= 48 && chars[i] <= 57)) {
                 buffer.append(chars[i]);//去除特殊格式
             }

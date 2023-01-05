@@ -396,19 +396,22 @@ public class TMatrixServiceImpl implements ITMatrixService
             queryWrapper.eq("gateway_type",tMatrix.getGatewayType());
         }
         List<TMatrix> tMatrixList = tMatrixMapper.selectList(queryWrapper);
-        if (StringUtils.isNotEmpty(tMatrixList) && "2".equals(tMatrix.getMatrixType())){
+        if (StringUtils.isNotEmpty(tMatrixList) && "1".equals(tMatrix.getMatrixType())){
             return -1;
         }
-        if (StringUtils.isNotEmpty(tMatrixList) && "1".equals(tMatrix.getMatrixType())){
+        if (StringUtils.isNotEmpty(tMatrixList) && "2".equals(tMatrix.getMatrixType())){
             for (TMatrix tMatrixPO:tMatrixList){
-                if (StringUtils.isNotEmpty(tMatrixPO.getMatrixType())){
+                if (tMatrixPO.getUid().equals(tMatrix.getUid())) {
+                    continue;
+                }
+                if (StringUtils.isNotEmpty(tMatrixPO.getMarketTypes())) {
                     for (String str : tMatrixPO.getMarketTypes().split(",")) {
-                        if (str.equals(tMatrix.getMatrixType())){
+                        if (str.equals(tMatrix.getMatrixType())) {
                             return -1;
                         }
                     }
-                }else {
-                    if (StringUtils.isEmpty(tMatrix.getMarketTypes())){
+                } else {
+                    if (StringUtils.isEmpty(tMatrix.getMarketTypes())) {
                         return -1;
                     }
                 }
