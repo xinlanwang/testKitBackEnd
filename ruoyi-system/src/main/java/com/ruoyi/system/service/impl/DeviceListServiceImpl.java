@@ -637,6 +637,21 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
     }
 
+    /**
+     * select tcd.ware_type as wareType,tcd.component_type as componentType,tcd.component_version as componentVersion,
+     *        tc.cluster_name as clusterName,tca.carline_model_type as carlineModelType,tci.market_type as marketType,
+     *        tcd.part_number as partNumber
+     * from t_component_data tcd
+     * left join t_carline_component tcc on (tcc.hw_version_uid = tcd.uid or tcc.sw_version_uid = tcd.uid)
+     * left join t_carline_info tci on tci.carline_info_uid = tcc.carline_info_uid
+     * left join t_cluster tc on tc.carline_uid = tci.carline_info_uid
+     * left join t_carline tca on tca.uid = tc.carline_uid
+     * where component_type = 'BCM1'
+     * @param deviceInfoComponent
+     * @param goldenInfoComponentMap
+     * @param deviceVariantType
+     * @return
+     */
     private DeviceCompareVO getDeviceCompareVO(DeviceInfoComponent deviceInfoComponent, Map<String, Map<String,GoldenInfoComponentDTO>> goldenInfoComponentMap,String deviceVariantType) {
         for (String goldenComponentType : goldenInfoComponentMap.keySet()) {
             Map<String, GoldenInfoComponentDTO> partComponentMap = goldenInfoComponentMap.get(goldenComponentType);
@@ -756,6 +771,9 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     private String cleanStr(String deviceComponent) {
+        if (StringUtils.isNotEmpty(deviceComponent) && ("BCM1".equals(deviceComponent.toUpperCase()) || "BCM2".equals(deviceComponent.toUpperCase()) )){
+            return deviceComponent;
+        }
         char[] chars = deviceComponent.toCharArray();
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < chars.length; i++) {
@@ -1007,6 +1025,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 TComponentData componentData = new TComponentData();
                 componentData.setComponentType(deviceInfoComponent.getComponentType());
                 componentData.setComponentName(deviceInfoComponent.getComponentName());
+                componentData.setPartNumber(deviceInfoComponent.getPartNumber());
                 componentData.setIsAvaliabel(1);
                 componentData.setComponentInstanceName(deviceInfoComponent.getComponentInstanceName());
                 String partnumber = deviceInfoComponent.getPartNumber();

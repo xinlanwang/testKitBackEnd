@@ -58,11 +58,11 @@ public class GoldenInfoController extends BaseController
     @ApiOperation("查询车型基本信息列表")
 //    @PreAuthorize("@ss.hasPermi('device:devicelist:list')")
     @GetMapping("/query")
-    public R<Map<String, Object>> list()
+    public AjaxResult list()
     {
         startPage();
         Map<String, Object> goldenListVos = goldenInfoService.querygoldenList();
-        return R.ok(goldenListVos);
+        return AjaxResult.success(goldenListVos);
     }
 
     /**

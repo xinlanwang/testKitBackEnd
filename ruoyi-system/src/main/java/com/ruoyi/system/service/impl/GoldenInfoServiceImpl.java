@@ -88,7 +88,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                 goldenListPlatfromVO.setMarketTypes(marketTypes);
                 plantForm.put(carlineModelType,goldenListPlatfromVO);
             }
-            goldenListVo.setPlatfromList(plantForm);
+            if(StringUtils.isNotEmpty(plantForm)){
+                goldenListVo.setPlatfromList(plantForm);
+            }
             //platformList end
             goldenListVos.add(goldenListVo);
         }
