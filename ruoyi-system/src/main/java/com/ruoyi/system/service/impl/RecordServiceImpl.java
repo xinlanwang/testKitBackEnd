@@ -48,7 +48,7 @@ public class RecordServiceImpl implements RecordService {
         queryWrapper.eq("operation_uid",operationUid);
         Page<TDataLog> page = new Page<>(pageNum, pageSize);
         Page<TDataLog> tClusterPage = desktopLogMapper.selectPage(page, queryWrapper);
-        if (tClusterPage == null || tClusterPage.getSize() == 0){
+        if (tClusterPage == null || tClusterPage.getSize() == 0 ){
             return new ArrayList();
         }
         Map<Date,Map<String, Object>> deskTopMaps = new HashMap();

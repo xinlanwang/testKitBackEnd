@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.TMatrixMapper;
 import com.ruoyi.system.service.ITMatrixService;
+import org.springframework.util.CollectionUtils;
 
 import static com.ruoyi.common.constant.TestKitConstants.*;
 
@@ -116,7 +117,7 @@ public class TMatrixServiceImpl implements ITMatrixService
 
 
         //
-        if (tMatrixList == null || tMatrixList.size() == 0){
+        if (CollectionUtils.isEmpty(tMatrixList)){
 //            return AjaxResult.warn("没有对应取值");
             return AjaxResult.success(new ArrayList<>());
         }
@@ -148,7 +149,7 @@ public class TMatrixServiceImpl implements ITMatrixService
 
     @Override
     public String importMatrix(List<ImportMatrixDTO> importMatrixDTOS, boolean b, String operName) {
-        if (importMatrixDTOS == null || importMatrixDTOS.size() == 0){
+        if (CollectionUtils.isEmpty(importMatrixDTOS)){
             return "导入文件为空";
         }
         String[] dictTypes = new String[] {"platformType" , "marketType" , "clusterName" , "projectType" , "variantType" , "carlineModelType" , "ocuCboxType" , "gatewayType"};
@@ -190,7 +191,7 @@ public class TMatrixServiceImpl implements ITMatrixService
 
     @Override
     public String imporValidate(List<ImportValidateDTO> importValidateDTOS, boolean b, String operName) {
-        if (importValidateDTOS == null || importValidateDTOS.size() == 0){
+        if (CollectionUtils.isEmpty(importValidateDTOS)){
             return "导入文件为空";
         }
         String[] dictTypes = new String[] {"clusterName", "projectType","platformType","marketType","functionGroupType",

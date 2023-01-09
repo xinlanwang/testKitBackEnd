@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.w3c.dom.*;
 
 import java.util.*;
@@ -508,7 +509,7 @@ public class DeviceListServiceImpl implements DeviceListService {
     public DeviceInfoVo getInfo(Long carlineInfoUid) {
         DeviceInfoVo deviceInfoVo = tCarlineInfoMapper.queryDeviceInfo(carlineInfoUid);
         List<DeviceInfoComponent> deviceInfoComponents = tCarlineInfoMapper.queryDeviceComponent(carlineInfoUid);
-        if (deviceInfoComponents == null || deviceInfoComponents.size() == 0) {
+        if (CollectionUtils.isEmpty(deviceInfoComponents)) {
             return null;
         }
         Map<String, Map<String,GoldenInfoComponentDTO>> goldenInfoComponentDTOMap = null;
@@ -598,7 +599,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         List<Long> goldenCarTypes = tMatrixMapper.selectGoldenCarType(carlineModelType, goldenClusterNameType);
         //理论上对应的有且仅有一个，但目前有重复的 todo
         //https://sumomoriaty.oss-cn-beijing.aliyuncs.com/zdcar/202212011111630.png
-        if (goldenCarTypes == null || goldenCarTypes.size() == 0) {
+        if (CollectionUtils.isEmpty(goldenCarTypes)) {
             return null;
         }
         Long goldenCarType = goldenCarTypes.get(0);
@@ -620,15 +621,20 @@ public class DeviceListServiceImpl implements DeviceListService {
             return AjaxResult.error("参数不得为空");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
-        if (goldenInfoComponentDTOS == null || goldenInfoComponentDTOS.size() == 0) {
+        if (CollectionUtils.isEmpty(goldenInfoComponentDTOS)) {
             return AjaxResult.error("GoldenInfo里并没有对应取值");
         }
         Map<String, Map<String,GoldenInfoComponentDTO>> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
         DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
         deviceInfoComponent.setComponentVersion(componentVersion);
         deviceInfoComponent.setComponentType(componentType);
-        deviceInfoComponent.setSort(0);
+        deviceInfoComponent.setPartNumber(deviceCompareParam.getPartNumber());
         deviceInfoComponent.setWareType(wareType);
+        if (deviceCompareParam.getSort() != null){
+            deviceInfoComponent.setSort(deviceCompareParam.getSort());
+        }else {
+            deviceInfoComponent.setSort(0);
+        }
         DeviceCompareVO deviceCompareVO = getDeviceCompareVO(deviceInfoComponent, goldenInfoComponentDTOMap,deviceCompareParam.getVariantType());
         if (deviceCompareVO != null) {
             return AjaxResult.success(deviceCompareVO);
@@ -664,17 +670,19 @@ public class DeviceListServiceImpl implements DeviceListService {
             if ((deviceComponentType.contains(cleanStr) || cleanStr.contains(deviceComponentType) || deviceComponentType.equals(cleanStr))
                     && StringUtils.isNotEmpty(deviceComponentVersion)) {
                 GoldenInfoComponentDTO goldenInfoComponentDTO = null;
-                GoldenInfoComponentDTO remainComponentDTO = null;
-                for (String partNumber:partComponentMap.keySet()){
-                    remainComponentDTO = partComponentMap.get(partNumber);
-                    if (StringUtils.isNotEmpty(deviceVariantType) && deviceVariantType.equals(partComponentMap.get(partNumber).getVariantType())){
+                //PN,VariantType对比筛选出比对配件
+                if (StringUtils.isNotEmpty(deviceInfoComponent.getPartNumber()) && partComponentMap.containsKey(deviceInfoComponent.getPartNumber())){
+                    goldenInfoComponentDTO = partComponentMap.get(deviceInfoComponent.getPartNumber());
+                }else {
+                    for (String partNumber:partComponentMap.keySet()){
                         goldenInfoComponentDTO = partComponentMap.get(partNumber);
-                        break;
+                        if (StringUtils.isNotEmpty(deviceVariantType) && deviceVariantType.equals(partComponentMap.get(partNumber).getVariantType())){
+                            goldenInfoComponentDTO = partComponentMap.get(partNumber);
+                            break;
+                        }
                     }
                 }
-                if (goldenInfoComponentDTO == null){
-                    goldenInfoComponentDTO = remainComponentDTO;
-                }
+
                 DeviceCompareVO deviceCompareVO = new DeviceCompareVO();
                 Integer compareNum = compareComponent(deviceInfoComponent, goldenInfoComponentDTO);
                 if (compareNum.equals(0)) {
@@ -837,7 +845,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 continue;
             }
             List<ImportDeviceDTO> importDeviceDTOS = deviceInfoVoList.get(key);
-            if (importDeviceDTOS == null || importDeviceDTOS.size() == 0) {
+            if (CollectionUtils.isEmpty(importDeviceDTOS)) {
                 continue;
             }
             for (ImportDeviceDTO importDeviceDTO : importDeviceDTOS) {

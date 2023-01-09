@@ -18,6 +18,7 @@ import com.ruoyi.system.service.DesktopService;
 import com.ruoyi.system.service.DeviceListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -56,7 +57,7 @@ public class DesktopServiceImpl implements DesktopService {
     public AjaxResult submit(DesktopSubmitParam desktopSubmitParam) {
         List<DesktopRecordParam> desktopRecordParams = desktopSubmitParam.getDesktopRecordParams();
         List<TDataLog> allDesktopLogs = new ArrayList<>();
-        if (desktopRecordParams == null || desktopRecordParams.size() == 0 || StringUtils.isEmpty(desktopSubmitParam.getLocalHostAcoount()) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostPassword())) {
+        if (CollectionUtils.isEmpty(desktopRecordParams) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostAcoount()) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostPassword())) {
             return AjaxResult.error("用户或者参数列表为空");
         }
         String localHostAcoount = desktopSubmitParam.getLocalHostAcoount();

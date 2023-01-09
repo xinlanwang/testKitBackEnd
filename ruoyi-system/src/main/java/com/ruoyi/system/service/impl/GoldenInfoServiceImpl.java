@@ -104,12 +104,12 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
     @Override
     public List<GoldenInfoVO> queryClusterInfo(String clusterName, String goldenCarName) {
         List<GoldenInfoVO> goldenInfoVOS = tCarlineInfoMapper.selectDeviceComponentsList(clusterName,goldenCarName);
-        if (goldenInfoVOS == null || goldenInfoVOS.size() == 0){
+        if (CollectionUtils.isEmpty(goldenInfoVOS)){
             return null;
         }
         for (GoldenInfoVO goldenInfoVO : goldenInfoVOS) {
             List<GoldenInfoComponentDTO> goldenInfoComponents = tCarlineInfoMapper.queryGoldenInfoDetail(clusterName,goldenCarName,goldenInfoVO.getMarketType());
-            if (goldenInfoComponents == null && goldenInfoComponents.size() == 0 && StringUtils.isEmpty(goldenInfoVO.getMarketType())) {
+            if (CollectionUtils.isEmpty(goldenInfoComponents)&& StringUtils.isEmpty(goldenInfoVO.getMarketType())) {
                 continue;
             }
             //build
@@ -163,7 +163,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
 
     @Override
     public String importGoldenInfoDevice(List<ImportGoldenInfoDTO> importGoldenInfoDTOS, boolean b, String originalFilename) {
-        if (importGoldenInfoDTOS == null || importGoldenInfoDTOS.size() == 0){
+        if (CollectionUtils.isEmpty(importGoldenInfoDTOS)){
             return "值为空";
         }
         String[] dictTypes = new String[] {"clusterName", "projectType","platformType","marketType","functionGroupType",
@@ -197,7 +197,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
             tCarline.setGoldenCarName(goldenCarTypeValue);
             tCarlineMapper.insert(tCarline);
             for (String marketType:regionMap.keySet()){
-                if (regionMap.get(marketType) == null || regionMap.get(marketType).size() == 0 ){
+                if (CollectionUtils.isEmpty(regionMap.get(marketType))){
                     continue;
                 }
                 List<ImportPartComponentDTO> importPartComponentDTOS = regionMap.get(marketType);
