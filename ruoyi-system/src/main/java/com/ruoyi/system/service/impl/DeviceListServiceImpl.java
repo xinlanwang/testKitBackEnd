@@ -114,17 +114,14 @@ public class DeviceListServiceImpl implements DeviceListService {
 
         //tCluster 筛选有无额外版本，并删除相关版本与配件信息
         List<TCluster> tClusters = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid",
-                tCarline.getUid()).eq("cluster_name",
-                tCluster.getClusterName()).orderByDesc("device_circle_num"));
-        if (tClusters == null && tClusters.size() < 0) {
+                tCarline.getUid()).orderByDesc("device_circle_num"));
+        if (CollectionUtils.isEmpty(tClusters)) {
             return -1L;
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
         Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
         Integer nextDeviceNum = (deviceNum + 1) % MAXCIRCLE;
-        List<TCluster> tClusterList = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid",
-                tCarline.getUid()).eq("device_type",tCluster.getDeviceType()));
-        if (tClusterList != null && tClusterList.size() == MAXCIRCLE){
+        if (tClusters.size() == MAXCIRCLE){
             cascadeDeleteVersion(carlineInfoUid, tClusters.get(0));
         }
 
