@@ -110,17 +110,17 @@ public class DeviceListServiceImpl implements DeviceListService {
 
 
         //tCluster 筛选有无额外版本，并删除相关版本与配件信息
-        List<TCluster> tClusters = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid", tCarline.getUid()).eq("cluster_name", tCluster.getClusterName()).orderByDesc("car_num"));
+        List<TCluster> tClusters = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid", tCarline.getUid()).eq("cluster_name", tCluster.getClusterName()).orderByDesc("device_circle_num"));
         if (tClusters == null && tClusters.size() < 0) {
             return -1L;
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
-        Integer deviceNum = tClusters.get(0).getCarNum();//从0开始到9循环，总计保存共10副本
+        Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
         Integer nextDeviceNum = (deviceNum + 1) % 10;
         cascadeDeleteVersion(carlineInfoUid, tClusters.get(0));
 
         //save -tCluster
-        tCluster.setCarNum(nextDeviceNum);
+        tCluster.setdeviceCircleNum(nextDeviceNum);
         buildTClusterPO(deviceInfoVo, tCluster);
         tClusterMapper.insert(tCluster);
         //t_carline_info
@@ -721,6 +721,8 @@ public class DeviceListServiceImpl implements DeviceListService {
         Integer goldenComponentSort;
         Integer minimalMinNum = 999999;
         String minimal = goldenInfoComponentDTO.getMinimalHW();
+        log.info("minimalVersion:{}",goldenInfoComponentDTO.getMinimalHW());
+        log.info("deviceComponentVersion:{}",deviceInfoComponent.getComponentVersion());
         if ("SW".equals(deviceInfoComponent.getWareType())){
             goldenComponentVersion = goldenInfoComponentDTO.getSwComponentVersion();
             goldenComponentSort = goldenInfoComponentDTO.getSwSort();
@@ -731,12 +733,11 @@ public class DeviceListServiceImpl implements DeviceListService {
                 minimalMinNum = cleanNum(minimal, MIN);
             }
         }
+        log.info("goldenComponentVersion:{}",goldenComponentVersion);
         if (StringUtils.isEmpty(goldenComponentVersion)) {
             return 0;
         }
-        log.info("minimalVersion:{}",goldenInfoComponentDTO.getMinimalVersion());
-        log.info("goldenComponentVersion:{}",goldenComponentVersion);
-        log.info("deviceComponentVersion:{}",deviceInfoComponent.getComponentVersion());
+
 
         Integer goldenNormalVersionMinNum = cleanNum(goldenComponentVersion, MIN);
         Integer deviceVersionNum = cleanNum(deviceInfoComponent.getComponentVersion(), MIN);
@@ -773,6 +774,9 @@ public class DeviceListServiceImpl implements DeviceListService {
     
 
     private Integer cleanNum(String deviceComponent, Integer getNum) {
+        if ("-".equals(deviceComponent)){
+            return 99999;
+        }
         String[] split = deviceComponent.split("/");
         if (MAX.equals(getNum)) {
             deviceComponent = new String(split[split.length - 1]);
@@ -1213,7 +1217,7 @@ public class DeviceListServiceImpl implements DeviceListService {
 
         //t_cluster
         TCluster tCluster = new TCluster();
-        tCluster.setCarNum(1);
+        tCluster.setdeviceCircleNum(1);
         tCluster.setCarlineUid(tCarline.getUid());
         tCluster.setCreateTime(new Date());
         buildTClusterPO(deviceInfoVo, tCluster);

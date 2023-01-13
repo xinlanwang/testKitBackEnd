@@ -36,8 +36,8 @@ public class DesktopController extends BaseController
      */
     @PostMapping("/getdb")
     @ApiOperation("提交")
-    public Object getdb(@RequestBody DesktopGetDBParam desktopGetDBParam) {
-        return desktopService.getdb(desktopGetDBParam);
+    public AjaxResult getdb(@RequestBody DesktopGetDBParam desktopGetDBParam) {
+        return AjaxResult.success(desktopService.getdb(desktopGetDBParam));
     }
 
     @PostMapping("/submit")

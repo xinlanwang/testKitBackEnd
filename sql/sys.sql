@@ -1126,7 +1126,7 @@ create table `ry-vue`.t_cluster
     cluster_update_by_uid varchar(32)                              null comment '更新者主键',
     last_updated          varchar(30)                              null comment '最近更新',
     status                tinyint(1) default 1                     null comment '当前版本状态 ',
-    car_num               tinyint(1) default 1                     not null comment '1-10的循环',
+    device_circle_num               tinyint(1) default 1                     not null comment '1-10的循环',
     create_time           timestamp  default '0000-00-00 00:00:00' not null comment '创建时间',
     update_time           timestamp  default '0000-00-00 00:00:00' not null comment '更新时间',
     create_by_uid         varchar(64)                              null comment '创建者',

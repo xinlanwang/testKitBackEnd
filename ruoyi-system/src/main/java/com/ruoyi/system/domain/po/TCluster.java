@@ -34,7 +34,7 @@ public class TCluster extends LocalBaseEntity
 
     /** 1-10的循环 */
     @Excel(name = "1-10的循环")
-    private Integer carNum;
+    private Integer deviceCircleNum;
 
     /** 更新点 */
     @Excel(name = "更新点")
@@ -79,11 +79,11 @@ public class TCluster extends LocalBaseEntity
     public TCluster() {
     }
 
-    public TCluster(Long uid, Long carlineUid, String projectType, Integer carNum, String clusterUpdatePoint, String clusterUpdateByUid, String deviceType, String clusterName, String lastUpdated, Integer status, String createByUid, String updateByUid, Long sort, Integer isShow) {
+    public TCluster(Long uid, Long carlineUid, String projectType, Integer deviceCircleNum, String clusterUpdatePoint, String clusterUpdateByUid, String deviceType, String clusterName, String lastUpdated, Integer status, String createByUid, String updateByUid, Long sort, Integer isShow) {
         this.uid = uid;
         this.carlineUid = carlineUid;
         this.projectType = projectType;
-        this.carNum = carNum;
+        this.deviceCircleNum = deviceCircleNum;
         this.clusterUpdatePoint = clusterUpdatePoint;
         this.clusterUpdateByUid = clusterUpdateByUid;
         this.deviceType = deviceType;
@@ -120,12 +120,12 @@ public class TCluster extends LocalBaseEntity
         this.projectType = projectType;
     }
 
-    public Integer getCarNum() {
-        return carNum;
+    public Integer getdeviceCircleNum() {
+        return deviceCircleNum;
     }
 
-    public void setCarNum(Integer carNum) {
-        this.carNum = carNum;
+    public void setdeviceCircleNum(Integer deviceCircleNum) {
+        this.deviceCircleNum = deviceCircleNum;
     }
 
     public String getClusterUpdatePoint() {

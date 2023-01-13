@@ -8,7 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="uid"    column="uid"    />
         <result property="carlineUid"    column="carline_uid"    />
         <result property="projectType"    column="project_type"    />
-        <result property="carNum"    column="car_num"    />
+        <result property="deviceCircleNum"    column="device_circle_num"    />
         <result property="clusterUpdatePoint"    column="cluster_update_point"    />
         <result property="clusterUpdateByUid"    column="cluster_update_by_uid"    />
         <result property="deviceType"    column="device_type"    />
@@ -24,7 +24,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectTClusterVo">
-        select uid, carline_uid, project_type, car_num, cluster_update_point, cluster_update_by_uid, device_type, cluster_name, last_updated, status, create_time, update_time, create_by_uid, update_by_uid, sort, is_show from t_cluster
+        select uid, carline_uid, project_type, device_circle_num, cluster_update_point, cluster_update_by_uid, device_type, cluster_name, last_updated, status, create_time, update_time, create_by_uid, update_by_uid, sort, is_show from t_cluster
     </sql>
 
     <select id="selectTClusterList" parameterType="TCluster" resultMap="TClusterResult">
@@ -32,7 +32,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>  
             <if test="carlineUid != null  and carlineUid != ''"> and carline_uid = #{carlineUid}</if>
             <if test="projectType != null  and projectType != ''"> and project_type = #{projectType}</if>
-            <if test="carNum != null "> and car_num = #{carNum}</if>
+            <if test="deviceCircleNum != null "> and device_circle_num = #{deviceCircleNum}</if>
             <if test="clusterUpdatePoint != null  and clusterUpdatePoint != ''"> and cluster_update_point = #{clusterUpdatePoint}</if>
             <if test="clusterUpdateByUid != null  and clusterUpdateByUid != ''"> and cluster_update_by_uid = #{clusterUpdateByUid}</if>
             <if test="deviceType != null  and deviceType != ''"> and device_type = #{deviceType}</if>
@@ -57,7 +57,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="uid != null">uid,</if>
             <if test="carlineUid != null">carline_uid,</if>
             <if test="projectType != null and projectType != ''">project_type,</if>
-            <if test="carNum != null">car_num,</if>
+            <if test="deviceCircleNum != null">device_circle_num,</if>
             <if test="clusterUpdatePoint != null">cluster_update_point,</if>
             <if test="clusterUpdateByUid != null">cluster_update_by_uid,</if>
             <if test="deviceType != null and deviceType != ''">device_type,</if>
@@ -75,7 +75,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="uid != null">#{uid},</if>
             <if test="carlineUid != null">#{carlineUid},</if>
             <if test="projectType != null and projectType != ''">#{projectType},</if>
-            <if test="carNum != null">#{carNum},</if>
+            <if test="deviceCircleNum != null">#{deviceCircleNum},</if>
             <if test="clusterUpdatePoint != null">#{clusterUpdatePoint},</if>
             <if test="clusterUpdateByUid != null">#{clusterUpdateByUid},</if>
             <if test="deviceType != null and deviceType != ''">#{deviceType},</if>
@@ -96,7 +96,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="carlineUid != null">carline_uid = #{carlineUid},</if>
             <if test="projectType != null and projectType != ''">project_type = #{projectType},</if>
-            <if test="carNum != null">car_num = #{carNum},</if>
+            <if test="deviceCircleNum != null">device_circle_num = #{deviceCircleNum},</if>
             <if test="clusterUpdatePoint != null">cluster_update_point = #{clusterUpdatePoint},</if>
             <if test="clusterUpdateByUid != null">cluster_update_by_uid = #{clusterUpdateByUid},</if>
             <if test="deviceType != null and deviceType != ''">device_type = #{deviceType},</if>

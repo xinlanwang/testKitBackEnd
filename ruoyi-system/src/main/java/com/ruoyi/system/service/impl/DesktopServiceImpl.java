@@ -194,10 +194,8 @@ public class DesktopServiceImpl implements DesktopService {
             String sql = "select * from " + desktopGetDBParam.getTableName();
             rs = stmt.executeQuery(sql);
             while (rs.next()) {
-//              获取源数据
                 Map<String, Object> oneDataMap = new HashMap<>();
                 ResultSetMetaData metaData = rs.getMetaData();
-//            获取列的个数
                 int columnCount = metaData.getColumnCount();
                 for (int i = 1; i <= columnCount; i++) {
                     String columnName = metaData.getColumnName(i);
@@ -210,51 +208,11 @@ public class DesktopServiceImpl implements DesktopService {
                 list.add(oneDataMap);
             }
             return list;
-            /*//3.定义sql
-            String sql = "select * from t_carline";
-            //4.获取执行sql对象
-            stmt = conn.createStatement();
-            //5.执行sql，返回结果集
-            rs = stmt.executeQuery(sql);
-            //6.处理结果
-            //循环判断游标是否是最后一行末尾。
-            //一行一行的移动，再逐个列获取数据
-            while (rs.next()) {
-
-                //获取数据
-                //6.2 获取数据
-                *//*
-                boolean next(): 游标向下移动一行，判断当前行是否是最后一行末尾(是否有数据)，
-                            如果是，则返回false，如果不是则返回true
-                        * getXxx(参数):获取数据
-                        * Xxx：代表数据类型   如： int getInt() ,	String getString()
-                        * 参数：
-                            1. int：代表列的编号,从1开始   如： getString(1)
-                            2. String：代表列名称。 如： getDouble("balance")
-                *//*
-                int id = rs.getInt(1);
-                String name = rs.getString("carline_model_type");
-                double balance = rs.getDouble(3);
-
-                System.out.println(id + "---" + name + "---" + balance);
-            }*/
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        /*StringBuffer stringBuffer = new StringBuffer();
-//        if (desktopGetDBParam != null && StringUtils.isNotEmpty(desktopGetDBParam.getTableNames())){
-            for (String tableName : desktopGetDBParam.getTableNames()) {
-                tableName = tableName.replace("\"", "");
-                Object s = desktopLogMapper.selectTableData();
-                if (StringUtils.isNotEmpty(s.toString())){
-                    stringBuffer.append(s);
-                }
-            }
-
-//        }
-        return stringBuffer;*/
     }
 
     private Integer getRecordIndex(TDesktopRecord tDesktopRecord) {
