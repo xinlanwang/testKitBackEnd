@@ -186,15 +186,16 @@ public class DesktopServiceImpl implements DesktopService {
             //1. 注册驱动
             Class.forName("com.mysql.cj.jdbc.Driver");
             //2.获取连接对象
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
+            conn = DriverManager.getConnection("jdbc:mysql://testkit-mysql:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "12345678");
+//            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
             //4.获取执行sql对象
             stmt = conn.createStatement();
             //5.执行sql，返回结果集
             String sql = "select * from " + desktopGetDBParam.getTableName();
             rs = stmt.executeQuery(sql);
-            Map<String, Object> oneDataMap = new HashMap<>();
             while (rs.next()) {
 //              获取源数据
+                Map<String, Object> oneDataMap = new HashMap<>();
                 ResultSetMetaData metaData = rs.getMetaData();
 //            获取列的个数
                 int columnCount = metaData.getColumnCount();
@@ -204,7 +205,6 @@ public class DesktopServiceImpl implements DesktopService {
                         oneDataMap.put(columnName, rs.getObject(i));
                     } else {
                         oneDataMap.put(columnName, null);
-
                     }
                 }
                 list.add(oneDataMap);
