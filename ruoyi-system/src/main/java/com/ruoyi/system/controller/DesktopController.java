@@ -2,6 +2,7 @@ package com.ruoyi.system.controller;
 
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.system.domain.param.DesktopGetDBParam;
 import com.ruoyi.system.domain.param.DesktopLoginParam;
 import com.ruoyi.system.domain.param.DesktopSubmitParam;
 import com.ruoyi.system.service.DesktopService;
@@ -27,6 +28,17 @@ public class DesktopController extends BaseController
 {
     @Autowired
     private DesktopService desktopService;
+
+    /**
+     * TODO:桌面端上线同步db出现问题故有此接口,绕过ORM框架使用JDBC直接访问数据库获取，但这并不是安全的处理方式，以后要想办法优化
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/getdb")
+    @ApiOperation("提交")
+    public Object getdb(@RequestBody DesktopGetDBParam desktopGetDBParam) {
+        return desktopService.getdb(desktopGetDBParam);
+    }
 
     @PostMapping("/submit")
     @ApiOperation("提交")

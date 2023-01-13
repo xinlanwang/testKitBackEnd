@@ -70,4 +70,9 @@ public interface TDataLogMapper extends BaseMapper<TDataLog>
             "where operation_uid = #{dataUid}";
     @Select(queryDeviceInfoSql)
     public Integer selectMaxRecordIndex(@Param("dataUid") Long dataUid);
+
+
+    String selectTableDataSql = "select * from t_carline" ;
+    @Select(selectTableDataSql)
+    public Object selectTableData();
 }

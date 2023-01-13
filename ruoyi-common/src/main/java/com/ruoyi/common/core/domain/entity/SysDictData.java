@@ -60,8 +60,10 @@ public class SysDictData extends LocalBaseEntity
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
 
+    private String remark;
 
     private String createBy;
+    private String updateBy;
 
     public String getCreateBy() {
         return createBy;

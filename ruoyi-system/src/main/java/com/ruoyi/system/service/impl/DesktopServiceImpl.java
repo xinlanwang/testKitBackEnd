@@ -1,7 +1,9 @@
 package com.ruoyi.system.service.impl;
 
+import java.sql.*;
 import java.util.List;
 
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.utils.SecurityUtils;
@@ -16,7 +18,10 @@ import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DesktopService;
 import com.ruoyi.system.service.DeviceListService;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -123,6 +128,133 @@ public class DesktopServiceImpl implements DesktopService {
     @Override
     public AjaxResult login(DesktopLoginParam desktopLoginParam) {
         return null;
+    }
+
+
+    @Test
+    public void test1() {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            //1. 注册驱动
+            Class.forName("com.mysql.jdbc.Driver");
+            //2.获取连接对象
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
+            //3.定义sql
+            String sql = "select * from t_carline";
+            //4.获取执行sql对象
+            stmt = conn.createStatement();
+            //5.执行sql，返回结果集
+            rs = stmt.executeQuery(sql);
+            //6.处理结果
+            //循环判断游标是否是最后一行末尾。
+            //一行一行的移动，再逐个列获取数据
+            while (rs.next()) {
+
+                //获取数据
+                //6.2 获取数据
+                /*
+                boolean next(): 游标向下移动一行，判断当前行是否是最后一行末尾(是否有数据)，
+                            如果是，则返回false，如果不是则返回true
+                        * getXxx(参数):获取数据
+                        * Xxx：代表数据类型   如： int getInt() ,	String getString()
+                        * 参数：
+                            1. int：代表列的编号,从1开始   如： getString(1)
+                            2. String：代表列名称。 如： getDouble("balance")
+                */
+                int id = rs.getInt(1);
+                String name = rs.getString("name");
+                double balance = rs.getDouble(3);
+
+                System.out.println(id + "---" + name + "---" + balance);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Object getdb(DesktopGetDBParam desktopGetDBParam) {
+        Connection conn = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+        try {
+            //1. 注册驱动
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            //2.获取连接对象
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
+            //4.获取执行sql对象
+            stmt = conn.createStatement();
+            //5.执行sql，返回结果集
+            String sql = "select * from " + desktopGetDBParam.getTableName();
+            rs = stmt.executeQuery(sql);
+            Map<String, Object> oneDataMap = new HashMap<>();
+            while (rs.next()) {
+//              获取源数据
+                ResultSetMetaData metaData = rs.getMetaData();
+//            获取列的个数
+                int columnCount = metaData.getColumnCount();
+                for (int i = 1; i <= columnCount; i++) {
+                    String columnName = metaData.getColumnName(i);
+                    if (rs.getObject(i) != null) {
+                        oneDataMap.put(columnName, rs.getObject(i));
+                    } else {
+                        oneDataMap.put(columnName, null);
+
+                    }
+                }
+                list.add(oneDataMap);
+            }
+            return list;
+            /*//3.定义sql
+            String sql = "select * from t_carline";
+            //4.获取执行sql对象
+            stmt = conn.createStatement();
+            //5.执行sql，返回结果集
+            rs = stmt.executeQuery(sql);
+            //6.处理结果
+            //循环判断游标是否是最后一行末尾。
+            //一行一行的移动，再逐个列获取数据
+            while (rs.next()) {
+
+                //获取数据
+                //6.2 获取数据
+                *//*
+                boolean next(): 游标向下移动一行，判断当前行是否是最后一行末尾(是否有数据)，
+                            如果是，则返回false，如果不是则返回true
+                        * getXxx(参数):获取数据
+                        * Xxx：代表数据类型   如： int getInt() ,	String getString()
+                        * 参数：
+                            1. int：代表列的编号,从1开始   如： getString(1)
+                            2. String：代表列名称。 如： getDouble("balance")
+                *//*
+                int id = rs.getInt(1);
+                String name = rs.getString("carline_model_type");
+                double balance = rs.getDouble(3);
+
+                System.out.println(id + "---" + name + "---" + balance);
+            }*/
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        /*StringBuffer stringBuffer = new StringBuffer();
+//        if (desktopGetDBParam != null && StringUtils.isNotEmpty(desktopGetDBParam.getTableNames())){
+            for (String tableName : desktopGetDBParam.getTableNames()) {
+                tableName = tableName.replace("\"", "");
+                Object s = desktopLogMapper.selectTableData();
+                if (StringUtils.isNotEmpty(s.toString())){
+                    stringBuffer.append(s);
+                }
+            }
+
+//        }
+        return stringBuffer;*/
     }
 
     private Integer getRecordIndex(TDesktopRecord tDesktopRecord) {

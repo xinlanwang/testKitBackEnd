@@ -124,7 +124,7 @@ public class SysDictDataServiceImpl implements ISysDictDataService
         if (sysDictData != null){
             sysDictData.setStatus(DICT_STATUS_NORMAL);
             dictDataMapper.updateDictData(sysDictData);
-            return 1;
+            return -1;
         }else {
             Integer currentMaxValue = dictDataMapper.selectMaxDictType(dictType);
             if (currentMaxValue == null){

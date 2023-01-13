@@ -34,6 +34,8 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DeviceListService;
 import io.netty.util.internal.StringUtil;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,8 @@ import static com.ruoyi.common.utils.PageUtils.startPage;
  */
 @Service
 public class DeviceListServiceImpl implements DeviceListService {
+    public static final Logger log = LoggerFactory.getLogger(DeviceListServiceImpl.class);
+
     @Autowired
     private TCarlineMapper tCarlineMapper;
     @Autowired
@@ -715,23 +719,30 @@ public class DeviceListServiceImpl implements DeviceListService {
     private int compareComponent(DeviceInfoComponent deviceInfoComponent, GoldenInfoComponentDTO goldenInfoComponentDTO) {
         String goldenComponentVersion;
         Integer goldenComponentSort;
+        Integer minimalMinNum = 999999;
+        String minimal = goldenInfoComponentDTO.getMinimalHW();
         if ("SW".equals(deviceInfoComponent.getWareType())){
             goldenComponentVersion = goldenInfoComponentDTO.getSwComponentVersion();
             goldenComponentSort = goldenInfoComponentDTO.getSwSort();
         }else {
             goldenComponentVersion = goldenInfoComponentDTO.getHwComponentVersion();
             goldenComponentSort = goldenInfoComponentDTO.getHwSort();
+            if (StringUtils.isNotEmpty(minimal)) {
+                minimalMinNum = cleanNum(minimal, MIN);
+            }
         }
         if (StringUtils.isEmpty(goldenComponentVersion)) {
             return 0;
         }
-        String minimal = goldenInfoComponentDTO.getMinimalVersion();
-        Integer minimalMinNum = 999999;
-        if (StringUtils.isNotEmpty(minimal)) {
-            minimalMinNum = cleanNum(minimal, MIN);
-        }
+        log.info("minimalVersion:{}",goldenInfoComponentDTO.getMinimalVersion());
+        log.info("goldenComponentVersion:{}",goldenComponentVersion);
+        log.info("deviceComponentVersion:{}",deviceInfoComponent.getComponentVersion());
+
         Integer goldenNormalVersionMinNum = cleanNum(goldenComponentVersion, MIN);
         Integer deviceVersionNum = cleanNum(deviceInfoComponent.getComponentVersion(), MIN);
+        log.info("minimalMinNum:{}",goldenInfoComponentDTO.getMinimalHW());
+        log.info("minimalMinNum:{}",goldenComponentVersion);
+        log.info("deviceVersionNum:{}",deviceInfoComponent.getComponentVersion());
         if (goldenComponentSort == null || goldenComponentSort == 0 ||
                 goldenInfoComponentDTO.getSort() == null || goldenInfoComponentDTO.getSort() == 0 ||
                 goldenComponentSort.equals(goldenInfoComponentDTO.getSort())){
@@ -752,15 +763,24 @@ public class DeviceListServiceImpl implements DeviceListService {
     Integer MIN = -1;
     Integer MAX = 1;
 
+    @Test
+    public void test2222(){
+        Integer num = cleanNum("0/X533", 0);
+        System.out.println(num);
+
+    }
+
+    
+
     private Integer cleanNum(String deviceComponent, Integer getNum) {
         String[] split = deviceComponent.split("/");
-        if (MAX.equals(split)) {
+        if (MAX.equals(getNum)) {
             deviceComponent = new String(split[split.length - 1]);
         } else {
             deviceComponent = new String(split[0]);
         }
         split = deviceComponent.split("-");
-        if (MAX.equals(split)) {
+        if (MAX.equals(getNum)) {
             deviceComponent = new String(split[split.length - 1]);
         } else {
             deviceComponent = new String(split[0]);
@@ -774,6 +794,9 @@ public class DeviceListServiceImpl implements DeviceListService {
             if ((chars[i] >= 48 && chars[i] <= 57)) {
                 buffer.append(chars[i]);//去除特殊格式
             }
+        }
+        if (StringUtils.isEmpty(buffer)){
+            return 0;
         }
         return Integer.valueOf(buffer.toString());
     }
@@ -816,6 +839,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             if ("HW".equals(goldenInfoComponentDTO.getWareType())){
                 tempComponentDTO.setHwComponentVersion(goldenInfoComponentDTO.getComponentVersion());
                 tempComponentDTO.setHwSort(goldenInfoComponentDTO.getSort());
+                tempComponentDTO.setMinimalHW(goldenInfoComponentDTO.getMinimalHW());
             }
             if ("SW".equals(goldenInfoComponentDTO.getWareType())){
                 tempComponentDTO.setSwComponentVersion(goldenInfoComponentDTO.getComponentVersion());

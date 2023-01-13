@@ -150,7 +150,12 @@ public class MatrixController extends BaseController {
     @ApiOperation("新增字典某类型下键值类型")
     public AjaxResult add(@RequestBody SysDictData dict)
     {
-        return toAjax(dictDataService.insertMatrixDictData(dict));
+        int i = dictDataService.insertMatrixDictData(dict);
+        if (i < 0){
+            return AjaxResult.error("已存在");
+        }else {
+            return AjaxResult.success("保存成功");
+        }
     }
 
     /**
