@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ruoyi.system.domain.AutoSaveVersionVO;
 import com.ruoyi.system.domain.po.TCluster;
 import com.ruoyi.system.domain.vo.GoldenListPlatfromVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -77,4 +78,15 @@ public interface TClusterMapper extends BaseMapper<TCluster>
     List<TCluster> selectUniqueClusterNames();
 
 
+    String selectAutoSaveVersionListSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.device_circle_num as AutoSaveVersionName\n" +
+            "from t_cluster\n" +
+            "left join t_carline_info tci on tci.cluster_uid = t_cluster.uid\n" +
+            "where carline_uid = (select carline_uid\n" +
+            "from t_cluster tc\n" +
+            "where tc.uid = (select cluster_uid\n" +
+            "from t_carline_info\n" +
+            "where carline_info_uid = #{carlineInfoUid}))\n" +
+            "order by t_cluster.update_time desc" ;
+    @Select(selectAutoSaveVersionListSql)
+    List<AutoSaveVersionVO> selectAutoSaveVersionList(@Param("carlineInfoUid") String carlineInfoUid);
 }

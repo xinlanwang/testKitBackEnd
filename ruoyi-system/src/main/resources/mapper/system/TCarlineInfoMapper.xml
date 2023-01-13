@@ -110,7 +110,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
                 #{item}
             </foreach>
         </if>
-        order by tci.update_time desc
+        and tc.uid in (select uid
+        from t_cluster a,(select MAX(update_time) as updateTime,carline_uid
+        from t_cluster b
+        group by carline_uid) b
+        where a.update_time = b.updateTime
+        and a.carline_uid = b.carline_uid)
+        order by tc.update_time desc
     </select>
 
     <select id="selectTCarlineInfoList" parameterType="TCarlineInfo" resultMap="TCarlineInfoResult">

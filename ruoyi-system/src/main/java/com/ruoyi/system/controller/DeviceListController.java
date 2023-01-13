@@ -1,14 +1,11 @@
 package com.ruoyi.system.controller;
 
 import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.config.RuoYiConfig;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.R;
 import com.ruoyi.common.core.page.TableDataInfo;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.common.utils.file.FileUploadUtils;
-import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
@@ -65,6 +62,16 @@ public class DeviceListController extends BaseController
         return deviceListService.importDTCReport(file.getInputStream(), true, operName);
     }
 
+
+    /**
+     * 查询`车型自动保存版本列表`列表
+     */
+    @ApiOperation("查询车型基本信息列表")
+//    @PreAuthorize("@ss.hasPermi('device:devicelist:list')")
+    @GetMapping("/autoSaveVersionList/{carlineInfoUid}")
+    public AjaxResult autoSaveVersionList(@PathVariable("carlineInfoUid") String carlineInfoUid) {
+        return AjaxResult.success(deviceListService.autoSaveVersionList(carlineInfoUid));
+    }
 
     /**
      * 查询`车型基本数据`列表

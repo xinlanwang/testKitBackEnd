@@ -18,6 +18,7 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.reflect.ReflectUtils;
+import com.ruoyi.system.domain.AutoSaveVersionVO;
 import com.ruoyi.system.domain.DeviceCompareVO;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
@@ -91,6 +92,8 @@ public class DeviceListServiceImpl implements DeviceListService {
         return deviceListVos;
     }
 
+    private final static Integer MAXCIRCLE = 10;
+
     @Override
     @Transactional
     public Long updateDeviceInfo(DeviceInfoVo deviceInfoVo) {
@@ -110,20 +113,28 @@ public class DeviceListServiceImpl implements DeviceListService {
 
 
         //tCluster 筛选有无额外版本，并删除相关版本与配件信息
-        List<TCluster> tClusters = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid", tCarline.getUid()).eq("cluster_name", tCluster.getClusterName()).orderByDesc("device_circle_num"));
+        List<TCluster> tClusters = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid",
+                tCarline.getUid()).eq("cluster_name",
+                tCluster.getClusterName()).orderByDesc("device_circle_num"));
         if (tClusters == null && tClusters.size() < 0) {
             return -1L;
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
         Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
-        Integer nextDeviceNum = (deviceNum + 1) % 10;
-        cascadeDeleteVersion(carlineInfoUid, tClusters.get(0));
+        Integer nextDeviceNum = (deviceNum + 1) % MAXCIRCLE;
+        List<TCluster> tClusterList = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid",
+                tCarline.getUid()).eq("device_type",tCluster.getDeviceType()));
+        if (tClusterList != null && tClusterList.size() == MAXCIRCLE){
+            cascadeDeleteVersion(carlineInfoUid, tClusters.get(0));
+        }
 
         //save -tCluster
+        tCluster.setUid(null);
         tCluster.setdeviceCircleNum(nextDeviceNum);
         buildTClusterPO(deviceInfoVo, tCluster);
         tClusterMapper.insert(tCluster);
         //t_carline_info
+        tCarlineInfo.setCarlineInfoUid(null);
         tCarlineInfo.setClusterUid(tCluster.getUid());
         buildTCarlineInfoPO(deviceInfoVo, tCarlineInfo);
         tCarlineInfoMapper.insert(tCarlineInfo);
@@ -447,6 +458,15 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     }
 
+    @Override
+    public List<AutoSaveVersionVO> autoSaveVersionList(String carlineInfoUid) {
+        if (StringUtils.isEmpty(carlineInfoUid)){
+            return null;
+        }
+        List<AutoSaveVersionVO> autoSaveVersionVOS = tClusterMapper.selectAutoSaveVersionList(carlineInfoUid);
+        return autoSaveVersionVOS;
+    }
+
     private static String regionRegexValue(TDTCReportDTO reportDTO, Map<String, String> componentMap, String fieldName, String filedValue) {
         Map<String, String> componentNameMap = JSON.parseObject(JSON.parseObject(filedValue).toJSONString(), new TypeReference<Map>() {
         });
@@ -504,7 +524,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                 continue;
             }
             TCluster tCluster = tClusterMapper.selectById(tCarlineInfo.getClusterUid());
-            cascadeDeleteVersion(carlineInfoUid, tCluster);
+            TCarline tCarline = tCarlineMapper.selectById(tCluster.getCarlineUid());
+            cascadeDeleteVersion(carlineInfoUid, tCluster,tCarline);
         }
         return 1;
     }
@@ -1167,13 +1188,15 @@ public class DeviceListServiceImpl implements DeviceListService {
         return dictMap;
     }
 
+
     /**
      * 级联删除某一副本关联内容
-     *
+     * TODO:考虑级联内容
      * @param carlineInfoUid
      * @param exClusterVersion
      */
     private void cascadeDeleteVersion(Long carlineInfoUid, TCluster exClusterVersion) {
+        //关于向下配件的级联删除
         List<TCarlineComponent> tCarlineComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>().eq("carline_info_uid", carlineInfoUid));
         if (tCarlineComponents != null && tCarlineComponents.size() > 0) {
             for (TCarlineComponent tCarlineComponent : tCarlineComponents) {
@@ -1185,7 +1208,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 if (ifDeleteTCarlineHWComponents != null && ifDeleteTCarlineHWComponents.size() == 1) {
                     tComponentDataMapper.deleteById(ifDeleteTCarlineHWComponents.get(0).getHwVersionUid());
                 }
-                List<TCarlineComponent> ifDeleteTCarlineOTComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>().eq("other_version_uid", tCarlineComponent.getHwVersionUid()));
+                List<TCarlineComponent> ifDeleteTCarlineOTComponents = tCarlineComponentMapper.selectList(new QueryWrapper<TCarlineComponent>().eq("other_version_uid", tCarlineComponent.getOtherVersionUid()));
                 if (ifDeleteTCarlineOTComponents != null && ifDeleteTCarlineOTComponents.size() == 1) {
                     tComponentDataMapper.deleteById(ifDeleteTCarlineOTComponents.get(0).getOtherVersionUid());
                 }
@@ -1193,7 +1216,19 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
         tCarlineComponentMapper.delete(new QueryWrapper<TCarlineComponent>().eq("carline_info_uid", carlineInfoUid));
         tCarlineInfoMapper.deleteById(carlineInfoUid);
+        //向上的级联删除
         tClusterMapper.deleteById(exClusterVersion);
+    }
+
+    /**
+     * 级联删除某一副本关联内容
+     * TODO:考虑级联内容
+     * @param carlineInfoUid
+     * @param exClusterVersion
+     */
+    private void cascadeDeleteVersion(Long carlineInfoUid, TCluster exClusterVersion,TCarline tCarline) {
+        cascadeDeleteVersion(carlineInfoUid,exClusterVersion);
+        tCarlineMapper.deleteById(tCarline);
     }
 
     @Override

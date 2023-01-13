@@ -1,12 +1,11 @@
 package com.ruoyi.system.service;
 
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.system.domain.AutoSaveVersionVO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
-import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.List;
@@ -36,4 +35,6 @@ public interface DeviceListService
 
     public AjaxResult importDTCReport(InputStream io, boolean b, String operName);
     public void quarzImportDTCReport();
+
+    public List<AutoSaveVersionVO> autoSaveVersionList(String carlineInfoUid);
 }
