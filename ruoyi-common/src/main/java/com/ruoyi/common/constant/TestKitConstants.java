@@ -54,4 +54,10 @@ public class TestKitConstants
     public static final String SYS_ROLE_MANAGER = "2";//普通管理员
     public static final String SYS_ROLE_NORMAL = "3";//普通用户
 
+
+    /**
+     * refresh路径
+     */
+    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
+    public static final String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-16.assets\\test\\golden";
 }

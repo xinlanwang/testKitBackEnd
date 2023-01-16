@@ -9,6 +9,7 @@ import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.system.domain.dto.ImportGoldenInfoDTO;
 import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
 import com.ruoyi.system.domain.vo.GoldenInfoVO;
+import com.ruoyi.system.service.DeviceListService;
 import com.ruoyi.system.service.GoldenInfoService;
 import com.ruoyi.system.service.ITCarlineService;
 import com.ruoyi.system.service.impl.DeviceExcelUtil;
@@ -38,16 +39,23 @@ public class GoldenInfoController extends BaseController
     private ITCarlineService tCarlineService;
     @Autowired
     private GoldenInfoService goldenInfoService;
+    @Autowired
+    private DeviceListService deviceListService;
+
 
 
     @PostMapping("/importGoldenInfoData")
     @ApiOperation("导入GoldenInfo")
     public AjaxResult importGoldenInfoData(MultipartFile file) throws Exception
     {
+        String originalFilename = file.getOriginalFilename();
+        String clusterName = originalFilename.split(" ")[0].toUpperCase();
+        Long[] strings = goldenInfoService.selectCarlineInfoIdsByClusterName(clusterName);
+        deviceListService.deleteTCarlineByUids(strings);
+
         DeviceExcelUtil<ImportPartComponentDTO> util = new DeviceExcelUtil<ImportPartComponentDTO>(ImportPartComponentDTO.class);
         List<ImportGoldenInfoDTO> importGoldenInfoDTOS = new ArrayList<>();
         util.importGoldenInfoExcel(file.getInputStream(),importGoldenInfoDTOS);
-        String originalFilename = file.getOriginalFilename();
         String message = goldenInfoService.importGoldenInfoDevice(importGoldenInfoDTOS, true, originalFilename);
         return success(message);
     }

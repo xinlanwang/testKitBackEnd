@@ -89,4 +89,21 @@ public interface TClusterMapper extends BaseMapper<TCluster>
             "order by t_cluster.update_time desc" ;
     @Select(selectAutoSaveVersionListSql)
     List<AutoSaveVersionVO> selectAutoSaveVersionList(@Param("carlineInfoUid") String carlineInfoUid);
+
+    String selectClusterNameSql = "select dict_label\n" +
+            "from sys_dict_data\n" +
+            "where dict_type = 'clusterName'\n" +
+            "and dict_value = #{clusterName}" ;
+    @Select(selectClusterNameSql)
+    String selectClusterName(@Param("clusterName") String clusterName);
+
+
+    String selectCarlineInfoIdsByClusterNameSql = "select distinct tci.carline_info_uid\n" +
+            "from t_cluster tc\n" +
+            "left join t_carline_info tci on tc.uid = tci.cluster_uid\n" +
+            "where 1 = 1\n" +
+            "and cluster_name = #{clusterName}\n" +
+            "and device_type = '3'" ;
+    @Select(selectCarlineInfoIdsByClusterNameSql)
+    Long[] selectCarlineInfoIdsByClusterName(@Param("clusterName") String clusterName);
 }

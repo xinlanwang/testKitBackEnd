@@ -1,11 +1,11 @@
 package com.ruoyi.system.service.impl;
-import java.time.temporal.Temporal;
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
@@ -162,6 +162,13 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
     }
 
     @Override
+    public Long[] selectCarlineInfoIdsByClusterName(String clusterName){
+        if (StringUtils.isEmpty(clusterName)){
+            return null;
+        }
+        return tClusterMapper.selectCarlineInfoIdsByClusterName(clusterName);
+    }
+    @Override
     public String importGoldenInfoDevice(List<ImportGoldenInfoDTO> importGoldenInfoDTOS, boolean b, String originalFilename) {
         if (CollectionUtils.isEmpty(importGoldenInfoDTOS)){
             return "值为空";
@@ -286,6 +293,78 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         }
 
         return null;
+    }
+
+    @Override
+    public String refreshGoldenByCarlineInfoUid(String clusterName) {
+        return tClusterMapper.selectClusterName(clusterName).replace("CLU","CL");
+    }
+
+    @Override
+    public Map<String, File> getAutoImportGoldenFildMap(){
+        Map<String, File> goldenMaxDateFileMap = getGoldenMaxDateFileMap();
+        Map<String, File> autoImportGoldenFileMap = new HashMap<>();
+        for (String fileName : goldenMaxDateFileMap.keySet()){
+            String[] strs = fileName.split(" ");
+            if (StringUtils.isNotEmpty(strs) && strs.length > 2){
+                String clusterName = strs[0];
+                if (null == autoImportGoldenFileMap.get(clusterName)){
+                    autoImportGoldenFileMap.put(clusterName,goldenMaxDateFileMap.get(fileName));
+                }else{
+                    Double goldenNum = getGoldenCWNumByFileName(fileName);
+                    Double contantMapNum = getGoldenCWNumByFileName(autoImportGoldenFileMap.get(clusterName).getName());
+                    if (contantMapNum < goldenNum){
+                        autoImportGoldenFileMap.put(clusterName,goldenMaxDateFileMap.get(fileName));
+                    }
+                }
+            }
+        }
+        return autoImportGoldenFileMap;
+    }
+
+    private Double getGoldenCWNumByFileName(String fileName) {
+        String str = fileName.toUpperCase().replace(".XLSX","");
+        try {
+            if (str.contains("_")){
+                str = str.split("_")[str.split("_").length - 1].toUpperCase();
+                if (str.contains("CW")){
+                    str = str.replace("CW.","");
+                    str = str.replace("CW","");
+                }
+                Double cwVersionNum = Double.valueOf(str);
+                return cwVersionNum;
+            }
+        } catch (Exception e) {
+            log.error("解析错误，该字符串为：{}",fileName);
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Map<String, File> getGoldenMaxDateFileMap() {
+        File[] files =  new File(AUTO_IMPORT_GOLDEN_PATH).listFiles();
+        Integer maxDateNum = 0;
+        String maxDateFileName = null;
+        for (File subfile:files){
+            if (subfile.isDirectory()){
+                String name = subfile.getName();
+                name = new StringBuffer().append(name.substring(name.length() - 2))
+                        .append(name.substring(name.length() - 4, name.length() - 2)).toString();
+                if (maxDateNum < Integer.valueOf(name)){
+                    maxDateNum = Integer.valueOf(name);
+                    maxDateFileName = subfile.getName();
+                }
+            }
+        }
+        List<File> allfiles = FileUtil.loopFiles(AUTO_IMPORT_GOLDEN_PATH);
+        Map<String, File> fileMap = new HashMap<>();
+        for (File file:allfiles){
+            String substring = file.getParent().substring(file.getParent().length() - 6);
+            if (maxDateFileName.equals(substring)){
+                fileMap.put(file.getName(),file);
+            }
+        }
+        return fileMap;
     }
 
     private String getComponentType(String componentName) {

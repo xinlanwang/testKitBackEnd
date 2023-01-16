@@ -445,7 +445,7 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     @Test
     public void test21() throws IOException, ParseException {
-        System.out.println(getGoldenCWNumByFileName("CL37 SOP 25-22_&_CL35.2_Goldern Car_MIB3_Minimal List_CW39.5"));
+//        System.out.println(getGoldenCWNumByFileName("CL37 SOP 25-22_&_CL35.2_Goldern Car_MIB3_Minimal List_CW39.5"));
         /*
         List<File> files = FileUtil.loopFiles(AUTO_IMPORT_DTC_PATH);
         System.out.println("总共大小为：" + files.size());
@@ -461,23 +461,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         }*/
     }
 
-    private Double getGoldenCWNumByFileName(String fileName) {
-        String str = fileName;
-        try {
-            if (str.contains("_")){
-                str = str.split("_")[str.split("_").length - 1].toUpperCase();
-                if (str.contains("CW")){
-                    str = str.replace("CW","");
-                }
-                Double cwVersionNum = Double.valueOf(str);
-                return cwVersionNum;
-            }
-        } catch (Exception e) {
-            log.error("解析错误，该字符串为：{}",fileName);
-            e.printStackTrace();
-        }
-        return null;
-    }
+
 
     private Date getDTCFileDateByFileName(String fileName) {
         try {
