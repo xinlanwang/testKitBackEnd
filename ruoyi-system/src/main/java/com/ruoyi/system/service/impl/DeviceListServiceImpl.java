@@ -2,6 +2,8 @@ package com.ruoyi.system.service.impl;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import cn.hutool.core.date.DateUtil;
@@ -187,8 +189,6 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
             }
         }
-
-
     }
 
     @Test
@@ -440,10 +440,72 @@ public class DeviceListServiceImpl implements DeviceListService {
         return basicInfo;
     }
 
-    private String IMPORT_DTC_REPORT_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
+    private String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
+    private String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
+
+    @Test
+    public void test21() throws IOException, ParseException {
+        System.out.println(getGoldenCWNumByFileName("CL37 SOP 25-22_&_CL35.2_Goldern Car_MIB3_Minimal List_CW39.5"));
+        /*
+        List<File> files = FileUtil.loopFiles(AUTO_IMPORT_DTC_PATH);
+        System.out.println("总共大小为：" + files.size());
+        for (File file:files){
+            System.out.println(file.getName());
+            long l = file.lastModified();
+            Date date = new Date(l);
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            System.out.println(simpleDateFormat.format(date));
+            System.out.println(file.getParent());
+            System.out.println(file.getCanonicalPath());
+            System.out.println();
+        }*/
+    }
+
+    private Double getGoldenCWNumByFileName(String fileName) {
+        String str = fileName;
+        try {
+            if (str.contains("_")){
+                str = str.split("_")[str.split("_").length - 1].toUpperCase();
+                if (str.contains("CW")){
+                    str = str.replace("CW","");
+                }
+                Double cwVersionNum = Double.valueOf(str);
+                return cwVersionNum;
+            }
+        } catch (Exception e) {
+            log.error("解析错误，该字符串为：{}",fileName);
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private Date getDTCFileDateByFileName(String fileName) {
+        try {
+            if ("AM".equals(fileName.substring(fileName.length() - 2,fileName.length())) ||
+                    "PM".equals(fileName.substring(fileName.length() - 2,fileName.length())) ){
+                StringBuffer stringBuffer = new StringBuffer();
+                stringBuffer.append(fileName.split("_")[fileName.split("_").length - 2]);
+                stringBuffer.append(fileName.split("_")[fileName.split("_").length - 1]);
+                stringBuffer.delete(stringBuffer.length() - 2,stringBuffer.length());
+                Date fileDate = new SimpleDateFormat("yyyyMMddhhmmss").parse(stringBuffer.toString());
+                return fileDate;
+            }else {
+                StringBuffer stringBuffer = new StringBuffer();
+                stringBuffer.append(fileName.split("_")[fileName.split("_").length - 2].replaceAll("\\.",""));
+                stringBuffer.append(fileName.split("_")[fileName.split("_").length - 1].replace(".xml","").replaceAll("\\.",""));
+                Date fileDate = new SimpleDateFormat("ddMMyyyyhhmmss").parse(stringBuffer.toString());
+                return fileDate;
+            }
+        } catch (ParseException e) {
+            log.error("解析错误，该字符串为：{}",fileName);
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public void quarzImportDTCReport(){
-        List<File> files = FileUtil.loopFiles(IMPORT_DTC_REPORT_PATH);
+        List<File> files = FileUtil.loopFiles(AUTO_IMPORT_DTC_PATH);
         System.out.println("总共大小为：" + files.size());
         for (File file:files){
             if (FileNameUtil.isType(file.getName(),"xml")){
@@ -452,7 +514,6 @@ public class DeviceListServiceImpl implements DeviceListService {
                 System.out.println(operName);
             }
         }
-
     }
 
     @Override
