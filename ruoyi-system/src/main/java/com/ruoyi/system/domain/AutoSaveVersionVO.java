@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class AutoSaveVersionVO {
     private String carlineInfoUid;
-    private String AutoSaveVersionName;
+    private String autoSaveVersionName;
 }

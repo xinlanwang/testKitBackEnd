@@ -997,6 +997,9 @@ public class DeviceListServiceImpl implements DeviceListService {
                 String versionCode = DateUtil.format(new Date(), "yyMMddHHmmss");
                 tCarlineInfo.setVersionCode(versionCode);
                 tCarlineInfo.setBasicType(BASIC_TYPE_WEB_DEVICE);
+                //版本名称
+                StringBuffer autoSaveVersionName = new StringBuffer(versionCode).append("_MIB3");
+                tCluster.setAutoSaveVersionName(autoSaveVersionName.toString());
                 tCarlineMapper.insert(tCarline);
                 tCluster.setCarlineUid(tCarline.getUid());
                 tClusterMapper.insert(tCluster);
@@ -1363,6 +1366,23 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCluster.setStatus(1);
         tCluster.setUpdateTime(new Date());
         tCluster.setIsShow(1);
+        //版本名称
+        /*时间戳_dtc_文件名   时间戳_manual*/
+        String now = DateUtil.format(new Date(), "yyMMddHHmmss");
+        StringBuffer autoSaveVersionName = new StringBuffer(now).append("_");
+        if (deviceInfoVo.getIsImportDTC() != null){
+            if (deviceInfoVo.getIsImportDTC().equals(0)){
+                autoSaveVersionName.append("MANUAL");
+            }else {
+                autoSaveVersionName.append("DTC");
+            }
+        }
+        if (deviceInfoVo.getIsModified() != null){
+            if (!deviceInfoVo.getIsModified().equals(0)){
+                autoSaveVersionName.append("(M)");
+            }
+        }
+        tCluster.setAutoSaveVersionName(autoSaveVersionName.toString());
     }
 
 }

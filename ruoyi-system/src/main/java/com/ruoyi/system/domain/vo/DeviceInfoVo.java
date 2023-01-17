@@ -22,6 +22,8 @@ public class DeviceInfoVo
    private Long originalCarlineInfoUid;
    @ApiModelProperty("设备类型：bc代表bench，car代表car，gd代表目标goldeninfo")
    private String carlineType;
+   private Integer isImportDTC;
+   private Integer isModified;
    @ApiModelProperty("版本规范车族名称，对应devicesName")
    private String goldenCarName;
    @ApiModelProperty

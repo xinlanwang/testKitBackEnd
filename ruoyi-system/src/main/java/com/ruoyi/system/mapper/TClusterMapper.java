@@ -78,7 +78,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
     List<TCluster> selectUniqueClusterNames();
 
 
-    String selectAutoSaveVersionListSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.device_circle_num as AutoSaveVersionName\n" +
+    String selectAutoSaveVersionListSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.auto_save_version_name as AutoSaveVersionName\n" +
             "from t_cluster\n" +
             "left join t_carline_info tci on tci.cluster_uid = t_cluster.uid\n" +
             "where carline_uid = (select carline_uid\n" +
