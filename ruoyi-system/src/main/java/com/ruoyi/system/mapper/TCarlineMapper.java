@@ -27,7 +27,7 @@ public interface TCarlineMapper extends BaseMapper<TCarline>
      */
     String queryDeviceListSql = "<script>\n" +
             "select t.carline_icon,tci.device_name as deviceName,tc.cluster_name as clusterName,tc.project_type as projectType,\n" +
-            "tci.market_type as marketType,t.carline_model_type as carlineModelType,tci.variant_type as variant_type,tci.vin_code as vinCode,tci.carline_info_uid\n" +
+            "tci.market_type as marketType,tci.carline_model_type as carlineModelType,tci.variant_type as variant_type,tci.vin_code as vinCode,tci.carline_info_uid\n" +
             "from t_carline t\n" +
             "left join t_cluster tc on t.uid = tc.carline_uid\n" +
             "left join t_carline_info tci on tc.uid = tci.cluster_uid\n" +

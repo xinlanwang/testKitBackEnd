@@ -20,6 +20,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static com.ruoyi.common.constant.TestKitConstants.AUTO_IMPORT_DTC_PATH;
 import static com.ruoyi.common.constant.TestKitConstants.AUTO_IMPORT_GOLDEN_PATH;
 
 
@@ -49,6 +50,7 @@ public class TestkitCommonController extends BaseController
     @GetMapping("refresh/all")
     @ApiOperation("提交")
     public AjaxResult getdb() throws Exception {
+        //golden
         Map<String, File> autoImportGoldenFildMap = goldenInfoService.getAutoImportGoldenFildMap();
         DeviceExcelUtil<ImportPartComponentDTO> util = new DeviceExcelUtil<ImportPartComponentDTO>(ImportPartComponentDTO.class);
         List<ImportGoldenInfoDTO> importGoldenInfoDTOS = new ArrayList<>();
@@ -58,9 +60,10 @@ public class TestkitCommonController extends BaseController
             String originalFilename = file.getName();
             String message = goldenInfoService.importGoldenInfoDevice(importGoldenInfoDTOS, true, originalFilename);
         }
-        //golden
+        //device
         try {
-            List<File> files = FileUtil.loopFiles(AUTO_IMPORT_GOLDEN_PATH);
+            List<File> files = FileUtil.loopFiles(AUTO_IMPORT_DTC_PATH);
+            deviceListService.quarzImportDTCReport();
             System.out.println("总共大小为：" + files.size());
             for (File file:files){
                 System.out.println(file.getName());
@@ -76,7 +79,6 @@ public class TestkitCommonController extends BaseController
         } catch (IOException e) {
             return AjaxResult.success("刷新失败");
         }
-        //device
     }
 
 

@@ -121,10 +121,11 @@ public class DeviceListServiceImpl implements DeviceListService {
             return -1L;
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
-        Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
-        Integer nextDeviceNum = (deviceNum + 1) % MAXCIRCLE;
-        if (tClusters.size() == MAXCIRCLE){
-            cascadeDeleteVersion(carlineInfoUid, tClusters.get(0));
+//        Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
+        List<TCluster> tClusterList = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid", carlineUid).orderByAsc("update_time"));
+        Integer nextDeviceNum = (tClusterList.get(0).getdeviceCircleNum() + 1) % MAXCIRCLE;
+        if (tClusterList.size() == MAXCIRCLE){
+            cascadeDeleteVersion(carlineInfoUid, tClusterList.get(0));
         }
 
         //save -tCluster
@@ -210,75 +211,80 @@ public class DeviceListServiceImpl implements DeviceListService {
     @Override
     public AjaxResult importDTCReport(InputStream IN, boolean b, String operName) {
         try {
-            Map<String,Map> reportMapVO = new HashMap<>();
-            Document docResult = XmlUtil.readXML(IN);
-            Field[] parseDTCReportDTOFields = Class.forName(PARSE_DTC_REPORT_DTO_PATH).getDeclaredFields();
-            Map<String, List<TDTCReport>> dtcReportMaps = new HashMap<>();
-            for (TDTCReport tdtcReport : tdtcReportMapper.selectList(new QueryWrapper<>())) {
-                List<TDTCReport> tempReports;
-                if (dtcReportMaps.get(tdtcReport.getLevel()) == null) {
-                    tempReports = new ArrayList<>();
-                } else {
-                    tempReports = dtcReportMaps.get(tdtcReport.getLevel());
-                }
-                tempReports.add(tdtcReport);
-                dtcReportMaps.put(tdtcReport.getLevel(), tempReports);
-            }
-            for (String level : dtcReportMaps.keySet()) {
-                if (level.equals("//")) {
-                    continue;
-                }
-                List<TDTCReport> dtcReports = dtcReportMaps.get(level);
-                NodeList nodeListByXPath = XmlUtil.getNodeListByXPath(level, docResult);
-                for (TDTCReport tdtcReport : dtcReports) {
-                    String conditions = tdtcReport.getSelectCondition();
-                    Map<String, String> conditionMap = JSON.parseObject(JSON.parseObject(conditions).toJSONString(), new TypeReference<Map>() {
-                    });
-                    for (int i = 0; i < nodeListByXPath.getLength(); i++) {
-                        Node item = nodeListByXPath.item(i);
-                        TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
-                        if (reportDTO == null) {
-                            continue;
-                        }
-                        for (String condition : conditionMap.keySet()) {
-                            String conditionValue = conditionMap.get(condition);
-                            String dtcValue = ReflectUtils.invokeGetter(reportDTO, condition).toString();
-                            if (dtcValue.equals(conditionValue) || dtcValue.contains(conditionValue)) {
-                                Map<String, String> componentMap = new HashMap<>();
-                                JSONObject jsonObject = JSON.parseObject(tdtcReport.getSelectValue());
-                                ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>() {
-                                });
-                                for (Field field : parseDTCReportDTOFields) {
-                                    String fieldName = field.getName();
-                                    Object invokeGetter = ReflectUtils.invokeGetter(parseObject, fieldName);
-                                    if (jsonObject.containsKey(fieldName) && invokeGetter == null) {
-                                        componentMap.put(fieldName, ReflectUtils.getFieldValue(reportDTO, fieldName));
-                                    } else if (jsonObject.containsKey(fieldName) && invokeGetter != null) {
-                                        regionRegexValue(reportDTO, componentMap, fieldName, invokeGetter.toString());
-                                    }
-                                }
-                                String componentName = tdtcReport.getComponentName();
-                                if (StringUtils.isEmpty(componentName)) {
-                                    componentMap.put("componentName", tdtcReport.getComponentType());
-                                } else {
-                                    regionRegexValue(reportDTO, componentMap, "componentName", componentName);
-                                }
-                                componentMap.put("ecuId", tdtcReport.getEcuId());
-                                componentMap.put("componentType", tdtcReport.getComponentType());
-                                if ("005F".equals(tdtcReport.getEcuId())) {
-                                    Map<String, String> basicInfo = getbasicInfo(docResult, reportDTO, componentMap);
-                                    reportMapVO.put("basicInfo",basicInfo);
-                                }
-                                reportMapVO.put(componentMap.get("ecuId"),componentMap);
-                            }
-                        }
-                    }
-                }
-            }
+            Map<String, Map> reportMapVO = getReoirtMapVO(IN);
             return AjaxResult.success(reportMapVO);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private Map<String, Map> getReoirtMapVO(InputStream IN) throws ClassNotFoundException {
+        Map<String,Map> reportMapVO = new HashMap<>();
+        Document docResult = XmlUtil.readXML(IN);
+        Field[] parseDTCReportDTOFields = Class.forName(PARSE_DTC_REPORT_DTO_PATH).getDeclaredFields();
+        Map<String, List<TDTCReport>> dtcReportMaps = new HashMap<>();
+        for (TDTCReport tdtcReport : tdtcReportMapper.selectList(new QueryWrapper<>())) {
+            List<TDTCReport> tempReports;
+            if (dtcReportMaps.get(tdtcReport.getLevel()) == null) {
+                tempReports = new ArrayList<>();
+            } else {
+                tempReports = dtcReportMaps.get(tdtcReport.getLevel());
+            }
+            tempReports.add(tdtcReport);
+            dtcReportMaps.put(tdtcReport.getLevel(), tempReports);
+        }
+        for (String level : dtcReportMaps.keySet()) {
+            if (level.equals("//")) {
+                continue;
+            }
+            List<TDTCReport> dtcReports = dtcReportMaps.get(level);
+            NodeList nodeListByXPath = XmlUtil.getNodeListByXPath(level, docResult);
+            for (TDTCReport tdtcReport : dtcReports) {
+                String conditions = tdtcReport.getSelectCondition();
+                Map<String, String> conditionMap = JSON.parseObject(JSON.parseObject(conditions).toJSONString(), new TypeReference<Map>() {
+                });
+                for (int i = 0; i < nodeListByXPath.getLength(); i++) {
+                    Node item = nodeListByXPath.item(i);
+                    TDTCReportDTO reportDTO = XmlUtil.xmlToBean(item, TDTCReportDTO.class);
+                    if (reportDTO == null) {
+                        continue;
+                    }
+                    for (String condition : conditionMap.keySet()) {
+                        String conditionValue = conditionMap.get(condition);
+                        String dtcValue = ReflectUtils.invokeGetter(reportDTO, condition).toString();
+                        if (dtcValue.equals(conditionValue) || dtcValue.contains(conditionValue)) {
+                            Map<String, String> componentMap = new HashMap<>();
+                            JSONObject jsonObject = JSON.parseObject(tdtcReport.getSelectValue());
+                            ParseDTCReportDTO parseObject = JSON.parseObject(jsonObject.toJSONString(), new TypeReference<ParseDTCReportDTO>() {
+                            });
+                            for (Field field : parseDTCReportDTOFields) {
+                                String fieldName = field.getName();
+                                Object invokeGetter = ReflectUtils.invokeGetter(parseObject, fieldName);
+                                if (jsonObject.containsKey(fieldName) && invokeGetter == null) {
+                                    componentMap.put(fieldName, ReflectUtils.getFieldValue(reportDTO, fieldName));
+                                } else if (jsonObject.containsKey(fieldName) && invokeGetter != null) {
+                                    regionRegexValue(reportDTO, componentMap, fieldName, invokeGetter.toString());
+                                }
+                            }
+                            String componentName = tdtcReport.getComponentName();
+                            if (StringUtils.isEmpty(componentName)) {
+                                componentMap.put("componentName", tdtcReport.getComponentType());
+                            } else {
+                                regionRegexValue(reportDTO, componentMap, "componentName", componentName);
+                            }
+                            componentMap.put("ecuId", tdtcReport.getEcuId());
+                            componentMap.put("componentType", tdtcReport.getComponentType());
+                            if ("005F".equals(tdtcReport.getEcuId())) {
+                                Map<String, String> basicInfo = getbasicInfo(docResult, reportDTO, componentMap);
+                                reportMapVO.put("basicInfo",basicInfo);
+                            }
+                            reportMapVO.put(componentMap.get("ecuId"),componentMap);
+                        }
+                    }
+                }
+            }
+        }
+        return reportMapVO;
     }
 
     private Map<String, String> getbasicInfo(Document docResult, TDTCReportDTO reportDTO, Map<String, String> componentMap) {
@@ -440,8 +446,6 @@ public class DeviceListServiceImpl implements DeviceListService {
         return basicInfo;
     }
 
-    private String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
-    private String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
 
     @Test
     public void test21() throws IOException, ParseException {
@@ -488,16 +492,66 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     @Override
-    public void quarzImportDTCReport(){
+    public void quarzImportDTCReport() throws ClassNotFoundException {
+        Map<String, Object> objectObjectHashMap = new HashMap<>();
         List<File> files = FileUtil.loopFiles(AUTO_IMPORT_DTC_PATH);
-        System.out.println("总共大小为：" + files.size());
         for (File file:files){
             if (FileNameUtil.isType(file.getName(),"xml")){
                 InputStream fileInputStream = IoUtil.toStream(file);
-                AjaxResult operName = importDTCReport(fileInputStream, true, "operName");
-                System.out.println(operName);
+                String deviceType = null;
+                String deviceName = null;
+                Map<String, Map> reportMapVO = getReoirtMapVO(fileInputStream);
+                if (!reportMapVO.isEmpty()){
+                    DeviceInfoVo deviceInfoVo = buildDeviceInfoVo(reportMapVO,deviceType,deviceName);
+                    insertDeviceInfo(deviceInfoVo);
+                }
             }
         }
+//        getDTCFileDateByFileName()
+    }
+
+    private DeviceInfoVo buildDeviceInfoVo(Map<String, Map> reportMapVO,String deviceType,String deviceName) {
+        DeviceInfoVo deviceInfoVo = new DeviceInfoVo();
+        List<DeviceInfoComponent> deviceInfoComponents = new ArrayList<>();
+        for (String ecuId:reportMapVO.keySet()){
+            if (StringUtils.isEmpty(ecuId)){
+                continue;
+            }
+            Map<String,String> map = reportMapVO.get(ecuId);
+            if ("basicInfo".equals(ecuId)){
+                deviceInfoVo.setCarlineType(deviceType);
+                deviceInfoVo.setDeviceName(deviceName);
+                deviceInfoVo.setClusterName(map.get("clusterName"));
+                deviceInfoVo.setProjectType(map.get("projectType"));
+                deviceInfoVo.setPlatformType(map.get("platformType"));
+                deviceInfoVo.setMarketType(map.get("marketType"));
+                deviceInfoVo.setCarlineModelType(map.get("carlineModelType"));
+                deviceInfoVo.setVariantType(map.get("variantType"));
+                deviceInfoVo.setVinCode(map.get("VIN"));
+                deviceInfoVo.setBasicType(BASIC_TYPE_WEB_DEVICE);
+            }else if ("005F-Data Medium".equals(ecuId)){
+                deviceInfoVo.setDbVersion(map.get("SWVersion"));
+            }else if ("005F-ZDC".equals(ecuId)){
+                DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
+                deviceInfoComponent.setComponentName(map.get("componentName"));
+                deviceInfoComponent.setComponentType(map.get("componentType"));
+                deviceInfoComponent.setOtherVersion(map.get("ZdcVersion"));
+                deviceInfoComponent.setComponentInstanceName(map.get("ZdcName"));
+                deviceInfoComponent.setEcuId(ecuId);
+                deviceInfoComponents.add(deviceInfoComponent);
+            }else {
+                DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
+                deviceInfoComponent.setComponentType(map.get("componentType"));
+                deviceInfoComponent.setComponentName(map.get("componentName"));
+                deviceInfoComponent.setPartNumber(map.get("HWTeilenummer"));
+                deviceInfoComponent.setHwVersion(map.get("HWVersion"));
+                deviceInfoComponent.setSwVersion(map.get("SWVersion"));
+                deviceInfoComponent.setEcuId(ecuId);
+                deviceInfoComponents.add(deviceInfoComponent);
+            }
+        }
+        deviceInfoVo.setDeviceInfoComponents(deviceInfoComponents);
+        return deviceInfoVo;
     }
 
     @Override
@@ -712,7 +766,7 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     /**
      * select tcd.ware_type as wareType,tcd.component_type as componentType,tcd.component_version as componentVersion,
-     *        tc.cluster_name as clusterName,tca.carline_model_type as carlineModelType,tci.market_type as marketType,
+     *        tc.cluster_name as clusterName,tci.carline_model_type as carlineModelType,tci.market_type as marketType,
      *        tcd.part_number as partNumber
      * from t_component_data tcd
      * left join t_carline_component tcc on (tcc.hw_version_uid = tcd.uid or tcc.sw_version_uid = tcd.uid)
@@ -973,6 +1027,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 if (StringUtils.isNotEmpty(importDeviceDTO.getCarline())) {
                     String carlineModelType = getDictValue("carlineModelType", dictMap, importDeviceDTO.getCarline(), "0");
                     tCarline.setCarlineModelType(carlineModelType);
+                    tCarlineInfo.setCarlineModelType(carlineModelType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getVariantType())) {
                     String variantType = getDictValue("variantType", dictMap, importDeviceDTO.getVariantType(), "0");
@@ -1341,6 +1396,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (deviceInfoVo.getOriginalCarlineInfoUid() != null) {
             tCarlineInfo.setOriginalCarlineInfoUid(deviceInfoVo.getOriginalCarlineInfoUid());
         }
+        tCarlineInfo.setCarlineModelType(deviceInfoVo.getCarlineModelType());
         tCarlineInfo.setPlatformType(deviceInfoVo.getPlatformType());
         tCarlineInfo.setMarketType(deviceInfoVo.getMarketType());
         tCarlineInfo.setVinCode(deviceInfoVo.getVinCode());

@@ -26,6 +26,7 @@ public class TCarlineInfo extends LocalBaseEntity
     @TableId(type = IdType.AUTO)
     private Long carlineInfoUid;
     private Long originalCarlineInfoUid;
+    private String carlineModelType;
 
     private String deviceName;
 

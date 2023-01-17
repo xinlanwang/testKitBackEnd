@@ -52,8 +52,8 @@ public class DeviceInfoVo
 
 
    @ApiModelProperty("设备组件列表")
-   private List<DeviceInfoComponent> deviceInfoComponents;
-   private Map<String,DeviceInfoComponent> deviceInfoComponentMap;
+   private List<DeviceInfoComponent> deviceInfoComponents;//自己save与update
+   private Map<String,DeviceInfoComponent> deviceInfoComponentMap;//为方便给前端返回info用
 
 
 }

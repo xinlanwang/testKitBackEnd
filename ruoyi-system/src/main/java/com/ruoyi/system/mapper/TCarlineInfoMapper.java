@@ -25,7 +25,7 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
      */
     String queryDeviceInfoSql = "select tci.carline_info_uid,tc.device_type as carlineType,tci.device_name as deviceName,\n" +
             "                               tc.cluster_name as clusterName,tc.project_type as projectType,tci.platform_type as platformType, \n" +
-            "                               tci.market_type as marketType,tl.carline_model_type as carlineModelType,tci.variant_type as variant_type,tci.vin_code as vinCode, \n" +
+            "                               tci.market_type as marketType,tci.carline_model_type as carlineModelType,tci.variant_type as variant_type,tci.vin_code as vinCode, \n" +
             "                                    tc.last_updated as clusterLastUpdateName,tci.db_version as dbVersion\n" +
             "                                    from t_carline_info tci \n" +
             "                                    left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
