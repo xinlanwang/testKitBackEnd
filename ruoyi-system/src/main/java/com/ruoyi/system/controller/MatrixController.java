@@ -154,7 +154,7 @@ public class MatrixController extends BaseController {
         if (i < 0){
             return AjaxResult.error("已存在");
         }else {
-            return AjaxResult.success("保存成功");
+            return AjaxResult.success("success");
         }
     }
 

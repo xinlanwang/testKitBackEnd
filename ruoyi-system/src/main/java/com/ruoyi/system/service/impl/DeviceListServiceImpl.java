@@ -98,15 +98,21 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     @Override
     @Transactional
-    public Long updateDeviceInfo(DeviceInfoVo deviceInfoVo) {
+    public AjaxResult updateDeviceInfo(DeviceInfoVo deviceInfoVo) {
         if (deviceInfoVo == null || deviceInfoVo.getCarlineInfoUid() == null) {
-            return -1L;
+            return AjaxResult.error("carlineInfoUid can't be blank");
+        }
+        //查重
+        Integer carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicateExcludedSameVersion(deviceInfoVo.getDeviceName(),deviceInfoVo.getCarlineInfoUid());
+        if (carlineDuplicateUids != null && carlineDuplicateUids > 0){
+            return AjaxResult.error("deviceName can't be duplicated");
+//            deleteTCarlineByUids(carlineDuplicateUids.toArray(new Long[carlineDuplicateUids.size()]));
         }
         //相关表字段获取
         Long carlineInfoUid = deviceInfoVo.getCarlineInfoUid();
         TCarlineInfo tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
         if (tCarlineInfo == null) {
-            return -1L;
+            return AjaxResult.error("carlineInfo doesn't exit");
         }
         Long clusterUid = tCarlineInfo.getClusterUid();
         TCluster tCluster = tClusterMapper.selectById(clusterUid);
@@ -118,7 +124,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         List<TCluster> tClusters = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid",
                 tCarline.getUid()).orderByDesc("device_circle_num"));
         if (CollectionUtils.isEmpty(tClusters)) {
-            return -1L;
+            return AjaxResult.error("current version doesn't exit");
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
 //        Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
@@ -146,7 +152,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
 
         //保存
-        return tCarlineInfo.getCarlineInfoUid();
+        return AjaxResult.success(tCarlineInfo.getCarlineInfoUid());
     }
 
     @Test
@@ -349,7 +355,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         String clusterNum = "-";
         String clusterName = "-";
         if ("HCP3".equals(projectName)) {
-            clusterNum = "CLU43";
+            clusterNum = "43";
         } else if ("MIB3".equals(projectName)) {
             String tempCluNumber = swVersion;
             Pattern pattern = Pattern.compile("[pePE]\\d{4}");
@@ -739,7 +745,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         String componentVersion = deviceCompareParam.getComponentVersion();
         if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) ||
                 StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(wareType) || StringUtils.isNotEmpty(componentVersion))) {
-            return AjaxResult.error("参数不得为空");
+            return AjaxResult.error("params can't be empty");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
         if (CollectionUtils.isEmpty(goldenInfoComponentDTOS)) {
@@ -994,9 +1000,16 @@ public class DeviceListServiceImpl implements DeviceListService {
                 continue;
             }
             for (ImportDeviceDTO importDeviceDTO : importDeviceDTOS) {
-                if (importDeviceDTO == null || StringUtils.isEmpty(importDeviceDTO.getCarline())) {
+                //判空
+                if (importDeviceDTO == null || StringUtils.isEmpty(importDeviceDTO.getCarline())|| StringUtils.isEmpty(importDeviceDTO.getDeviceName())) {
                     continue;
                 }
+                //查重
+                List<Long> carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicate(importDeviceDTO.getDeviceName());
+                if (!CollectionUtils.isEmpty(carlineDuplicateUids)){
+                    deleteTCarlineByUids(carlineDuplicateUids.toArray(new Long[carlineDuplicateUids.size()]));
+                }
+                //build
                 TCarline tCarline = new TCarline();
                 TCluster tCluster = new TCluster();
                 TCarlineInfo tCarlineInfo = new TCarlineInfo();
@@ -1055,6 +1068,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                 //版本名称
                 StringBuffer autoSaveVersionName = new StringBuffer(versionCode).append("_MIB3");
                 tCluster.setAutoSaveVersionName(autoSaveVersionName.toString());
+                tCluster.setUpdateTime(new Date());
+                tCluster.setCreateTime(new Date());
                 tCarlineMapper.insert(tCarline);
                 tCluster.setCarlineUid(tCarline.getUid());
                 tClusterMapper.insert(tCluster);
@@ -1176,7 +1191,9 @@ public class DeviceListServiceImpl implements DeviceListService {
         System.out.println(partnumber);
     }
 
-    private void buildUpdateComponent(DeviceInfoVo deviceInfoVo, Long carlineInfoUid) {
+
+    @Override
+    public void buildUpdateComponent(DeviceInfoVo deviceInfoVo, Long carlineInfoUid) {
         if (null != deviceInfoVo.getDeviceInfoComponents() && deviceInfoVo.getDeviceInfoComponents().size() > 0) {
             for (DeviceInfoComponent deviceInfoComponent : deviceInfoVo.getDeviceInfoComponents()) {
                 TComponentData componentData = new TComponentData();
@@ -1236,7 +1253,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (dictLabelMap == null) {
             dictLabelMap = new HashMap<String, String>();
         }
-        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName))){
+        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName)||"clusterName".equals(dictTypeName)||"goldenClusterNameType".equals(dictTypeName))){
             dictLabel = StringUtils.getCleanStr(dictLabel);
         }else {
             dictLabel = dictLabel.toUpperCase();
@@ -1333,17 +1350,28 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     @Override
     @Transactional
-    public Long insertDeviceInfo(DeviceInfoVo deviceInfoVo) {
-        if (deviceInfoVo == null) {
-            return -1L;
+    public AjaxResult insertDeviceInfo(DeviceInfoVo deviceInfoVo) {
+        if (deviceInfoVo == null || StringUtils.isEmpty(deviceInfoVo.getDeviceName())) {
+            return AjaxResult.error("deviceName can't be blank");
         }
         //deviceName不得重复
-        QueryWrapper<TCarlineInfo> tcarlineWrapper = new QueryWrapper<>();
-        tcarlineWrapper.eq("device_name", deviceInfoVo.getGoldenCarName());
-        List<TCarlineInfo> tCarlineInfos = tCarlineInfoMapper.selectList(tcarlineWrapper);
-        if (StringUtils.isNotEmpty(tCarlineInfos)) {
-            return -1L;
+        //查重
+        List<Long> carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicate(deviceInfoVo.getDeviceName());
+        if (!CollectionUtils.isEmpty(carlineDuplicateUids)){
+            return AjaxResult.error("deviceName can't be duplicated");
+//            deleteTCarlineByUids(carlineDuplicateUids.toArray(new Long[carlineDuplicateUids.size()]));
         }
+        TCarlineInfo tCarlineInfo = insertBasicInfo(deviceInfoVo);
+
+        //t_component_data与其连接表的保存
+        buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
+        //保存
+        return AjaxResult.success("device save success");
+    }
+
+
+    @Override
+    public TCarlineInfo insertBasicInfo(DeviceInfoVo deviceInfoVo) {
         //创建tcarline
         TCarline tCarline = new TCarline();
         tCarline.setCreateTime(new Date());
@@ -1364,11 +1392,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCarlineInfo.setCreateTime(new Date());
         buildTCarlineInfoPO(deviceInfoVo, tCarlineInfo);
         tCarlineInfoMapper.insert(tCarlineInfo);
-
-        //t_component_data与其连接表的保存
-        buildUpdateComponent(deviceInfoVo, tCarlineInfo.getCarlineInfoUid());
-        //保存
-        return tCarlineInfo.getCarlineInfoUid();
+        return tCarlineInfo;
     }
 
 
@@ -1427,14 +1451,14 @@ public class DeviceListServiceImpl implements DeviceListService {
         String now = DateUtil.format(new Date(), "yyMMddHHmmss");
         StringBuffer autoSaveVersionName = new StringBuffer(now).append("_");
         if (deviceInfoVo.getIsImportDTC() != null){
-            if (deviceInfoVo.getIsImportDTC().equals(0)){
-                autoSaveVersionName.append("MANUAL");
-            }else {
+            if (deviceInfoVo.getIsImportDTC()){
                 autoSaveVersionName.append("DTC");
+            }else {
+                autoSaveVersionName.append("MANUAL");
             }
         }
         if (deviceInfoVo.getIsModified() != null){
-            if (!deviceInfoVo.getIsModified().equals(0)){
+            if (deviceInfoVo.getIsModified()){
                 autoSaveVersionName.append("(M)");
             }
         }

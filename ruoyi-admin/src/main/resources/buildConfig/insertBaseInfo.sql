@@ -208,3 +208,14 @@ alter table testkit.t_component_data
 
 alter table t_carline_component
     add variant_type varchar(50) null comment '配件等级';
+alter table testkit.t_cluster
+    change car_num device_circle_num tinyint(1) default 1 not null comment '1-10的循环';
+alter table testkit.t_cluster     change car_num device_circle_num tinyint(1) default 1 not null comment '1-10';
+alter table testkit.t_cluster change car_num device_circle_num tinyint(1) default 1 not null comment '1-10';
+alter table testkit.t_cluster
+    add week_info varchar(16) null after status;
+
+alter table testkit.t_cluster
+    add auto_save_version_name varchar(63) null after week_info;
+alter table testkit.t_carline_info
+    add carline_model_type varchar(32) null;

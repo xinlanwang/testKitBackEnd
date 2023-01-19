@@ -2,6 +2,7 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.system.domain.dto.GoldenInfoComponentDTO;
 import com.ruoyi.system.domain.param.DeviceListParam;
@@ -165,4 +166,25 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     @Select(selectGoldenCarlineInfoSql)
     List<GoldenInfoComponentDTO> selectGoldenCarlineInfo(String carlineModelType,  @Param("goldenClusterNameType") String goldenClusterNameType,
                                                          @Param("marketType") String marketType,  @Param("goldenCarType") Long goldenCarType);
+
+    String countCarlineDuplicateSql = "select carline_info_uid as carlineInfoUid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where device_name = #{deviceName}";
+    @Select(countCarlineDuplicateSql)
+    List<Long>  countCarlineDuplicate( @Param("deviceName") String deviceName);
+
+    String countCarlineDuplicateExcludedSameVersionSql = "select carline_info_uid as carlineInfoUid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where device_name = #{deviceName}\n" +
+            "and tcl.uid <> (select carline_uid as carlineInfoUid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where tci.carline_info_uid = #{carlineInfoUid})";
+    @Select(countCarlineDuplicateExcludedSameVersionSql)
+    Integer  countCarlineDuplicateExcludedSameVersion( @Param("deviceName") String deviceName,@Param("carlineInfoUid")Long carlineInfoUid);
 }

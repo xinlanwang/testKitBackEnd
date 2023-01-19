@@ -75,7 +75,7 @@ public class TestkitCommonController extends BaseController
                 System.out.println(file.getCanonicalPath());
                 System.out.println();
             }
-            return AjaxResult.success("刷新成功");
+            return AjaxResult.success("success");
         } catch (IOException e) {
             return AjaxResult.success("刷新失败");
         }
@@ -91,7 +91,7 @@ public class TestkitCommonController extends BaseController
     @ApiOperation("查询车型基本信息列表")
     @GetMapping("refresh/device/{carlineInfoUid}")
     public AjaxResult autoSaveVersionList(@PathVariable("carlineInfoUid") String carlineInfoUid) {
-        return AjaxResult.success("device更新成功");
+        return AjaxResult.success("device update success");
     }
 
     /**
@@ -117,7 +117,7 @@ public class TestkitCommonController extends BaseController
             String originalFilename = file.getName();
             String message = goldenInfoService.importGoldenInfoDevice(importGoldenInfoDTOS, true, originalFilename);
         }
-        return AjaxResult.success("golden更新成功");
+        return AjaxResult.success("golden update success");
     }
 
     @ApiOperation("查询车型基本信息列表")
@@ -125,7 +125,7 @@ public class TestkitCommonController extends BaseController
     public AjaxResult autoSaveVersionList2(@PathVariable("clusterName") String clusterName) throws Exception {
         Long[] strings = goldenInfoService.selectCarlineInfoIdsByClusterName(clusterName);
         deviceListService.deleteTCarlineByUids(strings);
-        return AjaxResult.success("golden删除成功");
+        return AjaxResult.success("golden delete success");
     }
 
 }

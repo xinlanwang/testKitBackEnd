@@ -186,13 +186,13 @@ public class TMatrixServiceImpl implements ITMatrixService
         for (TMatrix tMatrix:saveMatrix){
             tMatrixMapper.insert(tMatrix);
         }
-        return "导入成功";
+        return "Operation successful";
     }
 
     @Override
     public String imporValidate(List<ImportValidateDTO> importValidateDTOS, boolean b, String operName) {
         if (CollectionUtils.isEmpty(importValidateDTOS)){
-            return "导入文件为空";
+            return "Operation file is empty";
         }
         String[] dictTypes = new String[] {"clusterName", "projectType","platformType","marketType","functionGroupType",
                 "variantType","taskType","carlineModelType","goldenCarType","goldenClusterNameType"};
@@ -222,7 +222,7 @@ public class TMatrixServiceImpl implements ITMatrixService
         for (TMatrix tMatrix:saveMatrix){
             tMatrixMapper.insert(tMatrix);
         }
-        return "导入成功";
+        return "Import successful";
     }
 
     /**
@@ -263,7 +263,7 @@ public class TMatrixServiceImpl implements ITMatrixService
         if (dictLabelMap == null) {
             dictLabelMap = new HashMap<String, String>();
         }
-        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName))){
+        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName)||"clusterName".equals(dictTypeName)||"goldenClusterNameType".equals(dictTypeName))){
             dictLabel = StringUtils.getCleanStr(dictLabel);
         }else {
             dictLabel = dictLabel.toUpperCase();

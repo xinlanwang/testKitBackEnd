@@ -5,6 +5,7 @@ import com.ruoyi.system.domain.AutoSaveVersionVO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
+import com.ruoyi.system.domain.po.TCarlineInfo;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 
 import java.io.InputStream;
@@ -23,9 +24,9 @@ public interface DeviceListService
 
     public AjaxResult compareOneComponent(DeviceCompareParam deviceCompareParam);
 
-    public Long insertDeviceInfo(DeviceInfoVo deviceInfoVo);
-
-    public Long updateDeviceInfo(DeviceInfoVo deviceInfoVo);
+    public AjaxResult insertDeviceInfo(DeviceInfoVo deviceInfoVo);
+    public TCarlineInfo insertBasicInfo(DeviceInfoVo deviceInfoVo);
+    public AjaxResult updateDeviceInfo(DeviceInfoVo deviceInfoVo);
 
     public int deleteTCarlineByUids(Long[] carlineInfoUids);
 
@@ -37,4 +38,6 @@ public interface DeviceListService
     public void quarzImportDTCReport() throws ClassNotFoundException;
 
     public List<AutoSaveVersionVO> autoSaveVersionList(String carlineInfoUid);
+
+    public void buildUpdateComponent(DeviceInfoVo desktopDevice, Long carlineInfoUid);
 }

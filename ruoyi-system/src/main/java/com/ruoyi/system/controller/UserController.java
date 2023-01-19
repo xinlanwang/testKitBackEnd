@@ -52,9 +52,9 @@ public class UserController extends BaseController {
     public R<String> update(@RequestBody DesktopRegisterParam desktopRegisterParam){
         Long i = userService.updateUser(desktopRegisterParam);
         if (i <= 0){
-            return R.fail("该用户不存在");
+            return R.fail("User doesn't exist");
         }
-        return R.ok("修改成功");
+        return R.ok("Operation successful");
     }
 
     /**

@@ -19,6 +19,8 @@ import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DesktopService;
 import com.ruoyi.system.service.DeviceListService;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -57,11 +59,14 @@ public class DesktopServiceImpl implements DesktopService {
     @Autowired
     private TDataLogMapper desktopLogMapper;
 
+    private static final Logger log = LoggerFactory.getLogger(DesktopServiceImpl.class);
 
     @Override
     public AjaxResult submit(DesktopSubmitParam desktopSubmitParam) {
         List<DesktopRecordParam> desktopRecordParams = desktopSubmitParam.getDesktopRecordParams();
+        log.info("desktopRecordParams的参数为：{}",desktopRecordParams);
         List<TDataLog> allDesktopLogs = new ArrayList<>();
+        //用户校验（设置客户端登录后好像不用了）
         if (CollectionUtils.isEmpty(desktopRecordParams) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostAcoount()) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostPassword())) {
             return AjaxResult.error("用户或者参数列表为空");
         }
@@ -76,7 +81,9 @@ public class DesktopServiceImpl implements DesktopService {
         Map<String, TDesktopRecord> updateDesktopRecords = new HashMap<>();
         Map<String, DesktopRecordParam> desktopRecordParamHashMap = new HashMap<>();
         List<Long> deleteDesktopRecordUids = new ArrayList<Long>();
+        //
         for (DesktopRecordParam desktopRecordParam : desktopRecordParams) {
+            log.info("desktopRecordParam的参数为：{}",desktopRecordParam);
             TDesktopRecord tDesktopRecord = new TDesktopRecord();
             buildDesktopRecord(tDesktopRecord, LocalHostUserId,desktopSubmitParam.getLocalHostAcoount(),desktopRecordParam);
             String indexUid = desktopRecordParam.getIndexUid();
@@ -85,6 +92,7 @@ public class DesktopServiceImpl implements DesktopService {
             if (StringUtils.isEmpty(indexUid) || desktopDevice == null || desktopDevice.getCarlineInfoUid() == null|| desktopDevice.getVersionCode() == null) {
                 continue;
             }
+            log.info("2 desktopRecordParam的参数为：{}",desktopRecordParam);
             if (OPERATION_TYPE_INSERT.equals(desktopRecordParam.getOperationType())) {
                 autoInstertDesktopDevice(tDesktopRecord, desktopDevice);
                 insertDesktopRecords.put(indexUid, tDesktopRecord);
@@ -102,6 +110,7 @@ public class DesktopServiceImpl implements DesktopService {
         if (StringUtils.isEmpty(operIp)){
             operIp = "192.168.0.1";
         }
+        log.info("3 desktopRecordParam的参数为：{}",insertDesktopRecords.keySet());
         for (String indexUid : insertDesktopRecords.keySet()) {
             TDesktopRecord tDesktopRecord = insertDesktopRecords.get(indexUid);
             tDesktopRecordMapper.insert(tDesktopRecord);
@@ -109,6 +118,7 @@ public class DesktopServiceImpl implements DesktopService {
             DesktopRecordParam desktopRecordParam = desktopRecordParamHashMap.get(indexUid);
             buildOperationLog(recordIndex,allDesktopLogs, LocalHostUserId, operIp, desktopRecordParam,tDesktopRecord, OPERATION_TYPE_INSERT);
         }
+        log.info("4 desktopRecordParam的参数为：{}",updateDesktopRecords.keySet());
         for (String indexUid : updateDesktopRecords.keySet()) {
             TDesktopRecord tDesktopRecord = updateDesktopRecords.get(indexUid);
             tDesktopRecordMapper.updateById(tDesktopRecord);
@@ -117,9 +127,11 @@ public class DesktopServiceImpl implements DesktopService {
             buildOperationLog(recordIndex,allDesktopLogs, LocalHostUserId, operIp, desktopRecordParam,tDesktopRecord, OPERATION_TYPE_UPDATE);
         }
         for (TDataLog tDataLog :allDesktopLogs){
+            log.info("5 desktopRecordParam的参数为：{}",tDataLog);
             desktopLogMapper.insert(tDataLog);
         }
         if(deleteDesktopRecordUids != null && deleteDesktopRecordUids.size() > 0) {
+            log.info("6 desktopRecordParam的参数为：{}",deleteDesktopRecordUids);
             tDesktopRecordMapper.deleteTDesktopRecordByUids(deleteDesktopRecordUids.toArray(new Long[deleteDesktopRecordUids.size()]));
         }
         return AjaxResult.success(insertDesktopRecords);
@@ -259,7 +271,10 @@ public class DesktopServiceImpl implements DesktopService {
         } else {
             desktopDevice.setOriginalCarlineInfoUid(desktopDevice.getCarlineInfoUid());
             desktopDevice.setBasicType(BASIC_TYPE_DESKTOP_DEVICE);
-            carlineInfoUid = deviceListService.insertDeviceInfo(desktopDevice);
+            //save
+            carlineInfoUid = deviceListService.insertBasicInfo(desktopDevice).getCarlineInfoUid();
+            //t_component_data与其连接表的保存
+            deviceListService.buildUpdateComponent(desktopDevice, carlineInfoUid);
         }
         tDesktopRecord.setDataUid(carlineInfoUid);
     }
