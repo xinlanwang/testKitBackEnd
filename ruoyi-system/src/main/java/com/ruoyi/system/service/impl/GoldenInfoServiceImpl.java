@@ -389,12 +389,13 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
 
     private void insertComponent(TCarlineComponent tCarlineComponent,String wareType, TComponentData componentData) {
         componentData.setUid(null);
-        TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
+        TComponentData tComponentData = null;
+        /*TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
                 .eq("component_type", componentData.getComponentType())
                 .eq("component_name", componentData.getComponentName())
                 .eq("ware_type", componentData.getWareType())
                 .eq("component_version", componentData.getComponentVersion())
-                .eq("part_number", componentData.getPartNumber()));
+                .eq("part_number", componentData.getPartNumber()));*/
         if (tComponentData != null){
             if (StringUtils.isNotEmpty(wareType) && "SW".equals(wareType)){
                 tCarlineComponent.setSwVersionUid(tComponentData.getUid());

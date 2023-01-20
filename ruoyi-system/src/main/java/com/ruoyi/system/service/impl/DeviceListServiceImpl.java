@@ -1147,9 +1147,11 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     private void insertComponent(TCarlineComponent tCarlineComponent, String wareType, TComponentData componentData){
         tCarlineComponent.setUid(null);
-        TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
+        /*TComponentData tComponentData = tComponentDataMapper.selectOne(new QueryWrapper<TComponentData>()
                 .eq("component_type", componentData.getComponentType()).eq("component_name", componentData.getComponentName())
                 .eq("ware_type", componentData.getWareType()).eq("component_version", componentData.getComponentVersion()).eq("part_number", componentData.getPartNumber()));
+        */
+        TComponentData tComponentData = null;
         if (StringUtils.isEmpty(componentData.getWareType())){
             return;
         }
