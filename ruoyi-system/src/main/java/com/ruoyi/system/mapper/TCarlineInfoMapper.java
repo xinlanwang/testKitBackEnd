@@ -187,4 +187,12 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "where tci.carline_info_uid = #{carlineInfoUid})";
     @Select(countCarlineDuplicateExcludedSameVersionSql)
     Integer  countCarlineDuplicateExcludedSameVersion( @Param("deviceName") String deviceName,@Param("carlineInfoUid")Long carlineInfoUid);
+
+
+    String selectAllGoldenSql = "select tci.carline_info_uid as carlineInfoUid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
+            "where tc.device_type = 3";
+    @Select(selectAllGoldenSql)
+    List<Long> selectAllGolden();
 }

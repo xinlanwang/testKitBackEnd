@@ -8,6 +8,7 @@ import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.po.TCarlineInfo;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -35,9 +36,12 @@ public interface DeviceListService
     public String importDevice(Map<String,List<ImportDeviceDTO>> deviceInfoVoList, boolean b, String operName);
 
     public AjaxResult importDTCReport(InputStream io, boolean b, String operName);
-    public void quarzImportDTCReport() throws ClassNotFoundException;
+    public void quarzImportDTCReport() throws ClassNotFoundException, IOException;
+    public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException;
 
     public List<AutoSaveVersionVO> autoSaveVersionList(String carlineInfoUid);
 
     public void buildUpdateComponent(DeviceInfoVo desktopDevice, Long carlineInfoUid);
+
+    public Long[] selectAllGolden();
 }

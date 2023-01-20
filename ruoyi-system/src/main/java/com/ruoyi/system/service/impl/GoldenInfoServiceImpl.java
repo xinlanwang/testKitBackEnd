@@ -303,6 +303,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
     @Override
     public Map<String, File> getAutoImportGoldenFildMap(){
         Map<String, File> goldenMaxDateFileMap = getGoldenMaxDateFileMap();
+        if (goldenMaxDateFileMap == null){
+            return null;
+        }
         Map<String, File> autoImportGoldenFileMap = new HashMap<>();
         for (String fileName : goldenMaxDateFileMap.keySet()){
             String[] strs = fileName.split(" ");
@@ -343,6 +346,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
 
     private Map<String, File> getGoldenMaxDateFileMap() {
         File[] files =  new File(AUTO_IMPORT_GOLDEN_PATH).listFiles();
+        if (files == null || files.length == 0){
+            return null;
+        }
         Integer maxDateNum = 0;
         String maxDateFileName = null;
         for (File subfile:files){

@@ -5,6 +5,8 @@ import java.util.List;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.system.domain.AutoSaveVersionVO;
+import com.ruoyi.system.domain.dto.CorrentVersionDeviceDTO;
+import com.ruoyi.system.domain.dto.RefreshDeviceDTO;
 import com.ruoyi.system.domain.po.TCluster;
 import com.ruoyi.system.domain.vo.GoldenListPlatfromVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -106,4 +108,38 @@ public interface TClusterMapper extends BaseMapper<TCluster>
             "and device_type = '3'" ;
     @Select(selectCarlineInfoIdsByClusterNameSql)
     Long[] selectCarlineInfoIdsByClusterName(@Param("clusterName") String clusterName);
+
+    String selectLastestClusterSql = "select tci.carline_info_uid as carlineInfoUid,tc.update_time as updateTime\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where tcl.uid = (select distinct tcl.uid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where device_name = #{deviceName} and tcl.uid <> '')\n" +
+            "and tc.update_time = (select MAX(tci.update_time)\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where tcl.uid = (select distinct tcl.uid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
+            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
+            "where device_name = #{deviceName} and tcl.uid <> ''))\n" +
+            "and tc.device_type = #{deviceType}" ;
+    @Select(selectLastestClusterSql)
+    RefreshDeviceDTO selectLastestCluster(@Param("deviceName")String deviceName, @Param("deviceType")String deviceType);
+
+    String selectCorrentVersionDeviceDTOSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.uid as clusterUid\n" +
+            "from t_cluster\n" +
+            "left join t_carline_info tci on tci.cluster_uid = t_cluster.uid\n" +
+            "where carline_uid = (select carline_uid\n" +
+            "from t_cluster tc\n" +
+            "where tc.uid = (select cluster_uid\n" +
+            "from t_carline_info\n" +
+            "where carline_info_uid = #{carlineInfoUid}))\n" +
+            "order by t_cluster.update_time asc" ;
+    @Select(selectCorrentVersionDeviceDTOSql)
+    List<CorrentVersionDeviceDTO> selectCorrentVersionDeviceDTO(@Param("carlineInfoUid")Long carlineInfoUid);
 }

@@ -30,4 +30,5 @@ public interface GoldenInfoService
     public String refreshGoldenByCarlineInfoUid(String clusterName);
 
     public Map<String, File> getAutoImportGoldenFildMap();
+
 }

@@ -20,10 +20,12 @@ public class DeviceInfoVo
    @ApiModelProperty("当前设备uid，新增不填，修改必填")
    private Long carlineInfoUid;
    private Long originalCarlineInfoUid;
+   private String dtcTime;
    @ApiModelProperty("设备类型：bc代表bench，car代表car，gd代表目标goldeninfo")
    private String carlineType;
    private Boolean isImportDTC;
    private Boolean isModified;
+   private Boolean isRefresh;
    @ApiModelProperty("版本规范车族名称，对应devicesName")
    private String goldenCarName;
    @ApiModelProperty

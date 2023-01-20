@@ -51,6 +51,10 @@ public class TestkitCommonController extends BaseController
     @ApiOperation("提交")
     public AjaxResult getdb() throws Exception {
         //golden
+        //删除当前的
+        Long[] carlineInfoUids = deviceListService.selectAllGolden();
+        deviceListService.deleteTCarlineByUids(carlineInfoUids);
+        //导入
         Map<String, File> autoImportGoldenFildMap = goldenInfoService.getAutoImportGoldenFildMap();
         DeviceExcelUtil<ImportPartComponentDTO> util = new DeviceExcelUtil<ImportPartComponentDTO>(ImportPartComponentDTO.class);
         List<ImportGoldenInfoDTO> importGoldenInfoDTOS = new ArrayList<>();
@@ -62,20 +66,7 @@ public class TestkitCommonController extends BaseController
         }
         //device
         try {
-            List<File> files = FileUtil.loopFiles(AUTO_IMPORT_DTC_PATH);
-            deviceListService.quarzImportDTCReport();
-            System.out.println("总共大小为：" + files.size());
-            for (File file:files){
-                System.out.println(file.getName());
-                long l = file.lastModified();
-                Date date = new Date(l);
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                System.out.println(simpleDateFormat.format(date));
-                System.out.println(file.getParent());
-                System.out.println(file.getCanonicalPath());
-                System.out.println();
-            }
-            return AjaxResult.success("success");
+            return deviceListService.quarzImportDTCReport(null);
         } catch (IOException e) {
             return AjaxResult.success("刷新失败");
         }
@@ -90,8 +81,8 @@ public class TestkitCommonController extends BaseController
      */
     @ApiOperation("查询车型基本信息列表")
     @GetMapping("refresh/device/{carlineInfoUid}")
-    public AjaxResult autoSaveVersionList(@PathVariable("carlineInfoUid") String carlineInfoUid) {
-        return AjaxResult.success("device update success");
+    public AjaxResult autoSaveVersionList(@PathVariable("carlineInfoUid") Long carlineInfoUid) throws IOException, ClassNotFoundException {
+        return deviceListService.quarzImportDTCReport(carlineInfoUid);
     }
 
     /**
@@ -106,6 +97,9 @@ public class TestkitCommonController extends BaseController
         //删除结束
         String conrentClusterName = goldenInfoService.refreshGoldenByCarlineInfoUid(clusterName);
         Map<String, File> autoImportGoldenFildMap = goldenInfoService.getAutoImportGoldenFildMap();
+        if (autoImportGoldenFildMap == null){
+            return AjaxResult.error("file is empty");
+        }
         DeviceExcelUtil<ImportPartComponentDTO> util = new DeviceExcelUtil<ImportPartComponentDTO>(ImportPartComponentDTO.class);
         List<ImportGoldenInfoDTO> importGoldenInfoDTOS = new ArrayList<>();
         for (String str:autoImportGoldenFildMap.keySet()){
