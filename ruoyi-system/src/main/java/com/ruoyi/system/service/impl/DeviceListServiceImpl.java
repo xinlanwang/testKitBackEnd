@@ -624,13 +624,20 @@ public class DeviceListServiceImpl implements DeviceListService {
     @Override
     public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException {
         TCarlineInfo tCarlineInfo = null;
-        TCluster tCluster = null;
+//        TCluster tCluster = null;
         AjaxResult ajaxResult = null;//todo:这里要优化
         if (carlineInfoUid != null){
             tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
-            tCluster = tClusterMapper.selectById(tCarlineInfo.getClusterUid());
+//            tCluster = tClusterMapper.selectById(tCarlineInfo.getClusterUid());
         }
+        log.info("准备读取文件，读取文件路径为：{}",AUTO_IMPORT_DTC_PATH);
+
         File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
+        if (files == null || files.length == 0){
+            log.error("该文件为空或者没有权限读取");
+            return AjaxResult.error("未找到对应文件");
+        }
+        log.info("开始读取文件，文件大小为{}",files.length);
         for (File file:files){
             String firePath = null;
             String deviceType = null;
@@ -638,21 +645,25 @@ public class DeviceListServiceImpl implements DeviceListService {
             if (file.getName().toUpperCase().contains("CAR") || "CAR".equals(file.getName().toUpperCase())){
                 firePath = file.getCanonicalPath();
                 deviceType = DEVICE_TYPE_CAR;
+                log.info("读取Car文件,文件名称为{}",file.getName());
             }else if (file.getName().toUpperCase().contains("BENCH") || "BENCH".equals(file.getName().toUpperCase())){
                 firePath = file.getCanonicalPath();
                 deviceType = DEVICE_TYPE_BENCH;
+                log.info("读取bench文件,文件名称为{}",file.getName());
             }else {
+                log.info("读取到未知文件,文件名称为{}",file.getName());
                 continue;
             }
-            if (tCluster != null && !deviceType.equals(tCluster.getDeviceType())){
+            /*if (tCluster != null && !deviceType.equals(tCluster.getDeviceType())){
                 continue;
-            }
+            }*/
             for (File dtcFile:FileUtil.loopFiles(firePath)){
                 String devicePath = dtcFile.getCanonicalPath();
                 deviceName = dtcFile.getParentFile().getName().split("_")[0];
                 if (tCarlineInfo != null && !deviceName.equals(tCarlineInfo.getDeviceName())){
                     continue;
                 }
+                log.error("当前读取的deviceName为：{}",deviceName);
                 Date lastDateByFileName = new Date(0);
                 File lastFileByFileName = null;
                 Long lastDateByFileDate = 0L;
@@ -857,6 +868,15 @@ public class DeviceListServiceImpl implements DeviceListService {
             goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
         }
         Map<String, DeviceInfoComponent> deviceInfoComponentMap = new HashMap<>();
+        //默认结构
+        for (TDTCReport tdtcReport : tdtcReportMapper.selectList(new QueryWrapper<TDTCReport>().notLike("ecu_id", "Vehicle"))) {
+            DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
+            deviceInfoComponent.setComponentType(tdtcReport.getComponentType());
+            deviceInfoComponent.setEcuId(tdtcReport.getEcuId());
+            deviceInfoComponentMap.put(tdtcReport.getComponentType(),deviceInfoComponent);
+        }
+
+        //true
         for (DeviceInfoComponent deviceInfoComponent : deviceInfoComponents) {
             String componentType = deviceInfoComponent.getComponentType();
             if (StringUtils.isEmpty(componentType)) {
@@ -1333,7 +1353,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
         TComponentData componentData = new TComponentData();
         componentData.setComponentType(componentType);
-        componentData.setComponentName(componentType);
+//        componentData.setComponentName(componentType);
         componentData.setIsAvaliabel(1);
         componentData.setPartNumber(null);//导入不存在partNumber
         componentData.setSort(0);

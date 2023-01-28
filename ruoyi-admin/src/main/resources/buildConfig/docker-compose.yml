@@ -12,10 +12,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8085:8080" # Forward the exposed port 4000 on the container to port 4000 on the host machine
+    privileged: true
+    user: root
     restart: always
     volumes:
       - /home/data/testKit/data:/var/lib/mysql
-      #- /home/data/testKit/my.cnf:/etc/mysql/my.cnf
+      - /home/data/testKit/my.cnf:/etc/mysql/my.cnf
+      - /home/data/testKit/auto_import:/home/data/testKit/auto_import
     depends_on:
       - testkit-mysql # This service depends on mysql. Start that first.
     environment: # Pass environment variables to the service
@@ -27,7 +30,7 @@ services:
 
   # Database Service (Mysql)
   testkit-mysql:
-    image: mysql:5.7
+    image: mysql:5.7.26
     ports:
       - "3308:3306"
     restart: always

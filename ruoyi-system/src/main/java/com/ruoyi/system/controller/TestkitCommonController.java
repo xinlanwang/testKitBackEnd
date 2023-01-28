@@ -58,12 +58,15 @@ public class TestkitCommonController extends BaseController
         Map<String, File> autoImportGoldenFildMap = goldenInfoService.getAutoImportGoldenFildMap();
         DeviceExcelUtil<ImportPartComponentDTO> util = new DeviceExcelUtil<ImportPartComponentDTO>(ImportPartComponentDTO.class);
         List<ImportGoldenInfoDTO> importGoldenInfoDTOS = new ArrayList<>();
-        for (String str:autoImportGoldenFildMap.keySet()){
-            File file = autoImportGoldenFildMap.get(str);
-            util.importGoldenInfoExcel(new FileInputStream(file), importGoldenInfoDTOS);
-            String originalFilename = file.getName();
-            String message = goldenInfoService.importGoldenInfoDevice(importGoldenInfoDTOS, true, originalFilename);
+        if (autoImportGoldenFildMap != null){
+            for (String str:autoImportGoldenFildMap.keySet()){
+                File file = autoImportGoldenFildMap.get(str);
+                util.importGoldenInfoExcel(new FileInputStream(file), importGoldenInfoDTOS);
+                String originalFilename = file.getName();
+                goldenInfoService.importGoldenInfoDevice(importGoldenInfoDTOS, true, originalFilename);
+            }
         }
+
         //device
         try {
             return deviceListService.quarzImportDTCReport(null);
