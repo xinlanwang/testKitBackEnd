@@ -461,7 +461,9 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         if (dictLabelMap == null){
             dictLabelMap = new HashMap<String,String>();
         }
-
+        if ("marketType".equals(dictTypeName) && dictLabel.contains(" ")){
+            dictLabel = dictLabel.split(" ")[0];
+        }
         //匹配名称CLU后匹配字典对应字段方便映射
         if ("clusterName".equals(dictTypeName)){
             dictLabel = new String(dictLabel.split(" ")[0]);
