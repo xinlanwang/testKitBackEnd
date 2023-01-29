@@ -15,11 +15,10 @@ public class TestKitConstants
 
 
     /**
-     * 字典Matrix字典 （只能建立matrix的索引项，validateAll只能显示MATRIXTYPE_VALIDATE字段，DICT_MATRIXTYPE_OTHER查不到，其他的只可查，不可显示于前台（逻辑删除）
+     * 字典Matrix字典 （只能建立matrix的索引项，validateAll只能显示MATRIXTYPE_VALIDATE字段，DICT_MATRIXTYPE_NON其他的只可查不显示于前台
      */
     public static final String DICT_MATRIXTYPE_NON = "0";
     public static final String DICT_MATRIXTYPE_VALIDATE = "1";
-    public static final String DICT_MATRIXTYPE_OTHER = "2";
 
     /**
      * OPERATION_TYPE
@@ -59,10 +58,8 @@ public class TestKitConstants
      * refresh路径
      */
 //    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
-//    public static final String AUTO_IMPORT_DTC_PATH = "/home/data/testKit/data/auto_import/dtc";
-    public static final String AUTO_IMPORT_DTC_PATH = "/home/data/testKit/auto_import/dtc";
-//    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-20.assets\\dtc";
-//    public static final String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-16.assets\\test\\golden";
-    public static final String AUTO_IMPORT_GOLDEN_PATH = "/home/data/testKit/auto_import/golden";
-//    public static final String AUTO_IMPORT_GOLDEN_PATH = "/home/data/testKit/data/auto_import/golden";
+//    public static final String AUTO_IMPORT_DTC_PATH = "/home/data/testKit/auto_import/dtc";
+    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-20.assets\\dtc";
+    public static final String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-16.assets\\test\\golden";
+//    public static final String AUTO_IMPORT_GOLDEN_PATH = "/home/data/testKit/auto_import/golden";
 }

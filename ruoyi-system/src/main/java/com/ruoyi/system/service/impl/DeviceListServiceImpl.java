@@ -350,7 +350,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
         carline = carline.toUpperCase();
         basicInfo.put("carline",carline);
-        String carlineModelType = getDictValue("carlineModelType", dictMap, carline, "0");
+        String carlineModelType = getDictValue("carlineModelType", dictMap, carline, DICT_MATRIXTYPE_NON);
         basicInfo.put("carlineModelType",carlineModelType);
         //CLUSTER
         String clusterNum = "-";
@@ -389,7 +389,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         basicInfo.put("MUSW", swVersion);
         basicInfo.put("clusterNum", clusterNum);
         if (!"-".equals(clusterNum) && StringUtils.isNotEmpty(clusterNum)){
-            clusterName = getDictValue("clusterName", dictMap, "CLU" + clusterNum, "0");
+            clusterName = getDictValue("clusterName", dictMap, "CLU" + clusterNum, DICT_MATRIXTYPE_NON);
         }
         basicInfo.put("clusterName", clusterName);
 
@@ -397,7 +397,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         basicInfo.put("projectName", projectName);
         String projectType = null;
         if (!"-".equals(projectName) && StringUtils.isNotEmpty(projectName)){
-            projectType = getDictValue("projectType", dictMap, projectName, "0");
+            projectType = getDictValue("projectType", dictMap, projectName, DICT_MATRIXTYPE_NON);
             basicInfo.put("projectType", projectType);
         }
 
@@ -413,7 +413,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         basicInfo.put("Variant", variant);
         String variantType = null;
         if (!"-".equals(variant) && StringUtils.isNotEmpty(variant)){
-            variantType = getDictValue("variantType", dictMap, variant, "0");
+            variantType = getDictValue("variantType", dictMap, variant, DICT_MATRIXTYPE_NON);
             basicInfo.put("variantType", variantType);
         }
 
@@ -422,7 +422,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         basicInfo.put("market", StringUtils.getCleanStr(market));
         String marketType = null;
         if (!"-".equals(market) && StringUtils.isNotEmpty(market)){
-            marketType = getDictValue("marketType", dictMap, market, "0");
+            marketType = getDictValue("marketType", dictMap, market, DICT_MATRIXTYPE_NON);
             basicInfo.put("marketType", marketType);
         }
 
@@ -1253,28 +1253,28 @@ public class DeviceListServiceImpl implements DeviceListService {
                     tCarlineInfo.setDeviceName(importDeviceDTO.getDeviceName());
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getCLU())) {
-                    String clusterName = getDictValue("clusterName", dictMap, importDeviceDTO.getCLU(), "0");
+                    String clusterName = getDictValue("clusterName", dictMap, importDeviceDTO.getCLU(), DICT_MATRIXTYPE_NON);
                     tCluster.setClusterName(clusterName);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getProject())) {
-                    String projectType = getDictValue("projectType", dictMap, importDeviceDTO.getProject(), "0");
+                    String projectType = getDictValue("projectType", dictMap, importDeviceDTO.getProject(), DICT_MATRIXTYPE_NON);
                     tCluster.setprojectType(projectType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getPlatform())) {
-                    String platformType = getDictValue("platformType", dictMap, importDeviceDTO.getPlatform(), "0");
+                    String platformType = getDictValue("platformType", dictMap, importDeviceDTO.getPlatform(), DICT_MATRIXTYPE_NON);
                     tCarlineInfo.setPlatformType(platformType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getMarket())) {
-                    String marketType = getDictValue("marketType", dictMap, importDeviceDTO.getMarket(), "0");
+                    String marketType = getDictValue("marketType", dictMap, importDeviceDTO.getMarket(), DICT_MATRIXTYPE_NON);
                     tCarlineInfo.setMarketType(marketType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getCarline())) {
-                    String carlineModelType = getDictValue("carlineModelType", dictMap, importDeviceDTO.getCarline(), "0");
+                    String carlineModelType = getDictValue("carlineModelType", dictMap, importDeviceDTO.getCarline(), DICT_MATRIXTYPE_NON);
                     tCarline.setCarlineModelType(carlineModelType);
                     tCarlineInfo.setCarlineModelType(carlineModelType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getVariantType())) {
-                    String variantType = getDictValue("variantType", dictMap, importDeviceDTO.getVariantType(), "0");
+                    String variantType = getDictValue("variantType", dictMap, importDeviceDTO.getVariantType(), DICT_MATRIXTYPE_NON);
                     tCarlineInfo.setVariantType(variantType);
                 }
                 if (StringUtils.isNotEmpty(importDeviceDTO.getVIN())) {
@@ -1492,7 +1492,8 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (dictLabelMap == null) {
             dictLabelMap = new HashMap<String, String>();
         }
-        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName)||"clusterName".equals(dictTypeName)||"goldenClusterNameType".equals(dictTypeName))){
+        if (!("carlineModelType".equals(dictTypeName) ||"goldenCarType".equals(dictTypeName)
+                ||"clusterName".equals(dictTypeName)||"goldenClusterNameType".equals(dictTypeName))){
             dictLabel = StringUtils.getCleanStr(dictLabel);
         }else {
             dictLabel = dictLabel.toUpperCase();
@@ -1519,7 +1520,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         } else {
             //假如存在则刷为将状态刷为0
             dictValue = dictLabelMap.get(dictLabel);
-            dictDataMapper.updateDictDataStatus(dictTypeName, dictLabel, dictValue, "0",matrixType);
+//            dictDataMapper.updateDictDataStatus(dictTypeName, dictLabel, dictValue, "0",matrixType);
         }
         return dictValue;
     }

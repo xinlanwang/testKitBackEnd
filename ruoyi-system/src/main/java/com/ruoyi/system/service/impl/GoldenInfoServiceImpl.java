@@ -366,7 +366,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         Map<String, File> fileMap = new HashMap<>();
         for (File file:allfiles){
             String substring = file.getParent().substring(file.getParent().length() - 6);
-            if (maxDateFileName.equals(substring)){
+            if (maxDateFileName != null && maxDateFileName.equals(substring)){
                 fileMap.put(file.getName(),file);
             }
         }
@@ -486,7 +486,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
         //假设加入的值字典中不存在
         SysDictData sysDictData = new SysDictData();
         sysDictData.setDictType(dictTypeName);
-        sysDictData.setMatrixType(DICT_MATRIXTYPE_OTHER);
+        sysDictData.setMatrixType(DICT_MATRIXTYPE_NON);
         sysDictData.setStatus(DICT_STATUS_NORMAL);
         sysDictData.setDictLabel(dictLabel);
         Integer dictValueNum;

@@ -151,12 +151,21 @@ and matrix_type = 0
 	<update id="updateDictDataStatus" parameterType="String">
 		update sys_dict_data
 		<set>
-			<if test="matrixType = '1'">matrix_type = #{matrixType},</if>
 			status = #{status}
 		</set>
 		where dict_type = #{dictTypeName}
 		  and dict_label = #{dictLabel}
 		  and dict_value = #{dictValue}
+	</update>
+
+	<update id="updateDictDataMatrixType" parameterType="String">
+		update sys_dict_data
+		<set>
+			matrix_type = #{matrixType}
+		</set>
+		where dict_type = #{dictTypeName}
+		and dict_label = #{dictLabel}
+		and dict_value = #{dictValue}
 	</update>
 
  	<insert id="insertDictData" parameterType="SysDictData">
