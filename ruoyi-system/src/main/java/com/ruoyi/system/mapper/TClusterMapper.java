@@ -122,7 +122,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
             "from t_carline_info tci\n" +
             "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
-            "where tcl.uid = (select distinct tcl.uid\n" +
+            "where tcl.uid in (select distinct tcl.uid\n" +
             "from t_carline_info tci\n" +
             "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +

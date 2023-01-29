@@ -699,7 +699,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                         lastFile = lastFileByFileDate;
                     }
                 }else {
-                    lastFile = lastFileByFileName;//如果二者相同则任意一种都可以
+                    lastFile = lastFileByFileDate;//如果二者相同则任意一种都可以
                 }
                 //查找最近的一版并比较是否更新
                 RefreshDeviceDTO refreshDeviceDTO = tClusterMapper.selectLastestCluster(deviceName,deviceType);
