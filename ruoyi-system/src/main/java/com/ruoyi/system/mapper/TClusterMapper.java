@@ -118,7 +118,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
             "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
             "where device_name = #{deviceName} and tcl.uid <> '')\n" +
-            "and tc.update_time = (select MAX(tci.update_time)\n" +
+            "and tc.update_time = (select MAX(tc.update_time)\n" +
             "from t_carline_info tci\n" +
             "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +

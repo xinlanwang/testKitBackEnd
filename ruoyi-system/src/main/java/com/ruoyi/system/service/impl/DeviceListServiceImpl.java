@@ -625,7 +625,7 @@ public class DeviceListServiceImpl implements DeviceListService {
     public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException {
         TCarlineInfo tCarlineInfo = null;
 //        TCluster tCluster = null;
-        AjaxResult ajaxResult = null;//todo:这里要优化
+        AjaxResult ajaxResult = AjaxResult.error("don't have such file");
         if (carlineInfoUid != null){
             tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
 //            tCluster = tClusterMapper.selectById(tCarlineInfo.getClusterUid());
@@ -657,9 +657,17 @@ public class DeviceListServiceImpl implements DeviceListService {
             /*if (tCluster != null && !deviceType.equals(tCluster.getDeviceType())){
                 continue;
             }*/
+
             for (File dtcFile:FileUtil.loopFiles(firePath)){
+                if (dtcFile == null){
+                    continue;
+                }
                 String devicePath = dtcFile.getCanonicalPath();
                 deviceName = dtcFile.getParentFile().getName().split("_")[0];
+                if (StringUtils.isEmpty(deviceName)){
+                    log.info("未找到符合格式的父级deviceName，其父级名称为：{}",dtcFile.getParentFile().getName());
+                    continue;
+                }
                 if (tCarlineInfo != null && !deviceName.equals(tCarlineInfo.getDeviceName())){
                     continue;
                 }
@@ -701,6 +709,9 @@ public class DeviceListServiceImpl implements DeviceListService {
 
                 //更新
                 //build
+                if (lastFile == null){
+                    continue;
+                }
                 InputStream fileInputStream = IoUtil.toStream(lastFile);
                 Map<String, Map> reportMapVO = getReoirtMapVO(fileInputStream);
                 if (reportMapVO.isEmpty()){
