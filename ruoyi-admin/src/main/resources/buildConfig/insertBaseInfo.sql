@@ -219,3 +219,6 @@ alter table testkit.t_cluster
     add auto_save_version_name varchar(63) null after week_info;
 alter table testkit.t_carline_info
     add carline_model_type varchar(32) null;
+alter table testkit.t_desktop_record
+    modify comment varchar(255) null comment 'comment';
+
