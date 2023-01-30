@@ -239,7 +239,7 @@ public class DesktopServiceImpl implements DesktopService {
             checkDeviceIntegralityDTO.setMessage("Can't submit empty data");
             return checkDeviceIntegralityDTO;
         }
-        List<Long> carlineInfoUids = new ArrayList<>();
+        Set<Long> carlineInfoUids = new HashSet<>();
         for (DesktopRecordParam desktopRecordParam:desktopRecordParams){
             DeviceInfoVo desktopDevice = desktopRecordParam.getDesktopDevice();
             if (desktopDevice == null){
