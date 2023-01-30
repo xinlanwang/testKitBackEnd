@@ -97,19 +97,19 @@ public class DeviceListServiceImpl implements DeviceListService {
     @Transactional
     public AjaxResult updateDeviceInfo(DeviceInfoVo deviceInfoVo) {
         if (deviceInfoVo == null || deviceInfoVo.getCarlineInfoUid() == null) {
-            return AjaxResult.error("carlineInfoUid can't be blank");
+            return AjaxResult.error("CarlineInfoUid can't be empty");
         }
         //查重
         Integer carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicateExcludedSameVersion(deviceInfoVo.getDeviceName(),deviceInfoVo.getCarlineInfoUid());
         if (carlineDuplicateUids != null && carlineDuplicateUids > 0){
-            return AjaxResult.error("deviceName can't be duplicated");
+            return AjaxResult.error("This device name already exists");
 //            deleteTCarlineByUids(carlineDuplicateUids.toArray(new Long[carlineDuplicateUids.size()]));
         }
         //相关表字段获取
         Long carlineInfoUid = deviceInfoVo.getCarlineInfoUid();
         TCarlineInfo tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
         if (tCarlineInfo == null) {
-            return AjaxResult.error("carlineInfo doesn't exit");
+            return AjaxResult.error("This carlineInfo doesn't exit");
         }
         Long clusterUid = tCarlineInfo.getClusterUid();
         TCluster tCluster = tClusterMapper.selectById(clusterUid);
@@ -120,7 +120,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         //tCluster 筛选有无额外版本，并删除相关版本与配件信息
         List<CorrentVersionDeviceDTO> correntVersionDeviceDTOS = tClusterMapper.selectCorrentVersionDeviceDTO(carlineInfoUid);
         if (CollectionUtils.isEmpty(correntVersionDeviceDTOS)) {
-            return AjaxResult.error("current version doesn't exit");
+            return AjaxResult.error("Current version doesn't exit");
         }
         //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
 //        Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
@@ -625,7 +625,7 @@ public class DeviceListServiceImpl implements DeviceListService {
     public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException {
         TCarlineInfo tCarlineInfo = null;
 //        TCluster tCluster = null;
-        AjaxResult ajaxResult = AjaxResult.error("don't have such file");
+        AjaxResult ajaxResult = AjaxResult.error("Don't have such file");
         if (carlineInfoUid != null){
             tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
 //            tCluster = tClusterMapper.selectById(tCarlineInfo.getClusterUid());
@@ -635,7 +635,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
         if (files == null || files.length == 0){
             log.error("该文件为空或者没有权限读取");
-            return AjaxResult.error("未找到对应文件");
+            return AjaxResult.error("Don't have such file");
         }
         log.info("开始读取文件，文件大小为{}",files.length);
         for (File file:files){
@@ -987,11 +987,11 @@ public class DeviceListServiceImpl implements DeviceListService {
         String componentVersion = deviceCompareParam.getComponentVersion();
         if (StringUtils.isEmpty(carlineModelType) || StringUtils.isEmpty(clusterName) || StringUtils.isEmpty(marketType) ||
                 StringUtils.isEmpty(componentType) || !(StringUtils.isNotEmpty(wareType) || StringUtils.isNotEmpty(componentVersion))) {
-            return AjaxResult.error("params can't be empty");
+            return AjaxResult.error("Params can't be empty");
         }
         List<GoldenInfoComponentDTO> goldenInfoComponentDTOS = getGoldenInfoComponents(carlineModelType, clusterName, marketType);
         if (CollectionUtils.isEmpty(goldenInfoComponentDTOS)) {
-            return AjaxResult.error("GoldenInfo里并没有对应取值");
+            return AjaxResult.error("This device's goldenInfo doesn't exit");
         }
         Map<String, Map<String,GoldenInfoComponentDTO>> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
         DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
@@ -1008,7 +1008,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (deviceCompareVO != null) {
             return AjaxResult.success(deviceCompareVO);
         }else {
-            return AjaxResult.error("GoldenInfo里没有对应配件");
+            return AjaxResult.error("this goldenInfo doesn't hava matched components");
         }
     }
 

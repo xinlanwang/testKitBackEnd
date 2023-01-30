@@ -69,13 +69,13 @@ public class DesktopServiceImpl implements DesktopService {
         List<TDataLog> allDesktopLogs = new ArrayList<>();
         //用户校验（设置客户端登录后好像不用了）
         if (CollectionUtils.isEmpty(desktopRecordParams) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostAcoount()) || StringUtils.isEmpty(desktopSubmitParam.getLocalHostPassword())) {
-            return AjaxResult.error("用户或者参数列表为空");
+            return AjaxResult.error("Userlist or params can't be empty");
         }
         String localHostAcoount = desktopSubmitParam.getLocalHostAcoount();
         SysUser sysUser = sysUserMapper.selectUserByUserName(localHostAcoount);
         String localHostPassword = desktopSubmitParam.getLocalHostPassword();
         if (sysUser == null || StringUtils.isEmpty(localHostPassword) || !SecurityUtils.matchesPassword(localHostPassword, sysUser.getPassword())) {
-            return AjaxResult.error("用户信息错误");
+            return AjaxResult.error("User information is wrong");
         }
         String LocalHostUserId = sysUser.getUserId().toString();
         Map<String, TDesktopRecord> insertDesktopRecords = new HashMap<>();
@@ -99,7 +99,7 @@ public class DesktopServiceImpl implements DesktopService {
                 insertDesktopRecords.put(indexUid, tDesktopRecord);
             } else if (OPERATION_TYPE_UPDATE.equals(desktopRecordParam.getOperationType())) {
                 if (StringUtils.isEmpty(desktopRecordParam.getRecordUid())){
-                    return AjaxResult.error("编辑时RecordUid不得为空");
+                    return AjaxResult.error("recorduid can't be empty");
                 }
                 autoInstertDesktopDevice(tDesktopRecord, desktopDevice);
                 updateDesktopRecords.put(indexUid, tDesktopRecord);
@@ -239,7 +239,7 @@ public class DesktopServiceImpl implements DesktopService {
             checkDeviceIntegralityDTO.setMessage("Can't submit empty data");
             return checkDeviceIntegralityDTO;
         }
-        List<Long> carlineInfoUids = null;
+        List<Long> carlineInfoUids = new ArrayList<>();
         for (DesktopRecordParam desktopRecordParam:desktopRecordParams){
             DeviceInfoVo desktopDevice = desktopRecordParam.getDesktopDevice();
             if (desktopDevice == null){
@@ -256,10 +256,10 @@ public class DesktopServiceImpl implements DesktopService {
         }
 
         List<TCarlineInfo> tCarlineInfos = tCarlineInfoMapper.selectList(new QueryWrapper<TCarlineInfo>()
-                .in("carline_info_uid,", carlineInfoUids.toArray(new Long[carlineInfoUids.size()])));
+                .in("carline_info_uid", carlineInfoUids.toArray(new Long[carlineInfoUids.size()])));
         if (CollectionUtils.isEmpty(tCarlineInfos) || tCarlineInfos.size() != carlineInfoUids.size()){
             checkDeviceIntegralityDTO.setIsIntegrated(false);
-            checkDeviceIntegralityDTO.setMessage("Device doesn‘t exist,please update datebase");
+            checkDeviceIntegralityDTO.setMessage("Device doesn‘t exist,please delete corrent uncommitted records and update datebase");
             return checkDeviceIntegralityDTO;
         }
         return checkDeviceIntegralityDTO;

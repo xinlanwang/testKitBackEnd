@@ -152,7 +152,7 @@ public class MatrixController extends BaseController {
     {
         int i = dictDataService.insertMatrixDictData(dict);
         if (i < 0){
-            return AjaxResult.error("已存在");
+            return AjaxResult.error("exixt");
         }else {
             return AjaxResult.success("success");
         }

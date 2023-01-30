@@ -85,7 +85,7 @@ public class GoldenInfoController extends BaseController
         if (goldenInfoVOS!=null){
             return AjaxResult.success(goldenInfoVOS);
         }else {
-            return AjaxResult.error("该车型不存在");
+            return AjaxResult.error("this carline doesn't exist,please update database");
         }
     }
 

@@ -58,8 +58,8 @@ public class TestKitConstants
      * refresh路径
      */
 //    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Documents\\jianguo\\Work\\需求\\idex\\idex";
-//    public static final String AUTO_IMPORT_DTC_PATH = "/home/data/testKit/auto_import/dtc";
-    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-20.assets\\dtc";
-    public static final String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-16.assets\\test\\golden";
-//    public static final String AUTO_IMPORT_GOLDEN_PATH = "/home/data/testKit/auto_import/golden";
+    public static final String AUTO_IMPORT_DTC_PATH = "/home/data/testKit/auto_import/dtc";
+//    public static final String AUTO_IMPORT_DTC_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-20.assets\\dtc";
+//    public static final String AUTO_IMPORT_GOLDEN_PATH = "C:\\Users\\10849\\Nutstore\\1\\Notebook\\EveryDay\\23-01\\23-01-16.assets\\test\\golden";
+    public static final String AUTO_IMPORT_GOLDEN_PATH = "/home/data/testKit/auto_import/golden";
 }
