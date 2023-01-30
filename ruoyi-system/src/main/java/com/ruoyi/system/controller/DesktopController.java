@@ -2,6 +2,7 @@ package com.ruoyi.system.controller;
 
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.system.domain.dto.CheckDeviceIntegralityDTO;
 import com.ruoyi.system.domain.param.DesktopGetDBParam;
 import com.ruoyi.system.domain.param.DesktopLoginParam;
 import com.ruoyi.system.domain.param.DesktopSubmitParam;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 /**
  * `devicelist`Controller
@@ -43,7 +45,12 @@ public class DesktopController extends BaseController
     @PostMapping("/submit")
     @ApiOperation("提交")
     public AjaxResult submit(@Validated @RequestBody DesktopSubmitParam desktopSubmitParam) throws Exception {
-        return desktopService.submit(desktopSubmitParam);
+        CheckDeviceIntegralityDTO checkDeviceIntegralityDTO = desktopService.checkDeviceIntegrality(desktopSubmitParam);
+        if (checkDeviceIntegralityDTO.getIsIntegrated()){
+            return desktopService.submit(desktopSubmitParam);
+        }else {
+            return AjaxResult.error(checkDeviceIntegralityDTO.getMessage());
+        }
     }
 
 

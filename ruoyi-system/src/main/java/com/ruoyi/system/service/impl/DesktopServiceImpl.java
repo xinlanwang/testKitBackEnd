@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.system.domain.dto.CheckDeviceIntegralityDTO;
 import com.ruoyi.system.domain.param.*;
 
 import java.util.Map;
@@ -225,6 +226,43 @@ public class DesktopServiceImpl implements DesktopService {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public CheckDeviceIntegralityDTO checkDeviceIntegrality(DesktopSubmitParam desktopSubmitParam) {
+        CheckDeviceIntegralityDTO checkDeviceIntegralityDTO = new CheckDeviceIntegralityDTO();
+        checkDeviceIntegralityDTO.setIsIntegrated(true);
+
+        List<DesktopRecordParam> desktopRecordParams = desktopSubmitParam.getDesktopRecordParams();
+        if (desktopSubmitParam == null || desktopRecordParams == null || desktopRecordParams.size() == 0){
+            checkDeviceIntegralityDTO.setIsIntegrated(false);
+            checkDeviceIntegralityDTO.setMessage("Can't submit empty data");
+            return checkDeviceIntegralityDTO;
+        }
+        List<Long> carlineInfoUids = null;
+        for (DesktopRecordParam desktopRecordParam:desktopRecordParams){
+            DeviceInfoVo desktopDevice = desktopRecordParam.getDesktopDevice();
+            if (desktopDevice == null){
+                checkDeviceIntegralityDTO.setIsIntegrated(false);
+                checkDeviceIntegralityDTO.setMessage("Record doesn‘t reference deviceInfo");
+                return checkDeviceIntegralityDTO;
+            }
+            if (desktopDevice.getCarlineInfoUid() == null){
+                checkDeviceIntegralityDTO.setIsIntegrated(false);
+                checkDeviceIntegralityDTO.setMessage("Device doesn‘t have carlineInfoUid");
+                return checkDeviceIntegralityDTO;
+            }
+            carlineInfoUids.add(desktopDevice.getCarlineInfoUid());
+        }
+
+        List<TCarlineInfo> tCarlineInfos = tCarlineInfoMapper.selectList(new QueryWrapper<TCarlineInfo>()
+                .in("carline_info_uid,", carlineInfoUids.toArray(new Long[carlineInfoUids.size()])));
+        if (CollectionUtils.isEmpty(tCarlineInfos) || tCarlineInfos.size() != carlineInfoUids.size()){
+            checkDeviceIntegralityDTO.setIsIntegrated(false);
+            checkDeviceIntegralityDTO.setMessage("Device doesn‘t exist,please update datebase");
+            return checkDeviceIntegralityDTO;
+        }
+        return checkDeviceIntegralityDTO;
     }
 
     private Integer getRecordIndex(TDesktopRecord tDesktopRecord) {
