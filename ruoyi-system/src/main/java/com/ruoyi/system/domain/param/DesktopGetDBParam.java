@@ -12,5 +12,6 @@ import java.util.List;
 @ApiModel(value = "DesktopSubmitParam",description = "桌面云端同步参数")
 @Data
 public class DesktopGetDBParam {
-private String tableName;
+//private String tableName;
+private String[] tableNames;
 }

@@ -33,9 +33,10 @@ public class RecordController extends BaseController
 
     @ApiOperation("查询测试记录列表")
     @PostMapping("/list")
-    public TableDataInfo list(@Validated @RequestBody DeviceListParam deviceListParam) {
+    public TableDataInfo list(@Validated @RequestBody RecordListParam deviceListParam) {
         startPage();
-        List list = recordService.list(deviceListParam);
+        List list = recordService.
+                list(deviceListParam);
         return getDataTable(list);
     }
 

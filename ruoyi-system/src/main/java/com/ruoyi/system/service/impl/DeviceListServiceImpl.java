@@ -100,8 +100,8 @@ public class DeviceListServiceImpl implements DeviceListService {
             return AjaxResult.error("CarlineInfoUid can't be empty");
         }
         //查重
-        Integer carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicateExcludedSameVersion(deviceInfoVo.getDeviceName(),deviceInfoVo.getCarlineInfoUid());
-        if (carlineDuplicateUids != null && carlineDuplicateUids > 0){
+        List<Long> carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicateExcludedSameVersion(deviceInfoVo.getDeviceName(),deviceInfoVo.getCarlineInfoUid(),BASIC_TYPE_WEB_DEVICE);
+        if (!CollectionUtils.isEmpty(carlineDuplicateUids)){
             return AjaxResult.error("This device name already exists");
 //            deleteTCarlineByUids(carlineDuplicateUids.toArray(new Long[carlineDuplicateUids.size()]));
         }
@@ -773,14 +773,14 @@ public class DeviceListServiceImpl implements DeviceListService {
             }else if ("005F-ZDC".equals(ecuId)){
                 DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
                 deviceInfoComponent.setComponentName(map.get("componentName"));
-                deviceInfoComponent.setComponentType(map.get("componentType"));
+                deviceInfoComponent.setComponentType(map.get("componentType").toUpperCase());
                 deviceInfoComponent.setOtherVersion(map.get("ZdcVersion"));
                 deviceInfoComponent.setComponentInstanceName(map.get("ZdcName"));
                 deviceInfoComponent.setEcuId(ecuId);
                 deviceInfoComponents.add(deviceInfoComponent);
             }else {
                 DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
-                deviceInfoComponent.setComponentType(map.get("componentType"));
+                deviceInfoComponent.setComponentType(map.get("componentType").toUpperCase());
                 deviceInfoComponent.setComponentName(map.get("componentName"));
                 deviceInfoComponent.setPartNumber(map.get("HWTeilenummer"));
                 deviceInfoComponent.setHwVersion(map.get("HWVersion"));
@@ -882,13 +882,18 @@ public class DeviceListServiceImpl implements DeviceListService {
         //默认结构
         for (TDTCReport tdtcReport : tdtcReportMapper.selectList(new QueryWrapper<TDTCReport>().notLike("ecu_id", "Vehicle"))) {
             DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
-            deviceInfoComponent.setComponentType(tdtcReport.getComponentType());
+            deviceInfoComponent.setComponentType(tdtcReport.getComponentType().toUpperCase());
             deviceInfoComponent.setEcuId(tdtcReport.getEcuId());
-            deviceInfoComponentMap.put(tdtcReport.getComponentType(),deviceInfoComponent);
+            if (StringUtils.isNotEmpty(tdtcReport.getComponentType())){
+                deviceInfoComponentMap.put(tdtcReport.getComponentType().toUpperCase(),deviceInfoComponent);
+            }
         }
 
         //true
         for (DeviceInfoComponent deviceInfoComponent : deviceInfoComponents) {
+            if (CollectionUtils.isEmpty(deviceInfoComponents)){
+                break;
+            }
             String componentType = deviceInfoComponent.getComponentType();
             if (StringUtils.isEmpty(componentType)) {
                 continue;
@@ -903,7 +908,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 componentMap.setCarlineInfoUid(deviceInfoComponent.getCarlineInfoUid());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getComponentType())) {
-                componentMap.setComponentType(deviceInfoComponent.getComponentType());
+                componentMap.setComponentType(deviceInfoComponent.getComponentType().toUpperCase());
             }
             if (StringUtils.isNotEmpty(deviceInfoComponent.getEcuId())) {
                 componentMap.setEcuId(deviceInfoComponent.getEcuId());
@@ -996,7 +1001,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         Map<String, Map<String,GoldenInfoComponentDTO>> goldenInfoComponentDTOMap = buildCompareMap(goldenInfoComponentDTOS);
         DeviceInfoComponent deviceInfoComponent = new DeviceInfoComponent();
         deviceInfoComponent.setComponentVersion(componentVersion);
-        deviceInfoComponent.setComponentType(componentType);
+        deviceInfoComponent.setComponentType(componentType.toUpperCase());
         deviceInfoComponent.setPartNumber(deviceCompareParam.getPartNumber());
         deviceInfoComponent.setWareType(wareType);
         if (deviceCompareParam.getSort() != null){
@@ -1325,7 +1330,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                     String hwProperty = componentType + "HW";
                     String swProperty = componentType + "SW";
                     if ("CONBOXOCU".equals(componentType)){
-                        componentType = "Conbox/OCU";
+                        componentType = "CONBOX/OCU";
                     }
                     insertImportComponent(ReflectUtils.invokeGetter(importDeviceDTO,hwProperty),ReflectUtils.invokeGetter(importDeviceDTO,swProperty), carlineInfoUid, componentType);
                 }
@@ -1338,7 +1343,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         Map hwComponentBuffer = new HashMap<String,Long>();
         Map swComponentBuffer = new HashMap<String,Long>();
         List<TComponentData> componentBufferList = tComponentDataMapper.selectList(new QueryWrapper<TComponentData>()
-                .eq("component_type", componentType));
+                .eq("component_type", componentType).isNull("component_name").isNull("part_number"));
         for (TComponentData componentData:componentBufferList){
             if ("HW".equals(componentData.getWareType())){
                 hwComponentBuffer.put(componentData.getComponentVersion(),componentData.getUid());
@@ -1363,7 +1368,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             return null;
         }
         TComponentData componentData = new TComponentData();
-        componentData.setComponentType(componentType);
+        componentData.setComponentType(componentType.toUpperCase());
 //        componentData.setComponentName(componentType);
         componentData.setIsAvaliabel(1);
         componentData.setPartNumber(null);//导入不存在partNumber
@@ -1441,7 +1446,7 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (null != deviceInfoVo.getDeviceInfoComponents() && deviceInfoVo.getDeviceInfoComponents().size() > 0) {
             for (DeviceInfoComponent deviceInfoComponent : deviceInfoVo.getDeviceInfoComponents()) {
                 TComponentData componentData = new TComponentData();
-                componentData.setComponentType(deviceInfoComponent.getComponentType());
+                componentData.setComponentType(deviceInfoComponent.getComponentType().toUpperCase());
                 componentData.setComponentName(deviceInfoComponent.getComponentName());
                 componentData.setPartNumber(deviceInfoComponent.getPartNumber());
                 componentData.setIsAvaliabel(1);

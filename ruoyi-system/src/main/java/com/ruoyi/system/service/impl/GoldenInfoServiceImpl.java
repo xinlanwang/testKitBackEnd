@@ -127,7 +127,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                 if ("SW".equals(goldenInfoComponent.getWareType())){
                     componentVO.setSwComponentVersion(goldenInfoComponent.getComponentVersion());
                 }
-                componentVO.setComponentType(goldenInfoComponent.getComponentType());
+                componentVO.setComponentType(goldenInfoComponent.getComponentType().toUpperCase());
                 String partnumber = goldenInfoComponent.getPartNumber();
                 if (StringUtils.isNotEmpty(partnumber)){
 //                    partnumber.replaceAll("\\u00A0+", "");
@@ -242,7 +242,7 @@ public class GoldenInfoServiceImpl implements GoldenInfoService
                     TComponentData componentData = new TComponentData();
                     TCarlineComponent deviceInfoComponent = new TCarlineComponent();
                     componentData.setComponentName(importPartComponentDTO.getCOMPONENTS());
-                    componentData.setComponentType(getComponentType(importPartComponentDTO.getCOMPONENTS()));
+                    componentData.setComponentType(getComponentType(importPartComponentDTO.getCOMPONENTS()).toUpperCase());
                     String partnumber = importPartComponentDTO.getPARTNUMBER();
                     if (StringUtils.isNotEmpty(partnumber)){
 //                        partnumber.replaceAll("\\u00A0+", "");

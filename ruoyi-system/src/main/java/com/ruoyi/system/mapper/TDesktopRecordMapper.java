@@ -2,8 +2,13 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.ruoyi.system.domain.param.RecordListParam;
 import com.ruoyi.system.domain.po.TDesktopRecord;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * `BIGINT(32) auto_increment`Mapper接口
@@ -60,4 +65,9 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
      * @return 结果
      */
     public int deleteTDesktopRecordByUids(Long[] uids);
+
+
+    public List<TDesktopRecord> selectListBySingleOrderDict(RecordListParam recordListParam);
+
+    public List<TDesktopRecord> selectListBySingleOrderNonDict(RecordListParam recordListParam);
 }

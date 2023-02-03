@@ -194,7 +194,8 @@ public class DesktopServiceImpl implements DesktopService {
         Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
-        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+
+        Map<String, List<Map<String, Object>>> dbMap = new HashMap<>();
         try {
             //1. 注册驱动
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -203,24 +204,32 @@ public class DesktopServiceImpl implements DesktopService {
 //            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
             //4.获取执行sql对象
             stmt = conn.createStatement();
-            //5.执行sql，返回结果集
-            String sql = "select * from " + desktopGetDBParam.getTableName();
-            rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                Map<String, Object> oneDataMap = new HashMap<>();
-                ResultSetMetaData metaData = rs.getMetaData();
-                int columnCount = metaData.getColumnCount();
-                for (int i = 1; i <= columnCount; i++) {
-                    String columnName = metaData.getColumnName(i);
-                    if (rs.getObject(i) != null) {
-                        oneDataMap.put(columnName, rs.getObject(i));
-                    } else {
-                        oneDataMap.put(columnName, null);
+            String[] tableNames = desktopGetDBParam.getTableNames();
+            if (tableNames != null && tableNames.length != 0){
+                for (String tableName:tableNames){
+                    List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+                    String sql = "select * from " + tableName;
+                    rs = stmt.executeQuery(sql);
+                    while (rs.next()) {
+                        Map<String, Object> oneDataMap = new HashMap<>();
+                        ResultSetMetaData metaData = rs.getMetaData();
+                        int columnCount = metaData.getColumnCount();
+                        for (int i = 1; i <= columnCount; i++) {
+                            String columnName = metaData.getColumnName(i);
+                            if (rs.getObject(i) != null) {
+                                oneDataMap.put(columnName, rs.getObject(i));
+                            } else {
+                                oneDataMap.put(columnName, null);
+                            }
+                        }
+                        list.add(oneDataMap);
                     }
+                    dbMap.put(tableName,list);
                 }
-                list.add(oneDataMap);
             }
-            return list;
+            rs.close();
+            conn.close();
+            return dbMap;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {

@@ -1,9 +1,11 @@
 package com.ruoyi.system.domain.param;
 
-import com.ruoyi.common.annotation.Excel;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * `BIGINT(32) auto_increment`对象 t_desktop_log
@@ -17,7 +19,24 @@ public class RecordListParam
 {
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty
+    private String singleOrderStr;//单项选择排序
+    @ApiModelProperty
+    private Boolean singleOrderByASC;//正序排序
+    private String dictTypeTable;
 
+    @ApiModelProperty
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date testDate;
+    @ApiModelProperty
+    private String tester;
+    @ApiModelProperty
+    private String functionGroupType;
+    @ApiModelProperty
+    private String deviceType;
+
+    private String dictTypeUnderLine;
+    private String dictTypeHump;
 
 
 }

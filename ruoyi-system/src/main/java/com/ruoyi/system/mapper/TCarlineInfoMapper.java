@@ -180,13 +180,14 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
             "where device_name = #{deviceName}\n" +
+            "and tci.basic_type = #{basicType}\n" +
             "and tcl.uid <> (select carline_uid as carlineInfoUid\n" +
             "from t_carline_info tci\n" +
             "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
             "where tci.carline_info_uid = #{carlineInfoUid})";
     @Select(countCarlineDuplicateExcludedSameVersionSql)
-    Integer  countCarlineDuplicateExcludedSameVersion( @Param("deviceName") String deviceName,@Param("carlineInfoUid")Long carlineInfoUid);
+    List<Long>  countCarlineDuplicateExcludedSameVersion( @Param("deviceName") String deviceName,@Param("carlineInfoUid")Long carlineInfoUid,@Param("basicType")String basicType);
 
 
     String selectAllGoldenSql = "select tci.carline_info_uid as carlineInfoUid\n" +
@@ -195,4 +196,11 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "where tc.device_type = 3";
     @Select(selectAllGoldenSql)
     List<Long> selectAllGolden();
+
+    String selectCarlineInfoUidByDeviceTypeSql = "select tci.carline_info_uid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "where tc.device_type = #{deviceType}";
+    @Select(selectCarlineInfoUidByDeviceTypeSql)
+    List<Long> selectCarlineInfoUidByDeviceType(@Param("deviceType") String deviceType);
 }

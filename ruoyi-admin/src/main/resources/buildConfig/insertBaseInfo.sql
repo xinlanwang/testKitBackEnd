@@ -222,3 +222,5 @@ alter table testkit.t_carline_info
 alter table testkit.t_desktop_record
     modify comment varchar(255) null comment 'comment';
 
+alter table testkit.t_desktop_record
+    add update_time timestamp default now() null after oper_time;

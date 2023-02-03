@@ -7,29 +7,29 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="TDesktopRecord" id="TDesktopRecordResult">
         <result property="uid"    column="uid"    />
         <result property="localhostUserId"    column="localhost_user_id"    />
-        <result property="operUserId"    column="oper_user_id"    />
+<!--        <result property="operUserId"    column="oper_user_id"    />-->
         <result property="dataUid"    column="data_uid"    />
-        <result property="dataType"    column="data_type"    />
+<!--        <result property="dataType"    column="data_type"    />-->
         <result property="operationType"    column="operation_type"    />
         <result property="operTime"    column="oper_time"    />
         <result property="status"    column="status"    />
         <result property="operIp"    column="oper_ip"    />
         <result property="operLocation"    column="oper_location"    />
         <result property="errorMsg"    column="error_msg"    />
-        <result property="functiongrouptype"    column="functionGroupType"    />
-        <result property="tasktype"    column="taskType"    />
+        <result property="functionGroupType"    column="function_group_type"    />
+        <result property="taskType"    column="task_type"    />
         <result property="mileacge"    column="mileacge"    />
-        <result property="testhour"    column="testHour"    />
+        <result property="testHour"    column="test_hour"    />
         <result property="location"    column="location"    />
-        <result property="systemreset"    column="systemReset"    />
-        <result property="navireset"    column="naviReset"    />
-        <result property="blackmap"    column="blackMap"    />
-        <result property="initializingoccurred"    column="initializingOccurred"    />
-        <result property="fallbackscreen"    column="fallBackScreen"    />
+        <result property="systemReset"    column="system_reset"    />
+        <result property="naviReset"    column="navi_reset"    />
+        <result property="blackMap"    column="black_map"    />
+        <result property="initializingOccurred"    column="initializing_occurred"    />
+        <result property="fallBackScreen"    column="fall_back_screen"    />
         <result property="bussleep"    column="bussleep"    />
-        <result property="plannedticket"    column="plannedTicket"    />
+        <result property="plannedTicket"    column="planned_ticket"    />
         <result property="comment"    column="comment"    />
-        <result property="operationtype"    column="operationType"    />
+        <result property="operationType"    column="operation_type"    />
     </resultMap>
 
     <sql id="selectTDesktopRecordVo">
@@ -168,4 +168,57 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{uid}
         </foreach>
     </delete>
+
+    <select id="selectListBySingleOrderDict" parameterType="com.ruoyi.system.domain.param.RecordListParam" resultMap="TDesktopRecordResult">
+        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,
+                tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket
+        from t_desktop_record tdc
+        left join t_carline_info tci on tci.carline_info_uid = tdc.data_uid
+        left join t_cluster tc on tci.cluster_uid = tc.uid
+        left join t_carline tcl on tcl.uid = tc.carline_uid
+        left join sys_dict_data tsdd on (tsdd.dict_value = ${dictTypeTable}.${dictTypeUnderLine} and tsdd.dict_type = #{dictTypeHump})
+        where 1 = 1
+        <if test="testDate != null  and testDate != ''">
+            and tc.oper_time = #{testDate}
+        </if>
+        <if test="tester != null  and tester != ''">
+            and tc.oper_user_name = #{tester}
+        </if>
+        <if test="functionGroupType != null  and functionGroupType != ''">
+            and tc.function_group_type = #{functionGroupType}
+        </if>
+        <if test="singleOrderByASC">
+            order by tsdd.dict_label asc
+        </if>
+        <if test="!singleOrderByASC">
+            order by tsdd.dict_label desc
+        </if>
+    </select>
+
+
+
+    <select id="selectListBySingleOrder" parameterType="com.ruoyi.system.domain.param.RecordListParam" resultMap="TDesktopRecordResult">
+        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,
+        tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket        from t_desktop_record tdc
+        left join t_carline_info tci on tci.carline_info_uid = tdc.data_uid
+        left join t_cluster tc on tci.cluster_uid = tc.uid
+        left join t_carline tcl on tcl.uid = tc.carline_uid
+        left join sys_dict_data tsdd on (tsdd.dict_value = tci.${dictTypeUnderLine} and tsdd.dict_type = #{dictTypeHump})
+        where 1= 1
+        <if test="testDate != null  and testDate != ''">
+            and tc.oper_time = #{testDate}
+        </if>
+        <if test="tester != null  and tester != ''">
+            and tc.oper_user_name = #{tester}
+        </if>
+        <if test="functionGroupType != null  and functionGroupType != ''">
+            and tc.function_group_type = #{functionGroupType}
+        </if>
+        <if test="singleOrderByASC">
+            order by tsdd.dict_label asc
+        </if>
+        <if test="!singleOrderByASC">
+            order by tsdd.dict_label desc
+        </if>
+    </select>
 </mapper>
