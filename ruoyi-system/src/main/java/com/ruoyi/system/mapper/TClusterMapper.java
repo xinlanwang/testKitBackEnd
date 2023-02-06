@@ -131,7 +131,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
     @Select(selectLastestClusterSql)
     RefreshDeviceDTO selectLastestCluster(@Param("deviceName")String deviceName, @Param("deviceType")String deviceType);
 
-    String selectCorrentVersionDeviceDTOSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.uid as clusterUid\n" +
+    String selectCorrentVersionDeviceDTOSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.uid as clusterUid,t_cluster.carline_uid as carlineUid\n" +
             "from t_cluster\n" +
             "left join t_carline_info tci on tci.cluster_uid = t_cluster.uid\n" +
             "where carline_uid = (select carline_uid\n" +

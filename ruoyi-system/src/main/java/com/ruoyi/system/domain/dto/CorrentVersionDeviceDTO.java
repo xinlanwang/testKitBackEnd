@@ -21,5 +21,6 @@ public class CorrentVersionDeviceDTO
    private Long clusterUid;
    private Integer deviceCircleNum;
    private Date updateTime;
+   private Long carlineUid;
 
 }

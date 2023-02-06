@@ -122,10 +122,6 @@ public class DeviceListServiceImpl implements DeviceListService {
         if (CollectionUtils.isEmpty(correntVersionDeviceDTOS)) {
             return AjaxResult.error("Current version doesn't exit");
         }
-        //t_cluster 1-10的版本循环,如果版本为10，则删去，存在则删，重新存储
-//        Integer deviceNum = tClusters.get(0).getdeviceCircleNum();//从0开始到9循环，总计保存共10副本
-        List<TCluster> tClusterList = tClusterMapper.selectList(new QueryWrapper<TCluster>().eq("carline_uid", carlineUid).orderByAsc("update_time"));
-//        Integer nextDeviceNum = (correntVersionDeviceDTOS.get(0).getdeviceCircleNum() + 1) % MAXCIRCLE;
         if (correntVersionDeviceDTOS.size() == MAXCIRCLE){
             cascadeDeleteVersion(correntVersionDeviceDTOS.get(0).getCarlineInfoUid(), correntVersionDeviceDTOS.get(0).getClusterUid());
         }
@@ -1251,11 +1247,11 @@ public class DeviceListServiceImpl implements DeviceListService {
                 if (importDeviceDTO == null || StringUtils.isEmpty(importDeviceDTO.getCarline())|| StringUtils.isEmpty(importDeviceDTO.getDeviceName())) {
                     continue;
                 }
-                //查重
+                //查重并删除同名重复项
                 List<Long> carlineDuplicateUids= tCarlineInfoMapper.countCarlineDuplicate(importDeviceDTO.getDeviceName());
-                if (!CollectionUtils.isEmpty(carlineDuplicateUids)){
+                /*if (!CollectionUtils.isEmpty(carlineDuplicateUids)){
                     deleteTCarlineByUids(carlineDuplicateUids.toArray(new Long[carlineDuplicateUids.size()]));
-                }
+                }*/
                 //build
                 TCarline tCarline = new TCarline();
                 TCluster tCluster = new TCluster();
@@ -1317,8 +1313,17 @@ public class DeviceListServiceImpl implements DeviceListService {
                 tCluster.setAutoSaveVersionName(autoSaveVersionName.toString());
                 tCluster.setUpdateTime(new Date());
                 tCluster.setCreateTime(new Date());
-                tCarlineMapper.insert(tCarline);
-                tCluster.setCarlineUid(tCarline.getUid());
+                if (CollectionUtils.isEmpty(carlineDuplicateUids)) {
+                    tCarlineMapper.insert(tCarline);
+                    tCluster.setCarlineUid(tCarline.getUid());
+                }else {
+                    //tCluster 筛选有无额外版本，并删除相关版本与配件信息
+                    List<CorrentVersionDeviceDTO> correntVersionDeviceDTOS = tClusterMapper.selectCorrentVersionDeviceDTO(carlineDuplicateUids.get(0));
+                    if (correntVersionDeviceDTOS.size() == MAXCIRCLE){
+                        cascadeDeleteVersion(correntVersionDeviceDTOS.get(0).getCarlineInfoUid(), correntVersionDeviceDTOS.get(0).getClusterUid());
+                    }
+                    tCluster.setCarlineUid(correntVersionDeviceDTOS.get(0).getCarlineUid());
+                }
                 tClusterMapper.insert(tCluster);
                 tCarlineInfo.setClusterUid(tCluster.getUid());
                 tCarlineInfoMapper.insert(tCarlineInfo);
