@@ -203,4 +203,11 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "where tc.device_type = #{deviceType}";
     @Select(selectCarlineInfoUidByDeviceTypeSql)
     List<Long> selectCarlineInfoUidByDeviceType(@Param("deviceType") String deviceType);
+
+    String selectCarlineInfoUidByDeviceNameSql = "select tci.carline_info_uid\n" +
+            "from t_carline_info tci\n" +
+            "left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "where tci.device_name like %#{deviceName}%";
+    @Select(selectCarlineInfoUidByDeviceNameSql)
+    List<Long> selectCarlineInfoUidByDeviceName(@Param("deviceName") String deviceName);
 }

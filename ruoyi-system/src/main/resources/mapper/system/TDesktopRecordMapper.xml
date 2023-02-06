@@ -7,7 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="TDesktopRecord" id="TDesktopRecordResult">
         <result property="uid"    column="uid"    />
         <result property="localhostUserId"    column="localhost_user_id"    />
-<!--        <result property="operUserId"    column="oper_user_id"    />-->
+        <result property="operUserName"    column="oper_user_name"    />
         <result property="dataUid"    column="data_uid"    />
 <!--        <result property="dataType"    column="data_type"    />-->
         <result property="operationType"    column="operation_type"    />
@@ -170,7 +170,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <select id="selectListBySingleOrderDict" parameterType="com.ruoyi.system.domain.param.RecordListParam" resultMap="TDesktopRecordResult">
-        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,
+        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,tdc.oper_user_name,
                 tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket
         from t_desktop_record tdc
         left join t_carline_info tci on tci.carline_info_uid = tdc.data_uid
@@ -178,14 +178,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         left join t_carline tcl on tcl.uid = tc.carline_uid
         left join sys_dict_data tsdd on (tsdd.dict_value = ${dictTypeTable}.${dictTypeUnderLine} and tsdd.dict_type = #{dictTypeHump})
         where 1 = 1
+        <if test="deviceName != null  and deviceName != ''">
+            and tci.device_name like "%"#{deviceName}"%"
+        </if>
+        <if test="deviceType != null  and deviceType != ''">
+            and tc.device_type = #{deviceType}
+        </if>
         <if test="testDate != null  and testDate != ''">
-            and tc.oper_time = #{testDate}
+            and tdc.oper_time = #{testDate}
         </if>
         <if test="tester != null  and tester != ''">
-            and tc.oper_user_name = #{tester}
+            and tdc.oper_user_name = #{tester}
         </if>
         <if test="functionGroupType != null  and functionGroupType != ''">
-            and tc.function_group_type = #{functionGroupType}
+            and tdc.function_group_type = #{functionGroupType}
         </if>
         <if test="singleOrderByASC">
             order by tsdd.dict_label asc
@@ -198,27 +204,92 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 
     <select id="selectListBySingleOrder" parameterType="com.ruoyi.system.domain.param.RecordListParam" resultMap="TDesktopRecordResult">
-        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,
-        tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket        from t_desktop_record tdc
+        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,tdc.oper_user_name,
+        tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket
+        from t_desktop_record tdc
         left join t_carline_info tci on tci.carline_info_uid = tdc.data_uid
         left join t_cluster tc on tci.cluster_uid = tc.uid
         left join t_carline tcl on tcl.uid = tc.carline_uid
         left join sys_dict_data tsdd on (tsdd.dict_value = tci.${dictTypeUnderLine} and tsdd.dict_type = #{dictTypeHump})
         where 1= 1
+        <if test="deviceName != null  and deviceName != ''">
+            and tci.device_name like "%"#{deviceName}"%"
+        </if>
+        <if test="deviceType != null  and deviceType != ''">
+            and tc.device_type = #{deviceType}
+        </if>
         <if test="testDate != null  and testDate != ''">
-            and tc.oper_time = #{testDate}
+            and tdc.oper_time = #{testDate}
         </if>
         <if test="tester != null  and tester != ''">
-            and tc.oper_user_name = #{tester}
+            and tdc.oper_user_name = #{tester}
         </if>
         <if test="functionGroupType != null  and functionGroupType != ''">
-            and tc.function_group_type = #{functionGroupType}
+            and tdc.function_group_type = #{functionGroupType}
         </if>
         <if test="singleOrderByASC">
             order by tsdd.dict_label asc
         </if>
         <if test="!singleOrderByASC">
             order by tsdd.dict_label desc
+        </if>
+    </select>
+
+
+    <select id="selectDefaultRecordList" parameterType="com.ruoyi.system.domain.param.RecordListParam" resultMap="TDesktopRecordResult">
+        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,tdc.oper_user_name,
+        tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket
+        from t_desktop_record tdc
+        left join t_carline_info tci on tci.carline_info_uid = tdc.data_uid
+        left join t_cluster tc on tci.cluster_uid = tc.uid
+        left join t_carline tcl on tcl.uid = tc.carline_uid
+        where 1= 1
+        <if test="deviceName != null  and deviceName != ''">
+            and tci.device_name like "%"#{deviceName}"%"
+        </if>
+        <if test="deviceType != null  and deviceType != ''">
+            and tc.device_type = #{deviceType}
+        </if>
+        <if test="testDate != null  and testDate != ''">
+            and tdc.oper_time = #{testDate}
+        </if>
+        <if test="tester != null  and tester != ''">
+            and tdc.oper_user_name = #{tester}
+        </if>
+        <if test="functionGroupType != null  and functionGroupType != ''">
+            and tdc.function_group_type = #{functionGroupType}
+        </if>
+        order by tdc.oper_time desc,tdc.update_time desc,tdc.oper_user_name asc
+    </select>
+
+    <select id="selectListBySingleOrderByRecord" parameterType="com.ruoyi.system.domain.param.RecordListParam" resultMap="TDesktopRecordResult">
+        select  tdc.uid,tdc.localhost_user_id,tdc.data_uid,tdc.oper_time,tdc.status,tdc.function_group_type,tdc.task_type,tdc.mileacge,tdc.oper_user_name,
+        tdc.test_hour,tdc.location,tdc.system_reset,tdc.navi_reset,tdc.black_map,tdc.initializing_occurred,tdc.fall_back_screen,tdc.bussleep,tdc.planned_ticket
+        from t_desktop_record tdc
+        left join t_carline_info tci on tci.carline_info_uid = tdc.data_uid
+        left join t_cluster tc on tci.cluster_uid = tc.uid
+        left join t_carline tcl on tcl.uid = tc.carline_uid
+        where 1= 1
+        <if test="deviceName != null  and deviceName != ''">
+            and tci.device_name like "%"#{deviceName}"%"
+        </if>
+        <if test="deviceType != null  and deviceType != ''">
+            and tc.device_type = #{deviceType}
+        </if>
+        <if test="testDate != null  and testDate != ''">
+            and tdc.oper_time = #{testDate}
+        </if>
+        <if test="tester != null  and tester != ''">
+            and tdc.oper_user_name = #{tester}
+        </if>
+        <if test="functionGroupType != null  and functionGroupType != ''">
+            and tdc.function_group_type = #{functionGroupType}
+        </if>
+        <if test="singleOrderByASC">
+            order by tdc.${dictTypeUnderLine} asc
+        </if>
+        <if test="!singleOrderByASC">
+            order by tdc.${dictTypeUnderLine} desc
         </if>
     </select>
 </mapper>

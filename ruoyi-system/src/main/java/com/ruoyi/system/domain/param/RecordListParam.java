@@ -34,6 +34,7 @@ public class RecordListParam
     private String functionGroupType;
     @ApiModelProperty
     private String deviceType;
+    private String deviceName;
 
     private String dictTypeUnderLine;
     private String dictTypeHump;

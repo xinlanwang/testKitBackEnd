@@ -35,8 +35,7 @@ public class RecordController extends BaseController
     @PostMapping("/list")
     public TableDataInfo list(@Validated @RequestBody RecordListParam deviceListParam) {
         startPage();
-        List list = recordService.
-                list(deviceListParam);
+        List list = recordService.list(deviceListParam);
         return getDataTable(list);
     }
 

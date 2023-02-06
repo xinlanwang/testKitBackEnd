@@ -70,4 +70,8 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
     public List<TDesktopRecord> selectListBySingleOrderDict(RecordListParam recordListParam);
 
     public List<TDesktopRecord> selectListBySingleOrderNonDict(RecordListParam recordListParam);
+
+    public List<TDesktopRecord> selectDefaultRecordList(RecordListParam recordListParam);
+
+    public List<TDesktopRecord> selectListBySingleOrderByRecord(RecordListParam recordListParam);
 }
