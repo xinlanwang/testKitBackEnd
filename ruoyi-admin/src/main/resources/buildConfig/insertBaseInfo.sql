@@ -224,3 +224,7 @@ alter table testkit.t_desktop_record
 
 alter table testkit.t_desktop_record
     add update_time timestamp default now() null after oper_time;
+
+INSERT INTO testkit.sys_dict_data (matrix_type, dict_label, dict_value, dict_type, status, dict_sort, params, css_class, list_class, is_default, create_by, create_time, update_by, update_time, remark, search_value) VALUES ('0', 'BENCH', '1', 'deviceType', DEFAULT, DEFAULT, null, null, null, DEFAULT, DEFAULT, null, DEFAULT, null, null, null);
+INSERT INTO testkit.sys_dict_data (matrix_type, dict_label, dict_value, dict_type, status, dict_sort, params, css_class, list_class, is_default, create_by, create_time, update_by, update_time, remark, search_value) VALUES ('0', 'CAR', '2', 'deviceType', DEFAULT, DEFAULT, null, null, null, DEFAULT, DEFAULT, null, DEFAULT, null, null, null);
+

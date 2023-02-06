@@ -27,7 +27,10 @@ public class RecordListParam
 
     @ApiModelProperty
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date testDate;
+    private Date testStartDate;
+    @ApiModelProperty
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private Date testEndDate;
     @ApiModelProperty
     private String tester;
     @ApiModelProperty

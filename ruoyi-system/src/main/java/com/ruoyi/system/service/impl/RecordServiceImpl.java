@@ -66,7 +66,7 @@ public class RecordServiceImpl implements RecordService {
             }
 
             //2.非value的dbVersion与vinCode（为非字典值的）
-            if ("dbVersion".equals(singleOrder) || "vincode".equals(singleOrder)){
+            if ("dbVersion".equals(singleOrder) || "vinCode".equals(singleOrder)|| "deviceName".equals(singleOrder)){
                 logger.info("本次排序依据device里非字典值的某一字段进行排序，该字段为{}，经过驼峰转换下划线形式为{}",singleOrder,hump2underline(singleOrder));
                 return desktopRecordMapper.selectListBySingleOrderNonDict(recordListParam);
             }
