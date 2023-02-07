@@ -67,11 +67,8 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
     public int deleteTDesktopRecordByUids(Long[] uids);
 
 
-    public List<TDesktopRecord> selectListBySingleOrderDict(RecordListParam recordListParam);
 
-    public List<TDesktopRecord> selectListBySingleOrderNonDict(RecordListParam recordListParam);
 
-    public List<TDesktopRecord> selectDefaultRecordList(RecordListParam recordListParam);
+    public List<TDesktopRecord> selectRecordList(RecordListParam recordListParam);
 
-    public List<TDesktopRecord> selectListBySingleOrderByRecord(RecordListParam recordListParam);
 }

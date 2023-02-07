@@ -3,6 +3,7 @@ package com.ruoyi.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.core.domain.entity.SysDictData;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.Threads;
 import com.ruoyi.system.domain.enums.DeviceSelectMapping;
@@ -38,61 +39,51 @@ public class RecordServiceImpl implements RecordService {
     private TDesktopRecordMapper desktopRecordMapper;
     @Autowired
     private TCarlineInfoMapper carlineInfoMapper;
+    @Autowired
+    private SysDictDataMapper dictDataMapper;
 
 
     @Override
     public List list(RecordListParam recordListParam) {
         List<TDesktopRecord> tDesktopRecords = new ArrayList<>();
+
+        /*for (SysDictData dictType : dictDataMapper.selectList(new QueryWrapper<SysDictData>().select("distinct dict_type"))) {
+            dictTypes.add(dictType.getDictType());
+        }*/
+        String[] dictTypestr = {"clusterName","goldenCarType","marketType","variantType","carlineModelType","projectType",
+                "platformType","functionGroupType","taskType","goldenClusterNameType","ocuCboxType","gatewayType"};
+        Set<String> dictTypes = new HashSet<>(Arrays.asList(dictTypestr));
+
+
+
+        //single
         String singleOrder = recordListParam.getSingleOrderStr();
-        recordListParam.setDictTypeHump(singleOrder);
-        recordListParam.setDictTypeUnderLine(hump2underline(singleOrder));
-
-        //是单项排序还是默认排序
-        if (recordListParam == null || StringUtils.isEmpty(singleOrder) || recordListParam.getSingleOrderByASC() == null){
-            logger.info("本次排序无其他参数，为默认排序");
-            tDesktopRecords = desktopRecordMapper.selectDefaultRecordList(recordListParam);
-        }else {
-            //1.record字段直接排序
-            TDesktopRecord tDesktopRecord = new TDesktopRecord();
-            Field[] fields = tDesktopRecord.getClass().getDeclaredFields();
-            for (Field field:fields){
-                field.setAccessible(true);
-                if(singleOrder.equals(field.getName())){
-                    recordListParam.setSingleOrderStr(hump2underline(singleOrder));
-                    logger.info("本次排序依据record里的某一字段进行排序，该字段为{}，经过驼峰转换下划线形式为{}",singleOrder,hump2underline(singleOrder));
-                    tDesktopRecords = desktopRecordMapper.selectListBySingleOrderByRecord(recordListParam);
-                    return tDesktopRecords;
-                }
+        if (StringUtils.isNotEmpty(singleOrder)){
+            recordListParam.setDictTypeUnderLine(hump2underline(singleOrder));
+            if (!dictTypes.contains(singleOrder)){
+                recordListParam.setIsDictValue(false);
+            }else {
+                recordListParam.setIsDictValue(true);
             }
-
-            //2.非value的dbVersion与vinCode（为非字典值的）
-            if ("dbVersion".equals(singleOrder) || "vinCode".equals(singleOrder)|| "deviceName".equals(singleOrder)){
-                logger.info("本次排序依据device里非字典值的某一字段进行排序，该字段为{}，经过驼峰转换下划线形式为{}",singleOrder,hump2underline(singleOrder));
-                return desktopRecordMapper.selectListBySingleOrderNonDict(recordListParam);
-            }
-
-            //3.device value项目比较（为字典值的）
+            //
             if ("deviceType".equals(singleOrder) || "clusterName".equals(singleOrder) || "projectType".equals(singleOrder)){
                 recordListParam.setDictTypeTable("tc");
             }else {
                 recordListParam.setDictTypeTable("tci");
             }
-            logger.info("本次排序依据device里字典值中的某一字段进行排序，该字段为{}，存在表为{},经过驼峰转换下划线形式为{}",singleOrder,recordListParam.getDictTypeTable(),hump2underline(singleOrder));
-            tDesktopRecords = desktopRecordMapper.selectListBySingleOrderDict(recordListParam);
+            //record字段
+            Field[] fields = new TDesktopRecord().getClass().getDeclaredFields();
+            for (Field field:fields){
+                field.setAccessible(true);
+                if(singleOrder.equals(field.getName())){
+                    recordListParam.setDictTypeTable("tdc");
+                }
+            }
         }
-
+        logger.info("————————————————————select record begin——————————————————————————");
+        tDesktopRecords = desktopRecordMapper.selectRecordList(recordListParam);
+        logger.info("————————————————————select record end——————————————————————————");
         return tDesktopRecords;
-    }
-
-    private void gettDesktopRecords(RecordListParam recordListParam, QueryWrapper<TDesktopRecord> qw) {
-        if (StringUtils.isNotEmpty(recordListParam.getDeviceType())){
-            List<Long> carlineInfoUids = carlineInfoMapper.selectCarlineInfoUidByDeviceType(recordListParam.getDeviceType());
-            qw.in("data_uid",carlineInfoUids.toArray(new Long[carlineInfoUids.size()]));
-        }
-        if (StringUtils.isNotEmpty(recordListParam.getDeviceName())){
-            List<Long> carlineInfoUids = carlineInfoMapper.selectCarlineInfoUidByDeviceName(recordListParam.getDeviceName());
-            qw.in("data_uid",carlineInfoUids.toArray(new Long[carlineInfoUids.size()]));
-        }
     }
 
     public static String hump2underline(String str) {

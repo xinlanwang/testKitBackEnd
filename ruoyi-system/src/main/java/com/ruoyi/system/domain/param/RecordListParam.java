@@ -40,7 +40,7 @@ public class RecordListParam
     private String deviceName;
 
     private String dictTypeUnderLine;
-    private String dictTypeHump;
+    private Boolean isDictValue;
 
 
 }
