@@ -816,6 +816,9 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     private static String regexStr(String content, String regex) {
+        if (StringUtils.isEmpty(content) || StringUtils.isEmpty(regex)){
+            return null;
+        }
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(content);
         if (matcher.find()) {

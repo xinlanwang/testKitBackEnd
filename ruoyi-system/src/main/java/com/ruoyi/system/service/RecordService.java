@@ -1,5 +1,6 @@
 package com.ruoyi.system.service;
 
+import com.ruoyi.system.domain.dto.ExportRecordListDTO;
 import com.ruoyi.system.domain.param.DesktopSubmitParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
 import com.ruoyi.system.domain.param.RecordListParam;
@@ -18,4 +19,6 @@ public interface RecordService
     public List list(RecordListParam deviceListParam);
 
     public List historyList(Long recordUid);
+
+    public List<ExportRecordListDTO> selectFullRecordList(RecordListParam deviceListParam);
 }

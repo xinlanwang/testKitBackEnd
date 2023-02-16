@@ -201,8 +201,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             and tdc.function_group_type = #{functionGroupType}
         </if>
 
---         group by tdc.data_uid
-
         <if test="singleOrderStr == null or singleOrderStr == ''">
             order by tdc.oper_time desc,tdc.update_time desc,tdc.oper_user_name asc
         </if>

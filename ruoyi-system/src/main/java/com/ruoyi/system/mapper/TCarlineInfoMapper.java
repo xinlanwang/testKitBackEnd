@@ -35,6 +35,17 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
     @Select(queryDeviceInfoSql)
     DeviceInfoVo queryDeviceInfo(@Param("carlineInfoUid") Long carlineInfoUid);
 
+    String queryDeviceInfosSql = "select tci.carline_info_uid,tc.device_type as carlineType,tci.device_name as deviceName,\n" +
+            "                               tc.cluster_name as clusterName,tc.project_type as projectType,tci.platform_type as platformType, \n" +
+            "                               tci.market_type as marketType,tci.carline_model_type as carlineModelType,tci.variant_type as variant_type,tci.vin_code as vinCode, \n" +
+            "                                    tc.last_updated as clusterLastUpdateName,tci.db_version as dbVersion\n" +
+            "                                    from t_carline_info tci \n" +
+            "                                    left join t_cluster tc on tci.cluster_uid = tc.uid\n" +
+            "                                    left join t_carline tl on tc.carline_uid = tl.uid \n" +
+            "                                    where tci.carline_info_uid in (${carlineInfoUids})";
+    @Select(queryDeviceInfosSql)
+    List<DeviceInfoVo> queryDeviceInfos(@Param("carlineInfoUids") String carlineInfoUids);
+
     /**
      * 设备详情B配件基本信息
      */
@@ -47,6 +58,16 @@ public interface TCarlineInfoMapper extends BaseMapper<TCarlineInfo>
             "            where tci.carline_info_uid = #{carlineInfoUid}";
     @Select(queryDeviceComponentSql)
     List<DeviceInfoComponent> queryDeviceComponent(@Param("carlineInfoUid") Long carlineInfoUid);
+
+    String queryDeviceComponentsSql = "select tci.carline_info_uid as carlineInfoUid,tcd.component_type as componentType,tdr.ecu_id as ecuId,tcd.component_instance_name as componentInstanceName,\n" +
+            "                        tcd.component_version as componentVersion,tcd.sort as sort,tcd.ware_type as wareType,tcc.variant_type as variantType,tcd.part_number as partNumber,tcd.component_name as componentName\n" +
+            "                                    from t_carline_info tci \n" +
+            "                                    left join t_carline_component tcc on tci.carline_info_uid = tcc.carline_info_uid \n" +
+            "                                    left join t_component_data tcd on (tcd.uid = tcc.hw_version_uid or tcd.uid = tcc.sw_version_uid or tcd.uid = tcc.other_version_uid)\n" +
+            "left join t_dtc_report tdr on tcd.component_type = tdr.component_type" +
+            "            where tci.carline_info_uid in (${carlineInfoUids})";
+    @Select(queryDeviceComponentsSql)
+    List<DeviceInfoComponent> queryDeviceComponents(@Param("carlineInfoUids") String carlineInfoUids);
 
     /**
      * GoldenInfo设备详情基本信息
