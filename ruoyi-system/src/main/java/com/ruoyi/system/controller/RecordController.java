@@ -58,7 +58,7 @@ public class RecordController extends BaseController
      * 导出`用户`列表
      */
     @PostMapping("/export")
-    public void export(HttpServletResponse response, RecordListParam deviceListParam)
+    public void export(HttpServletResponse response, @Validated @RequestBody RecordListParam deviceListParam)
     {
         List<ExportRecordListDTO> list = recordService.selectFullRecordList(deviceListParam);
         ExcelUtil<ExportRecordListDTO> util = new ExcelUtil<ExportRecordListDTO>(ExportRecordListDTO.class);

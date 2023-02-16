@@ -270,6 +270,7 @@ public class RecordServiceImpl implements RecordService {
                 exportRecordListDTO.setCarlineModelType(deviceInfoVo.getCarlineModelType());
                 exportRecordListDTO.setMarketType(deviceInfoVo.getMarketType());
                 exportRecordListDTO.setDbVersion(deviceInfoVo.getDbVersion());
+                exportRecordListDTO.setDataMedium(deviceInfoVo.getDbVersion());
                 exportRecordListDTO.setVinCode(deviceInfoVo.getVinCode());
             }
 
@@ -293,8 +294,9 @@ public class RecordServiceImpl implements RecordService {
             if (componentTypeMap == null){
                 continue;
             }
+
             for (String componentType:componentTypeMap.keySet()){
-                if (StringUtils.isEmpty(componentType)){
+                if (StringUtils.isEmpty(componentType) || "DBVERSION".equals(componentType)){
                     continue;
                 }
                 if ("CONBOX/OCU".equals(componentType)){

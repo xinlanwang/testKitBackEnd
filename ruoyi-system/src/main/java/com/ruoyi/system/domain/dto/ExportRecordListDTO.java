@@ -73,7 +73,7 @@ public class ExportRecordListDTO {
     @Excel(name = "0019 GATEWAY")
     private String GATEWAY;
     @Excel(name = "005F-Data Medium DBVERSION")
-    private String DBVERSION;
+    private String dataMedium;
     @Excel(name = "0017 KOMBI")
     private String KOMBI;
     @Excel(name = "005F MU")
@@ -86,6 +86,5 @@ public class ExportRecordListDTO {
     private String BCM1;
     @Excel(name = "005F-ZDC MU-ZDC")
     private String MUZDC;
-
 
 }
