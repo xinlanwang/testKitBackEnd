@@ -36,7 +36,6 @@ public interface DeviceListService
     public String importDevice(Map<String,List<ImportDeviceDTO>> deviceInfoVoList, boolean b, String operName);
 
     public AjaxResult importDTCReport(InputStream io, boolean b, String operName);
-    public void quarzImportDTCReport() throws ClassNotFoundException, IOException;
     public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException;
 
     public List<AutoSaveVersionVO> autoSaveVersionList(String carlineInfoUid);

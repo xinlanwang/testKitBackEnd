@@ -127,7 +127,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
             "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
             "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
             "where device_name = #{deviceName} and tcl.uid <> ''))\n" +
-            "and tc.device_type = #{deviceType}" ;
+            "and tc.device_type = #{deviceType} and tci.basic_type = 1 limit 1" ;
     @Select(selectLastestClusterSql)
     RefreshDeviceDTO selectLastestCluster(@Param("deviceName")String deviceName, @Param("deviceType")String deviceType);
 
@@ -139,6 +139,7 @@ public interface TClusterMapper extends BaseMapper<TCluster>
             "where tc.uid = (select cluster_uid\n" +
             "from t_carline_info\n" +
             "where carline_info_uid = #{carlineInfoUid}))\n" +
+            "and tci.basic_type = 1\n" +
             "order by t_cluster.update_time asc" ;
     @Select(selectCorrentVersionDeviceDTOSql)
     List<CorrentVersionDeviceDTO> selectCorrentVersionDeviceDTO(@Param("carlineInfoUid")Long carlineInfoUid);

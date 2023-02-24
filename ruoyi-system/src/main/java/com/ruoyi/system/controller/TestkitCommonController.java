@@ -52,7 +52,7 @@ public class TestkitCommonController extends BaseController
     public AjaxResult getdb() throws Exception {
         //golden
         //删除当前的
-        Long[] carlineInfoUids = deviceListService.selectAllGolden();
+        /*Long[] carlineInfoUids = deviceListService.selectAllGolden();
         deviceListService.deleteTCarlineByUids(carlineInfoUids);
         //导入
         Map<String, File> autoImportGoldenFildMap = goldenInfoService.getAutoImportGoldenFildMap();
@@ -65,7 +65,7 @@ public class TestkitCommonController extends BaseController
                 String originalFilename = file.getName();
                 goldenInfoService.importGoldenInfoDevice(importGoldenInfoDTOS, true, originalFilename);
             }
-        }
+        }*/
 
         //device
         try {

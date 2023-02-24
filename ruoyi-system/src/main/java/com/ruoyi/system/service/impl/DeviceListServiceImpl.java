@@ -468,10 +468,24 @@ public class DeviceListServiceImpl implements DeviceListService {
         }*/
     }
 
+    @Test
+    public void main() throws ParseException {
+        StringBuffer stringBuffer = new StringBuffer();
+        String fileName = "BAUNEEGFZ21042102_28.09.2022_13.26.14.xml";
+        stringBuffer.append(fileName.split("_")[fileName.split("_").length - 2].replaceAll("\\.",""));
+        stringBuffer.append(fileName.split("_")[fileName.split("_").length - 1].replace(".xml","").replaceAll("\\.",""));
+        System.out.println(stringBuffer);
+        Date fileDate = new SimpleDateFormat("ddMMyyyyhhmmss").parse(stringBuffer.toString());
+        System.out.println(fileDate);
+    }
 
 
     private Date getDTCFileDateByFileName(String fileName) {
+        if (fileName.contains("IDEXReport")){
+            return null;
+        }
         try {
+            log.info("-----------------------------fileName:{}",fileName);
             if ("AM".equals(fileName.substring(fileName.length() - 2,fileName.length())) ||
                     "PM".equals(fileName.substring(fileName.length() - 2,fileName.length())) ){
                 StringBuffer stringBuffer = new StringBuffer();
@@ -513,7 +527,8 @@ public class DeviceListServiceImpl implements DeviceListService {
 
     @Test
     public void test333() throws IOException, ClassNotFoundException {
-        File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
+//        File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
+        File[] files =  new File("C:\\\\Users\\\\10849\\\\Nutstore\\\\1\\\\Notebook\\\\EveryDay\\\\23-01\\\\23-01-20.assets\\\\dtc").listFiles();
         for (File file:files){
             String firePath = null;
             if (file.getName().toUpperCase().contains("CAR") || "CAR".equals(file.getName().toUpperCase())
@@ -523,6 +538,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 continue;
             }
             for (File dtcFile:FileUtil.loopFiles(firePath)){
+                System.out.println(dtcFile.getAbsolutePath());
                 String deviceType = null;
                 if (FileNameUtil.isType(dtcFile.getName(),"xml")){
                     InputStream fileInputStream = IoUtil.toStream(dtcFile);
@@ -536,7 +552,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
         }
     }
-    @Override
+    /*@Override
     @Test
     public void quarzImportDTCReport() throws ClassNotFoundException, IOException {
         File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
@@ -563,6 +579,11 @@ public class DeviceListServiceImpl implements DeviceListService {
                 File lastFile = null;
                 //找到最近的一版时间
                 for (File deviceFile:FileUtil.loopFiles(devicePath)){
+                    String path = deviceFile.getPath();
+                    log.info("___________________filepath:{}",path);
+                    if (path.contains("IDEXReport") || path.contains("xsl") || !path.contains("xml")){
+                        continue;
+                    }
                     Date correntDate = getDTCFileDateByFileName(deviceFile.getName());
                     if (DateUtil.compare(lastDateByFileName,correntDate) < 0){
                         lastFileByFileName = deviceFile;
@@ -616,7 +637,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 updateDeviceInfo(deviceInfoVo);
             }
         }
-    }
+    }*/
     @Override
     public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException {
         TCarlineInfo tCarlineInfo = null;
@@ -675,6 +696,11 @@ public class DeviceListServiceImpl implements DeviceListService {
                 File lastFile = null;
                 //找到最近的一版时间
                 for (File deviceFile:FileUtil.loopFiles(devicePath)){
+                    String path = deviceFile.getPath();
+                    log.info("___________________1filepath:{}",path);
+                    if (path.contains("IDEXReport") || path.contains("xsl") || !path.contains("xml")){
+                        continue;
+                    }
                     Date correntDate = getDTCFileDateByFileName(deviceFile.getName());
                     if (DateUtil.compare(lastDateByFileName,correntDate) < 0){
                         lastFileByFileName = deviceFile;
@@ -725,6 +751,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
                 //插入
                 DeviceInfoVo deviceInfoVo = buildDeviceInfoVo(reportMapVO,deviceType,deviceName);
+                deviceInfoVo.setBasicType(BASIC_TYPE_WEB_DEVICE);
                 deviceInfoVo.setIsRefresh(true);
                 deviceInfoVo.setCarlineInfoUid(refreshDeviceDTO.getCarlineInfoUid());
                 deviceInfoVo.setDtcTime(dtcTimeStr);
@@ -1316,17 +1343,24 @@ public class DeviceListServiceImpl implements DeviceListService {
                 tCluster.setAutoSaveVersionName(autoSaveVersionName.toString());
                 tCluster.setUpdateTime(new Date());
                 tCluster.setCreateTime(new Date());
+                Long carlineUid = null;
                 if (CollectionUtils.isEmpty(carlineDuplicateUids)) {
                     tCarlineMapper.insert(tCarline);
-                    tCluster.setCarlineUid(tCarline.getUid());
+                    carlineUid = tCarline.getUid();
                 }else {
                     //tCluster 筛选有无额外版本，并删除相关版本与配件信息
                     List<CorrentVersionDeviceDTO> correntVersionDeviceDTOS = tClusterMapper.selectCorrentVersionDeviceDTO(carlineDuplicateUids.get(0));
                     if (correntVersionDeviceDTOS.size() == MAXCIRCLE){
                         cascadeDeleteVersion(correntVersionDeviceDTOS.get(0).getCarlineInfoUid(), correntVersionDeviceDTOS.get(0).getClusterUid());
                     }
-                    tCluster.setCarlineUid(correntVersionDeviceDTOS.get(0).getCarlineUid());
+                    if (CollectionUtils.isEmpty(correntVersionDeviceDTOS)){
+                        tCarlineMapper.insert(tCarline);
+                        carlineUid = tCarline.getUid();
+                    }else {
+                        carlineUid = correntVersionDeviceDTOS.get(0).getCarlineUid();
+                    }
                 }
+                tCluster.setCarlineUid(carlineUid);
                 tClusterMapper.insert(tCluster);
                 tCarlineInfo.setClusterUid(tCluster.getUid());
                 tCarlineInfoMapper.insert(tCarlineInfo);
