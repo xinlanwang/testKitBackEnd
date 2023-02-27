@@ -69,7 +69,7 @@ public class TestkitCommonController extends BaseController
 
         //device
         try {
-            return deviceListService.quarzImportDTCReport(null);
+            return deviceListService.quarzImportAllDTCReport();
         } catch (IOException e) {
             return AjaxResult.success("刷新失败");
         }

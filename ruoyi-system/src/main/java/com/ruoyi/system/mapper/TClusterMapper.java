@@ -109,27 +109,29 @@ public interface TClusterMapper extends BaseMapper<TCluster>
     @Select(selectCarlineInfoIdsByClusterNameSql)
     Long[] selectCarlineInfoIdsByClusterName(@Param("clusterName") String clusterName);
 
-    String selectLastestClusterSql = "select tci.carline_info_uid as carlineInfoUid,tc.update_time as updateTime\n" +
-            "from t_carline_info tci\n" +
-            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
-            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
-            "where tcl.uid in (select distinct tcl.uid\n" +
-            "from t_carline_info tci\n" +
-            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
-            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
-            "where device_name = #{deviceName} and tcl.uid <> '')\n" +
-            "and tc.update_time = (select MAX(tc.update_time)\n" +
-            "from t_carline_info tci\n" +
-            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
-            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
-            "where tcl.uid in (select distinct tcl.uid\n" +
-            "from t_carline_info tci\n" +
-            "left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
-            "left join t_carline tcl on tcl.uid = tc.carline_uid\n" +
-            "where device_name = #{deviceName} and tcl.uid <> ''))\n" +
-            "and tc.device_type = #{deviceType} and tci.basic_type = 1 limit 1" ;
+    String selectLastestClusterSql = "select tci.carline_info_uid as carlineInfoUid,tc.update_time as updateTime,tci.device_name,tc.device_type\n" +
+            "            from t_carline_info tci \n" +
+            "            left join t_cluster tc on tc.uid = tci.cluster_uid \n" +
+            "            left join t_carline tcl on tcl.uid = tc.carline_uid \n" +
+            "            where tcl.uid in (select distinct tcl.uid \n" +
+            "            from t_carline_info tci \n" +
+            "            left join t_cluster tc on tc.uid = tci.cluster_uid \n" +
+            "            left join t_carline tcl on tcl.uid = tc.carline_uid \n" +
+            "            where device_name = (select device_name from t_carline_info where carline_info_uid = #{carlineInfoUid})\n" +
+            "              and tcl.uid <> '')\n" +
+            "            and tc.update_time = (select MAX(tc.update_time) \n" +
+            "            from t_carline_info tci \n" +
+            "            left join t_cluster tc on tc.uid = tci.cluster_uid \n" +
+            "            left join t_carline tcl on tcl.uid = tc.carline_uid \n" +
+            "            where tcl.uid in (select distinct tcl.uid \n" +
+            "            from t_carline_info tci \n" +
+            "            left join t_cluster tc on tc.uid = tci.cluster_uid \n" +
+            "            left join t_carline tcl on tcl.uid = tc.carline_uid \n" +
+            "            where device_name = (select device_name from t_carline_info where carline_info_uid = #{carlineInfoUid})\n" +
+            "              and tcl.uid <> ''))\n" +
+            "            and tci.basic_type = 1 limit 1" ;
     @Select(selectLastestClusterSql)
-    RefreshDeviceDTO selectLastestCluster(@Param("deviceName")String deviceName, @Param("deviceType")String deviceType);
+    RefreshDeviceDTO selectLastestCluster(@Param("carlineInfoUid")Long carlineInfoUid);
 
     String selectCorrentVersionDeviceDTOSql = "select tci.carline_info_uid as carlineInfoUid,t_cluster.uid as clusterUid,t_cluster.carline_uid as carlineUid\n" +
             "from t_cluster\n" +

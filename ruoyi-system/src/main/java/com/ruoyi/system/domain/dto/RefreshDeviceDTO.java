@@ -22,5 +22,7 @@ public class RefreshDeviceDTO
    @ApiModelProperty("当前设备uid，新增不填，修改必填")
    private Long carlineInfoUid;
    private Date updateTime;
+   private String deviceName;
+   private String deviceType;
 
 }

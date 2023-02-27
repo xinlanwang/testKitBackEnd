@@ -43,4 +43,7 @@ public interface DeviceListService
     public void buildUpdateComponent(DeviceInfoVo desktopDevice, Long carlineInfoUid);
 
     public Long[] selectAllGolden();
+
+    public AjaxResult quarzImportAllDTCReport() throws IOException, ClassNotFoundException;
+
 }

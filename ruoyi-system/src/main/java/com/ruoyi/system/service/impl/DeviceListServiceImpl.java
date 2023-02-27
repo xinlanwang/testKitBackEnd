@@ -526,7 +526,7 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     @Test
-    public void test333() throws IOException, ClassNotFoundException {
+    /*public void test333() throws IOException, ClassNotFoundException {
 //        File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
         File[] files =  new File("C:\\\\Users\\\\10849\\\\Nutstore\\\\1\\\\Notebook\\\\EveryDay\\\\23-01\\\\23-01-20.assets\\\\dtc").listFiles();
         for (File file:files){
@@ -551,7 +551,7 @@ public class DeviceListServiceImpl implements DeviceListService {
                 }
             }
         }
-    }
+    }*/
     /*@Override
     @Test
     public void quarzImportDTCReport() throws ClassNotFoundException, IOException {
@@ -640,125 +640,113 @@ public class DeviceListServiceImpl implements DeviceListService {
     }*/
     @Override
     public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException {
-        TCarlineInfo tCarlineInfo = null;
-//        TCluster tCluster = null;
-        AjaxResult ajaxResult = AjaxResult.error("Don't have such file");
-        if (carlineInfoUid != null){
-            tCarlineInfo = tCarlineInfoMapper.selectById(carlineInfoUid);
-//            tCluster = tClusterMapper.selectById(tCarlineInfo.getClusterUid());
-        }
+        String firePath = null;
         log.info("准备读取文件，读取文件路径为：{}",AUTO_IMPORT_DTC_PATH);
-
+        RefreshDeviceDTO refreshDeviceDTO = tClusterMapper.selectLastestCluster(carlineInfoUid);
+        if (refreshDeviceDTO == null || refreshDeviceDTO.getCarlineInfoUid() == null){
+            return AjaxResult.error("Don't have such device？");
+        }//和前面的部分合并
+        //找文件
         File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
         if (files == null || files.length == 0){
             log.error("该文件为空或者没有权限读取");
             return AjaxResult.error("Don't have such file");
         }
         log.info("开始读取文件，文件大小为{}",files.length);
-        for (File file:files){
-            String firePath = null;
-            String deviceType = null;
-            String deviceName = null;
-            if (file.getName().toUpperCase().contains("CAR") || "CAR".equals(file.getName().toUpperCase())){
+
+        DeviceInfoVo deviceInfoVo = null;
+        for (File file:files) {
+            if (DEVICE_TYPE_CAR.equals(refreshDeviceDTO.getDeviceType()) && (file.getName().toUpperCase().contains("CAR") || "CAR".equals(file.getName().toUpperCase()))) {
                 firePath = file.getCanonicalPath();
-                deviceType = DEVICE_TYPE_CAR;
-                log.info("读取Car文件,文件名称为{}",file.getName());
-            }else if (file.getName().toUpperCase().contains("BENCH") || "BENCH".equals(file.getName().toUpperCase())){
+                log.info("读取Car文件,文件名称为{}", file.getName());
+                break;
+            } else if (DEVICE_TYPE_BENCH.equals(refreshDeviceDTO.getDeviceType()) && (file.getName().toUpperCase().contains("BENCH") || "BENCH".equals(file.getName().toUpperCase()))){
                 firePath = file.getCanonicalPath();
-                deviceType = DEVICE_TYPE_BENCH;
-                log.info("读取bench文件,文件名称为{}",file.getName());
-            }else {
-                log.info("读取到未知文件,文件名称为{}",file.getName());
+                log.info("读取bench文件,文件名称为{}", file.getName());
+                break;
+            }
+
+        }
+
+        Date lastDateByFileName = new Date(0);
+        File lastFileByFileName = null;
+        Long lastDateByFileDate = 0L;
+        File lastFileByFileDate = null;
+        File lastFile = null;
+        String devicePath = null;
+        String dtcTimeStr = null;
+        //找同名文件
+        for (File dtcFile:FileUtil.loopFiles(firePath)){
+            if (dtcFile == null){
                 continue;
             }
-            /*if (tCluster != null && !deviceType.equals(tCluster.getDeviceType())){
-                continue;
-            }*/
-
-            for (File dtcFile:FileUtil.loopFiles(firePath)){
-                if (dtcFile == null){
-                    continue;
-                }
-                String devicePath = dtcFile.getCanonicalPath();
-                deviceName = dtcFile.getParentFile().getName().split("_")[0];
-                if (StringUtils.isEmpty(deviceName)){
-                    log.info("未找到符合格式的父级deviceName，其父级名称为：{}",dtcFile.getParentFile().getName());
-                    continue;
-                }
-                if (tCarlineInfo != null && !deviceName.equals(tCarlineInfo.getDeviceName())){
-                    continue;
-                }
-                log.error("当前读取的deviceName为：{}",deviceName);
-                Date lastDateByFileName = new Date(0);
-                File lastFileByFileName = null;
-                Long lastDateByFileDate = 0L;
-                File lastFileByFileDate = null;
-                File lastFile = null;
-                //找到最近的一版时间
-                for (File deviceFile:FileUtil.loopFiles(devicePath)){
-                    String path = deviceFile.getPath();
-                    log.info("___________________1filepath:{}",path);
-                    if (path.contains("IDEXReport") || path.contains("xsl") || !path.contains("xml")){
-                        continue;
-                    }
-                    Date correntDate = getDTCFileDateByFileName(deviceFile.getName());
-                    if (DateUtil.compare(lastDateByFileName,correntDate) < 0){
-                        lastFileByFileName = deviceFile;
-                        lastDateByFileName = correntDate;
-                    }
-                    if (deviceFile.lastModified() > lastDateByFileDate){
-                        lastDateByFileDate = deviceFile.lastModified();
-                        lastFileByFileDate = deviceFile;
-                    }
-                }
-                if (lastFileByFileName != null && !lastFileByFileName.getName().equals(lastFileByFileDate.getName())){
-                    //build
-                    Date preciseDateByName = getPreciseDate(lastFileByFileName);
-                    Date preciseDateByDate = getPreciseDate(lastFileByFileDate);
-                    if (DateUtil.compare(preciseDateByName,preciseDateByDate) < 0){
-                        lastFile = lastFileByFileName;
-                    }else {
-                        lastFile = lastFileByFileDate;
-                    }
-                }else {
-                    lastFile = lastFileByFileDate;//如果二者相同则任意一种都可以
-                }
-                //查找最近的一版并比较是否更新
-                RefreshDeviceDTO refreshDeviceDTO = tClusterMapper.selectLastestCluster(deviceName,deviceType);
-                if (refreshDeviceDTO == null || refreshDeviceDTO.getCarlineInfoUid() == null){
-                    continue;
-                }
-
-                //更新
-                //build
-                if (lastFile == null){
-                    continue;
-                }
-                InputStream fileInputStream = IoUtil.toStream(lastFile);
-                Map<String, Map> reportMapVO = getReoirtMapVO(fileInputStream);
-                if (reportMapVO.isEmpty()){
-                    return null;
-                }
-                //时间比较
-                String dtcTimeStr = null;
-                Date dtcTimeDate = null;
-                if (reportMapVO.get("basicInfo") != null && reportMapVO.get("basicInfo").get("dtcTime") != null) {
-                    dtcTimeStr = reportMapVO.get("basicInfo").get("dtcTime").toString();
-                    dtcTimeDate = DateUtil.parse(dtcTimeStr, new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"));
-                }
-                if (dtcTimeDate == null || DateUtil.compare(lastDateByFileName,refreshDeviceDTO.getUpdateTime()) > 0){
-                    continue;
-                }
-                //插入
-                DeviceInfoVo deviceInfoVo = buildDeviceInfoVo(reportMapVO,deviceType,deviceName);
-                deviceInfoVo.setBasicType(BASIC_TYPE_WEB_DEVICE);
-                deviceInfoVo.setIsRefresh(true);
-                deviceInfoVo.setCarlineInfoUid(refreshDeviceDTO.getCarlineInfoUid());
-                deviceInfoVo.setDtcTime(dtcTimeStr);
-                ajaxResult = updateDeviceInfo(deviceInfoVo);
+            String fileName = dtcFile.getParentFile().getName();
+            if (fileName.equals(refreshDeviceDTO.getDeviceName()) || fileName.contains(refreshDeviceDTO.getDeviceName())){
+                devicePath = dtcFile.getCanonicalPath();
+                break;
             }
         }
-            return ajaxResult;
+        if (StringUtils.isEmpty(devicePath)){
+            log.info("this devicePath is {}" + devicePath);
+            return AjaxResult.error("Don't have such report");
+        }
+        //找到最新的一版
+        for (File deviceFile:FileUtil.loopFiles(devicePath)){
+            String path = deviceFile.getPath();
+            log.info("___________________1filepath:{}",path);
+            if (path.contains("IDEXReport") || path.contains("xsl") || !path.contains("xml")){
+                continue;
+            }
+            Date correntDate = getDTCFileDateByFileName(deviceFile.getName());
+            if (DateUtil.compare(lastDateByFileName,correntDate) < 0){
+                lastFileByFileName = deviceFile;
+                lastDateByFileName = correntDate;
+            }
+            if (deviceFile.lastModified() > lastDateByFileDate){
+                lastDateByFileDate = deviceFile.lastModified();
+                lastFileByFileDate = deviceFile;
+            }
+        }
+        if (lastFileByFileName != null && !lastFileByFileName.getName().equals(lastFileByFileDate.getName())){
+            Date preciseDateByName = getPreciseDate(lastFileByFileName);
+            Date preciseDateByDate = getPreciseDate(lastFileByFileDate);
+            if (DateUtil.compare(preciseDateByName,preciseDateByDate) < 0){
+                lastFile = lastFileByFileName;
+            }else {
+                lastFile = lastFileByFileDate;
+            }
+        }else {
+            lastFile = lastFileByFileDate;//如果二者相同则任意一种都可以
+        }
+        if (lastFile == null){
+            return AjaxResult.error("Not such file");
+        }
+
+        //build
+        InputStream fileInputStream = IoUtil.toStream(lastFile);
+        Map<String, Map> reportMapVO = getReoirtMapVO(fileInputStream);
+        if (reportMapVO.isEmpty()){
+            return AjaxResult.error("This is empty file");
+        }
+
+        //查找最近的一版并比较是否更新，时间与最新一版device进行比较
+        Date dtcTimeDate = null;
+        if (reportMapVO.get("basicInfo") != null && reportMapVO.get("basicInfo").get("dtcTime") != null) {
+            dtcTimeStr = reportMapVO.get("basicInfo").get("dtcTime").toString();
+            dtcTimeDate = DateUtil.parse(dtcTimeStr, new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"));
+        }
+        if (dtcTimeDate != null && DateUtil.compare(lastDateByFileName,refreshDeviceDTO.getUpdateTime()) > 0){
+            return AjaxResult.success("The current version is the latest");
+        }
+
+        //插入
+        deviceInfoVo = buildDeviceInfoVo(reportMapVO,refreshDeviceDTO.getDeviceType(),refreshDeviceDTO.getDeviceName());
+        deviceInfoVo.setBasicType(BASIC_TYPE_WEB_DEVICE);
+        deviceInfoVo.setIsRefresh(true);
+        deviceInfoVo.setDeviceName(refreshDeviceDTO.getDeviceName());
+        deviceInfoVo.setCarlineInfoUid(refreshDeviceDTO.getCarlineInfoUid());
+        deviceInfoVo.setDtcTime(dtcTimeStr);
+        return updateDeviceInfo(deviceInfoVo);
     }
 
     private Date getPreciseDate(File lastFile) throws ClassNotFoundException {
@@ -1530,6 +1518,16 @@ public class DeviceListServiceImpl implements DeviceListService {
     public Long[] selectAllGolden() {
         List<Long> carlineInfoUids = tCarlineInfoMapper.selectAllGolden();
         return carlineInfoUids.toArray(new Long[carlineInfoUids.size()]);
+    }
+
+    @Override
+    public AjaxResult quarzImportAllDTCReport() throws IOException, ClassNotFoundException {
+        List<DeviceListVo> deviceListVos = tCarlineInfoMapper.queryDeviceList(new DeviceListParam());
+        for (DeviceListVo deviceListVo:deviceListVos){
+            Long carlineInfoUid = deviceListVo.getCarlineInfoUid();
+            quarzImportDTCReport(carlineInfoUid);
+        }
+        return AjaxResult.success("refresh success");
     }
 
     /**
