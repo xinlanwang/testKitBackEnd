@@ -228,3 +228,7 @@ alter table testkit.t_desktop_record
 INSERT INTO testkit.sys_dict_data (matrix_type, dict_label, dict_value, dict_type, status, dict_sort, params, css_class, list_class, is_default, create_by, create_time, update_by, update_time, remark, search_value) VALUES ('0', 'BENCH', '1', 'deviceType', DEFAULT, DEFAULT, null, null, null, DEFAULT, DEFAULT, null, DEFAULT, null, null, null);
 INSERT INTO testkit.sys_dict_data (matrix_type, dict_label, dict_value, dict_type, status, dict_sort, params, css_class, list_class, is_default, create_by, create_time, update_by, update_time, remark, search_value) VALUES ('0', 'CAR', '2', 'deviceType', DEFAULT, DEFAULT, null, null, null, DEFAULT, DEFAULT, null, DEFAULT, null, null, null);
 
+
+INSERT INTO testkit.sys_job (job_id, job_name, job_group, invoke_target, cron_expression, misfire_policy, concurrent, status, create_by, create_time, update_by, update_time, remark) VALUES (201, '定时从idexReport刷新device数据', 'DEFAULT', 'deviceTask.quarzImportAllDTCReport', '0 0 20 * * ?', '1', '1', '0', 'admin', '2023-01-03 15:35:02', 'admin', '2023-02-10 23:17:29', '');
+INSERT INTO testkit.sys_job (job_id, job_name, job_group, invoke_target, cron_expression, misfire_policy, concurrent, status, create_by, create_time, update_by, update_time, remark) VALUES (200, 'test', 'DEFAULT', 'deviceTask.test', '0/10 * * * * ?', '1', '1', '0', 'admin', '2023-01-03 15:35:02', 'admin', '2023-02-10 23:17:29', '');
+UPDATE testkit.sys_job t SET t.status = '1' WHERE t.job_id = 200 ;

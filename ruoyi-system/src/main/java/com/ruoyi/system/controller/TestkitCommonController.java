@@ -49,7 +49,7 @@ public class TestkitCommonController extends BaseController
      */
     @GetMapping("refresh/all")
     @ApiOperation("提交")
-    public AjaxResult getdb() throws Exception {
+    public AjaxResult refreshAllDevice() throws Exception {
         //golden
         //删除当前的
         /*Long[] carlineInfoUids = deviceListService.selectAllGolden();
