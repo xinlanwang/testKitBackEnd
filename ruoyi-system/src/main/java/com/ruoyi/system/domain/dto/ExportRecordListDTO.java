@@ -45,9 +45,9 @@ public class ExportRecordListDTO {
     @Excel(name = "Task")
     private String taskType;
     @Excel(name = "Mileacge")
-    private Integer mileacge;
+    private Double mileacge;
     @Excel(name = "Test Hour")
-    private Integer testHour;
+    private Double testHour;
     @Excel(name = "Location")
     private String location;
     @Excel(name = "System Reset")
@@ -63,7 +63,7 @@ public class ExportRecordListDTO {
     @Excel(name = "Bussleep")
     private String bussleep;
     @Excel(name = "Planned Ticket")
-    private String plannedTicket;
+    private Integer plannedTicket;
     @Excel(name = "Comment")
     private String comment;
 

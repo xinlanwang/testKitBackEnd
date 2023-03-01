@@ -303,8 +303,8 @@ create table t_desktop_record
     oper_location         varchar(255)                            null comment '操作地点',
     function_group_type   varchar(50)                             null comment 'functionGroupType',
     task_type             varchar(50)                             null comment 'taskType',
-    mileacge              int(4)                                  null comment 'mileacge',
-    test_hour             int(4)                                  null comment 'testHour',
+    mileacge              double precision(4)                                  null comment 'mileacge',
+    test_hour             double precision(4)                                  null comment 'testHour',
     location              varchar(50)                             null comment 'location',
     system_reset          varchar(50)                             null comment 'systemReset',
     navi_reset            varchar(50)                             null comment 'naviReset',
@@ -312,7 +312,7 @@ create table t_desktop_record
     initializing_occurred varchar(50)                             null comment 'initializingOccurred',
     fall_back_screen      varchar(50)                             null comment 'fallBackScreen',
     bussleep              varchar(50)                             null comment 'bussleep',
-    planned_ticket        varchar(50)                             null comment 'plannedTicket',
+    planned_ticket        int                             null comment 'plannedTicket',
     comment               varchar(50)                             null comment 'comment',
     local_host_acoount    varchar(50)                             null
 )

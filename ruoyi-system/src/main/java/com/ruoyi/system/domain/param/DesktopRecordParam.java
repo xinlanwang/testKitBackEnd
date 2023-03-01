@@ -32,9 +32,9 @@ public class DesktopRecordParam {
         @ApiModelProperty
         String taskType;
         @ApiModelProperty
-        Integer mileacge;
+        Double mileacge;
         @ApiModelProperty
-        Integer testHour;
+        Double testHour;
         @ApiModelProperty
         String location;
         @ApiModelProperty
@@ -50,7 +50,7 @@ public class DesktopRecordParam {
         @ApiModelProperty
         String bussleep;
         @ApiModelProperty
-        String plannedTicket;
+        Integer plannedTicket;
         @ApiModelProperty
         String comment;
         @ApiModelProperty

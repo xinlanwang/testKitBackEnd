@@ -67,11 +67,11 @@ public class TDesktopRecord
 
     /** mileacge */
     @Excel(name = "mileacge")
-    private Integer mileacge;
+    private Double mileacge;
 
     /** testHour */
     @Excel(name = "testHour")
-    private Integer testHour;
+    private Double testHour;
 
     /** location */
     @Excel(name = "location")
@@ -103,7 +103,7 @@ public class TDesktopRecord
 
     /** plannedTicket */
     @Excel(name = "plannedTicket")
-    private String plannedTicket;
+    private Integer plannedTicket;
 
     /** comment */
     @Excel(name = "comment")
