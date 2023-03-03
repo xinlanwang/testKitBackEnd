@@ -1,10 +1,13 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.ruoyi.system.domain.dto.DashboardGetDeviceUseDTO;
+import com.ruoyi.system.domain.param.DashboardParam;
 import com.ruoyi.system.domain.param.RecordListParam;
 import com.ruoyi.system.domain.po.TDesktopRecord;
 import org.apache.ibatis.annotations.Param;
@@ -71,4 +74,12 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
 
     public List<TDesktopRecord> selectRecordList(RecordListParam recordListParam);
 
+
+    String getDeviceUseSql = "select tdr.uid as recordUid,tci.device_name as deviceName,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge,\n" +
+            "       DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime\n" +
+            "from t_desktop_record tdr\n" +
+            "left join t_carline_info tci on tci.carline_info_uid = tdr.data_uid\n" +
+            "group by DATE_FORMAT( tdr.oper_time, '%Y-%m-%d')\n";
+    @Select(getDeviceUseSql)
+    public List<DashboardGetDeviceUseDTO> getDeviceUse(DashboardParam dashboardParam);
 }

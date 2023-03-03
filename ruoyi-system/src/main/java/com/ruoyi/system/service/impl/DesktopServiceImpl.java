@@ -200,8 +200,8 @@ public class DesktopServiceImpl implements DesktopService {
             //1. 注册驱动
             Class.forName("com.mysql.cj.jdbc.Driver");
             //2.获取连接对象
-            conn = DriverManager.getConnection("jdbc:mysql://testkit-mysql:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "12345678");
-//            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
+//            conn = DriverManager.getConnection("jdbc:mysql://testkit-mysql:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "12345678");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/testkit?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8", "root", "123456");
             //4.获取执行sql对象
             stmt = conn.createStatement();
             String[] tableNames = desktopGetDBParam.getTableNames();
