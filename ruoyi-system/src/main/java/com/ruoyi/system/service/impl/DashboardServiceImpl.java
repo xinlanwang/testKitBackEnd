@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Date;
 
@@ -119,6 +120,13 @@ public class DashboardServiceImpl implements DashboardService {
                     resultMap.put("endTime",curDate);
                     resultMap.put("index",index);
                     resultMap.put("deviceName",deviceName);
+                    //webfront start
+                    List value = new ArrayList<>();
+                    value.add(index);
+                    value.add(DateUtil.format((Date) resultMap.get("startTime"),"yyyy-MM-dd"));
+                    value.add(DateUtil.format((Date) resultMap.get("endTime"),"yyyy-MM-dd"));
+                    resultMap.put("value",value);
+                    //webfront end
                     if (i < thisDeviceDTOList.size() - 1){
                         Map nextResultMap = new HashMap<>();
                         nextResultMap.put("startTime",thisDeviceDTOList.get(i + 1).getOperTime());
