@@ -76,10 +76,11 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
 
 
     String getDeviceUseSql = "select tdr.uid as recordUid,tci.device_name as deviceName,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge,\n" +
-            "       DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime\n" +
-            "from t_desktop_record tdr\n" +
-            "left join t_carline_info tci on tci.carline_info_uid = tdr.data_uid\n" +
-            "group by DATE_FORMAT( tdr.oper_time, '%Y-%m-%d')\n";
+            "                   DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime\n" +
+            "            from t_desktop_record tdr\n" +
+            "            left join t_carline_info tci on tci.carline_info_uid = tdr.data_uid\n" +
+            "group by recordUid\n" ;
+//            "group by DATE_FORMAT( tdr.oper_time, '%Y-%m-%d')\n";
     @Select(getDeviceUseSql)
     public List<DashboardGetDeviceUseDTO> getDeviceUse(DashboardParam dashboardParam);
 }

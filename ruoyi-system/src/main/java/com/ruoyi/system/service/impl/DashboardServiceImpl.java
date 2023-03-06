@@ -70,10 +70,10 @@ public class DashboardServiceImpl implements DashboardService {
         }
         DashboardGetDeviceUseDTO[] dashboardGetDeviceUseDTOS = deviceUseDTOList.toArray(new DashboardGetDeviceUseDTO[deviceUseDTOList.size()]);
         //1.对全部时间进行排序
-        quickSort(dashboardGetDeviceUseDTOS,0, dashboardGetDeviceUseDTOS.length - 1);
+        dashboardGetDeviceUseDTOS = quickSort(dashboardGetDeviceUseDTOS,0, dashboardGetDeviceUseDTOS.length - 1);
 
         //2.用linkedMap各领各的device
-        Map<String, List<DashboardGetDeviceUseDTO>> deviceLickedMap = new HashMap<>();
+        Map<String, List<DashboardGetDeviceUseDTO>> deviceLickedMap = new LinkedHashMap<>();
         for (DashboardGetDeviceUseDTO dashboardGetDeviceUseDTO:dashboardGetDeviceUseDTOS){
             List<DashboardGetDeviceUseDTO> lickedDeviceDTO;
             String deviceName = dashboardGetDeviceUseDTO.getDeviceName();
@@ -88,33 +88,42 @@ public class DashboardServiceImpl implements DashboardService {
 
         //3.合并这个Map的star与end为新的list并输出给前端
         List<Map> resultMapList = new ArrayList<>();
+        Integer index = 0;
         for (String deviceName : deviceLickedMap.keySet()){
             List<DashboardGetDeviceUseDTO> thisDeviceDTOList = deviceLickedMap.get(deviceName);
             Boolean isEnd = false;
-            for (int i = 0;i < thisDeviceDTOList.size() - 1;i++){
+            index++;
+            for (int i = 0;i < thisDeviceDTOList.size();i++){
                 Date curDate = thisDeviceDTOList.get(i).getOperTime();
-                Date startDate,endDate;
                 //3.1 第一天为startDate，毋庸置疑的
                 if (i == 0){
-                    startDate = curDate;
                     Map resultMap = new HashMap<>();
-                    resultMap.put("startTime",startDate);
-                }else {
-                //3.2 如果前驱的第二天为当前天，则end为当前天,否则新增新的list，并把start设置为当前天
-                    Date beforeDate = thisDeviceDTOList.get(i - 1).getOperTime();
-                    if (!DateUtils.addDays(beforeDate,1).equals(curDate)){
-                        endDate = curDate;
+                    resultMap.put("startTime",curDate);
+                    resultMapList.add(resultMap);
+                }
+                //3.2.1 如果当前天的后继不为次天，则end为当前天
+                if (i < thisDeviceDTOList.size() - 1) {
+                    Date afterDate = thisDeviceDTOList.get(i + 1).getOperTime();
+                    if (!DateUtils.addDays(curDate, 1).equals(afterDate)) {
                         isEnd = true;
                     }
                 }
-                //3.3 仅有结束结点才存在endDate
-                if (isEnd){
+                //3.2.2 如果当前结点不存在后继，则end为当前
+                if (i == thisDeviceDTOList.size() - 1){
+                    isEnd = true;
+                }
+
+                //3.3 仅有结束结点才存在endDate || 单结点
+                if (isEnd ||  (thisDeviceDTOList.size() == 1 && i == 0)){
                     Map resultMap = resultMapList.get(resultMapList.size() - 1);
                     resultMap.put("endTime",curDate);
-                    if (i != thisDeviceDTOList.size() - 1){
+                    resultMap.put("index",index);
+                    resultMap.put("deviceName",deviceName);
+                    if (i < thisDeviceDTOList.size() - 1){
                         Map nextResultMap = new HashMap<>();
-                        resultMap.put("startTime",thisDeviceDTOList.get(i + 1).getOperTime());
+                        nextResultMap.put("startTime",thisDeviceDTOList.get(i + 1).getOperTime());
                         resultMapList.add(nextResultMap);
+                        isEnd = false;
                     }
                 }
             }
@@ -123,11 +132,11 @@ public class DashboardServiceImpl implements DashboardService {
 
         return resultMapList;
     }
-    public void quickSort(DashboardGetDeviceUseDTO[] arr,int low,int high){
+    public DashboardGetDeviceUseDTO[] quickSort(DashboardGetDeviceUseDTO[] arr,int low,int high){
         int i,j;
         DashboardGetDeviceUseDTO t,temp;
         if(low>high){
-            return;
+            return arr;
         }
         i=low;
         j=high;
@@ -152,6 +161,7 @@ public class DashboardServiceImpl implements DashboardService {
         arr[i] = temp;
         quickSort(arr, low, j-1);
         quickSort(arr, j+1, high);
+        return arr;
     }
 
 
