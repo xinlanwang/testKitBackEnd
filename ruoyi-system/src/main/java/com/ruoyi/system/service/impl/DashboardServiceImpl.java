@@ -1,22 +1,13 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.date.DateUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.domain.entity.SysUser;
+import cn.hutool.core.lang.hash.Hash;
 import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.SecurityUtils;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.system.domain.dto.CheckDeviceIntegralityDTO;
+import com.ruoyi.system.domain.dto.DashboardGetDeviceTestHourDTO;
 import com.ruoyi.system.domain.dto.DashboardGetDeviceUseDTO;
 import com.ruoyi.system.domain.param.*;
-import com.ruoyi.system.domain.po.TCarlineInfo;
-import com.ruoyi.system.domain.po.TDataLog;
-import com.ruoyi.system.domain.po.TDesktopRecord;
-import com.ruoyi.system.domain.vo.DeviceInfoVo;
 import com.ruoyi.system.mapper.*;
 import com.ruoyi.system.service.DashboardService;
-import com.ruoyi.system.service.DesktopService;
 import com.ruoyi.system.service.DeviceListService;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,12 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Date;
-
-import static com.ruoyi.common.constant.TestKitConstants.*;
 
 /**
  * 字典 业务层处理
@@ -64,8 +51,67 @@ public class DashboardServiceImpl implements DashboardService {
 
 
     @Override
+    public List staticRecordGroupByFunctionGroup(DashboardParam dashboardParam) {
+        List<DashboardGetDeviceTestHourDTO> deviceUseDTOList = desktopRecordMapper.staticRecordGroupByFunctionGroup(dashboardParam);
+        return deviceUseDTOList;
+    }
+
+    @Override
+    public Map<String, List> deviceStatisticTicket(DashboardParam dashboardParam) {
+        List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.deviceStatisticTicket(dashboardParam);
+        Map<String, List> resultMap = new HashMap<>();
+        List<String> dateList = new ArrayList<>();
+        List mileacgeList = new ArrayList<>();
+        List testHourList = new ArrayList<>();
+        List plannedTicketList = new ArrayList<>();
+        for (DashboardGetDeviceUseDTO dashboardGetDeviceUseDTO:deviceUseDTOList){
+            dateList.add(DateUtil.format(dashboardGetDeviceUseDTO.getOperTime(),"yyyy-MM-dd"));
+            mileacgeList.add(dashboardGetDeviceUseDTO.getMileacge());
+            testHourList.add(dashboardGetDeviceUseDTO.getTestHour());
+            plannedTicketList.add(dashboardGetDeviceUseDTO.getPlannedTicket());
+        }
+        resultMap.put("Date",dateList);
+        resultMap.put("mileacge",mileacgeList);
+        resultMap.put("testHour",testHourList);
+        resultMap.put("plannedTicket",plannedTicketList);
+        return resultMap;
+    }
+
+    @Override
+    public List deviceUsageStatistics(DashboardParam dashboardParam) {
+        List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.staticRecordGroupByDeviceName(dashboardParam);
+        return deviceUseDTOList;
+    }
+
+    @Override
+    public Map<String, List> deviceUsageTrend(DashboardParam dashboardParam) {
+        List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.staticRecordGroupByRecordId(dashboardParam);
+        if (CollectionUtils.isEmpty(deviceUseDTOList)){
+            return null;
+        }
+        DashboardGetDeviceUseDTO[] dashboardGetDeviceUseDTOS = deviceUseDTOList.toArray(new DashboardGetDeviceUseDTO[deviceUseDTOList.size()]);
+        //1.对全部时间进行排序
+        dashboardGetDeviceUseDTOS = quickSort(dashboardGetDeviceUseDTOS,0, dashboardGetDeviceUseDTOS.length - 1);
+        //2.针对每个deviceName分发结果
+        Map<String, List> resultMap = new LinkedHashMap<>();
+        for (DashboardGetDeviceUseDTO dashboardGetDeviceUseDTO:deviceUseDTOList){
+            String deviceName = dashboardGetDeviceUseDTO.getDeviceName();
+            List tempList = null;
+            if (resultMap.get(deviceName) == null){
+                tempList = new ArrayList();
+            }else {
+                tempList = resultMap.get(deviceName);
+            }
+            tempList.add(dashboardGetDeviceUseDTO);
+            resultMap.put(deviceName,tempList);
+        }
+        return resultMap;
+    }
+
+
+    @Override
     public List<Map> getDeviceUse(DashboardParam dashboardParam) {
-        List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.getDeviceUse(dashboardParam);
+        List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.staticRecordGroupByRecordId(dashboardParam);
         if (CollectionUtils.isEmpty(deviceUseDTOList)){
             return null;
         }
@@ -140,6 +186,9 @@ public class DashboardServiceImpl implements DashboardService {
 
         return resultMapList;
     }
+
+
+
     public DashboardGetDeviceUseDTO[] quickSort(DashboardGetDeviceUseDTO[] arr,int low,int high){
         int i,j;
         DashboardGetDeviceUseDTO t,temp;

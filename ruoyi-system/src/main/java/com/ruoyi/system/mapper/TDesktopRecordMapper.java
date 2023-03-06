@@ -1,16 +1,13 @@
 package com.ruoyi.system.mapper;
 
 import java.util.List;
-import java.util.Map;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
+import com.ruoyi.system.domain.dto.DashboardGetDeviceTestHourDTO;
 import com.ruoyi.system.domain.dto.DashboardGetDeviceUseDTO;
 import com.ruoyi.system.domain.param.DashboardParam;
 import com.ruoyi.system.domain.param.RecordListParam;
 import com.ruoyi.system.domain.po.TDesktopRecord;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 /**
@@ -76,11 +73,39 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
 
 
     String getDeviceUseSql = "select tdr.uid as recordUid,tci.device_name as deviceName,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge,\n" +
-            "                   DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime\n" +
+            "                   DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime,sum(tdr.planned_ticket) as plannedTicket\n" +
             "            from t_desktop_record tdr\n" +
             "            left join t_carline_info tci on tci.carline_info_uid = tdr.data_uid\n" +
             "group by recordUid\n" ;
-//            "group by DATE_FORMAT( tdr.oper_time, '%Y-%m-%d')\n";
     @Select(getDeviceUseSql)
-    public List<DashboardGetDeviceUseDTO> getDeviceUse(DashboardParam dashboardParam);
+    public List<DashboardGetDeviceUseDTO> staticRecordGroupByRecordId(DashboardParam dashboardParam);
+
+    String staticRecordByDeviceNameSql = "select tdr.uid as recordUid,tci.device_name as deviceName,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge,\n" +
+            "                   DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime\n" +
+            "            from t_desktop_record tdr\n" +
+            "            left join t_carline_info tci on tci.carline_info_uid = tdr.data_uid\n" +
+            "group by deviceName" ;
+    @Select(staticRecordByDeviceNameSql)
+    public List<DashboardGetDeviceUseDTO> staticRecordGroupByDeviceName(DashboardParam dashboardParam);
+
+
+    String staticRecordGroupByFunctionGroupSql = "select tdr.uid as recordUid,tci.device_name as deviceName,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge,\n" +
+            "                               DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime,sum(tdr.planned_ticket) as plannedTicket,\n" +
+            "                sum(case when tc.device_type = 1 then tdr.test_hour else 0 end ) as benchTestHour,\n" +
+            "                sum(case when tc.device_type = 2 then tdr.test_hour else 0 end ) as carTestHour\n" +
+            "                from t_desktop_record tdr\n" +
+            "                left join t_carline_info tci on tci.carline_info_uid = tdr.data_uid\n" +
+            "                left join t_cluster tc on tc.uid = tci.cluster_uid\n" +
+            "group by tdr.oper_time" ;
+    @Select(staticRecordGroupByFunctionGroupSql)
+    public List<DashboardGetDeviceTestHourDTO> staticRecordGroupByFunctionGroup(DashboardParam dashboardParam);
+
+
+    String deviceStatisticTicketSql = "select tdr.uid as recordUid,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge,\n" +
+            "                               DATE_FORMAT( tdr.oper_time, '%Y-%m-%d') as operTime,sum(tdr.planned_ticket) as plannedTicket\n" +
+            "            from t_desktop_record tdr\n" +
+            "            group by oper_time " +
+            "order by oper_time asc " ;
+    @Select(deviceStatisticTicketSql)
+    public List<DashboardGetDeviceUseDTO> deviceStatisticTicket(DashboardParam dashboardParam);
 }

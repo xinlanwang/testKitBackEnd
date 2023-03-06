@@ -42,4 +42,28 @@ public class DashboardController extends BaseController
         return AjaxResult.success(dashboardService.getDeviceUse(dashboardParam));
     }
 
+    @PostMapping("/deviceUsageStatistics")
+    @ApiOperation("台架/车辆使用时间统计")
+    public AjaxResult deviceUsageStatistics(@RequestBody DashboardParam dashboardParam) {
+        return AjaxResult.success(dashboardService.deviceUsageStatistics(dashboardParam));
+    }
+
+    @PostMapping("/deviceUsageTrend")
+    @ApiOperation("台架/车辆使用趋势")
+    public AjaxResult deviceUsageTrend(@RequestBody DashboardParam dashboardParam) {
+        return AjaxResult.success(dashboardService.deviceUsageTrend(dashboardParam));
+    }
+
+    @PostMapping("/deviceUsageByGroup")
+    @ApiOperation("台架/车辆使用趋势")
+    public AjaxResult staticRecordGroupByFunctionGroup(@RequestBody DashboardParam dashboardParam) {
+        return AjaxResult.success(dashboardService.staticRecordGroupByFunctionGroup(dashboardParam));
+    }
+
+    @PostMapping("/deviceStatisticTicket")
+    @ApiOperation("台架/车辆使用趋势")
+    public AjaxResult deviceStatisticTicket(@RequestBody DashboardParam dashboardParam) {
+        return AjaxResult.success(dashboardService.deviceStatisticTicket(dashboardParam));
+    }
+
 }

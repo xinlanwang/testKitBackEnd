@@ -19,4 +19,11 @@ public interface DashboardService
 {
 
     public List<Map> getDeviceUse(DashboardParam dashboardParam);
+
+    public List deviceUsageStatistics(DashboardParam dashboardParam);
+
+    public Map<String, List>  deviceUsageTrend(DashboardParam dashboardParam);
+    public List staticRecordGroupByFunctionGroup(DashboardParam dashboardParam);
+
+    public Map<String, List> deviceStatisticTicket(DashboardParam dashboardParam);
 }
