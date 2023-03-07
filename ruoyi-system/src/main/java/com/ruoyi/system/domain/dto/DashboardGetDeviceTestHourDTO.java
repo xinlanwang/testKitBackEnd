@@ -14,4 +14,5 @@ public class DashboardGetDeviceTestHourDTO {
     private Integer plannedTicket;
     private Double benchTestHour;
     private Double carTestHour;
+    private String functionGroupType;
 }

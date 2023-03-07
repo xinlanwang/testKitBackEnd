@@ -34,7 +34,7 @@ public class DashboardParam extends BaseEntity {
         /** 汽车名称 */
         @ApiModelProperty("汽车模型名称类型")
         private String[] carlineModelTypes;
-        //模糊项
+        /*//模糊项
         @ApiModelProperty("Component模糊搜索必填字段：组件类型：mu代表mu，gw代表gw，hud代表hud，km代表kombi等")
         private String componentType;
         @ApiModelProperty("Component模糊搜索选填字段：软件版本")
@@ -50,17 +50,17 @@ public class DashboardParam extends BaseEntity {
         @ApiModelProperty("最近更新")
         private String lastUpdated;
         @ApiModelProperty("数据库版本")
-        private String dbVersion;
+        private String dbVersion;*/
 
 
         //record项
         /** functionGroupType */
         @Excel(name = "functionGroupType")
-        private String functionGroupType;
+        private String[] functionGroupTypes;
         @ApiModelProperty
         @JsonFormat(pattern = "yyyy-MM-dd")
-        private Date testStartDate;
+        private String testStartDate;
         @ApiModelProperty
         @JsonFormat(pattern = "yyyy-MM-dd")
-        private Date testEndDate;
+        private String testEndDate;
 }
