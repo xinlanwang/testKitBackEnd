@@ -3,9 +3,12 @@ package com.ruoyi.system.service;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.system.domain.AutoSaveVersionVO;
 import com.ruoyi.system.domain.dto.ImportDeviceDTO;
+import com.ruoyi.system.domain.dto.RefreshLogExportDTO;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
+import com.ruoyi.system.domain.param.RefreshLogParam;
 import com.ruoyi.system.domain.po.TCarlineInfo;
+import com.ruoyi.system.domain.po.TRefreshLog;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
 
 import java.io.IOException;
@@ -36,7 +39,7 @@ public interface DeviceListService
     public String importDevice(Map<String,List<ImportDeviceDTO>> deviceInfoVoList, boolean b, String operName);
 
     public AjaxResult importDTCReport(InputStream io, boolean b, String operName);
-    public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException;
+    public AjaxResult quarzImportDTCReport(Long carlineInfoUid,String refreshWay) ;
 
     public List<AutoSaveVersionVO> autoSaveVersionList(String carlineInfoUid);
 
@@ -44,6 +47,9 @@ public interface DeviceListService
 
     public Long[] selectAllGolden();
 
-    public AjaxResult quarzImportAllDTCReport() throws IOException, ClassNotFoundException;
+    public AjaxResult quarzImportAllDTCReport(String refreshWay);
 
+    public List<TRefreshLog> selectAllLogList(RefreshLogParam refreshLogParam);
+
+    public List<RefreshLogExportDTO> mapRefreshLogDictValue(List<TRefreshLog> list);
 }

@@ -86,14 +86,14 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public Map<String, List> deviceUsageTrend(DashboardParam dashboardParam) {
         List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.staticRecordGroupByRecordId(dashboardParam);
+        Map<String, List> resultMap = new LinkedHashMap<>();
         if (CollectionUtils.isEmpty(deviceUseDTOList)){
-            return null;
+            return resultMap;
         }
         DashboardGetDeviceUseDTO[] dashboardGetDeviceUseDTOS = deviceUseDTOList.toArray(new DashboardGetDeviceUseDTO[deviceUseDTOList.size()]);
         //1.对全部时间进行排序
         dashboardGetDeviceUseDTOS = quickSort(dashboardGetDeviceUseDTOS,0, dashboardGetDeviceUseDTOS.length - 1);
         //2.针对每个deviceName分发结果
-        Map<String, List> resultMap = new LinkedHashMap<>();
         for (DashboardGetDeviceUseDTO dashboardGetDeviceUseDTO:deviceUseDTOList){
             String deviceName = dashboardGetDeviceUseDTO.getDeviceName();
             List tempList = null;
@@ -111,16 +111,17 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<Map> getDeviceUse(DashboardParam dashboardParam) {
+        List<Map> resultMapList = new ArrayList<>();
+        Map<String, List<DashboardGetDeviceUseDTO>> deviceLickedMap = new LinkedHashMap<>();
         List<DashboardGetDeviceUseDTO> deviceUseDTOList = desktopRecordMapper.staticRecordGroupByRecordId(dashboardParam);
         if (CollectionUtils.isEmpty(deviceUseDTOList)){
-            return null;
+            return resultMapList;
         }
         DashboardGetDeviceUseDTO[] dashboardGetDeviceUseDTOS = deviceUseDTOList.toArray(new DashboardGetDeviceUseDTO[deviceUseDTOList.size()]);
         //1.对全部时间进行排序
         dashboardGetDeviceUseDTOS = quickSort(dashboardGetDeviceUseDTOS,0, dashboardGetDeviceUseDTOS.length - 1);
 
         //2.用linkedMap各领各的device
-        Map<String, List<DashboardGetDeviceUseDTO>> deviceLickedMap = new LinkedHashMap<>();
         for (DashboardGetDeviceUseDTO dashboardGetDeviceUseDTO:dashboardGetDeviceUseDTOS){
             List<DashboardGetDeviceUseDTO> lickedDeviceDTO;
             String deviceName = dashboardGetDeviceUseDTO.getDeviceName();
@@ -134,7 +135,6 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         //3.合并这个Map的star与end为新的list并输出给前端
-        List<Map> resultMapList = new ArrayList<>();
         Integer index = 0;
         for (String deviceName : deviceLickedMap.keySet()){
             List<DashboardGetDeviceUseDTO> thisDeviceDTOList = deviceLickedMap.get(deviceName);

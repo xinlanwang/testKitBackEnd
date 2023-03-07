@@ -3,6 +3,8 @@ package com.ruoyi.system.domain.vo;
 import com.ruoyi.common.utils.StringUtils;
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * devicelist
  * 
@@ -28,5 +30,7 @@ public class DeviceListVo
    private String variantType;
    private String vinCode;
    private String lastUpdated;
+   private String updateTime;
+   private String autoSaveVersionName;
 
 }

@@ -240,3 +240,17 @@ alter table testkit.t_desktop_record
     modify test_hour double null comment 'testHour';
 alter table testkit.t_desktop_record
     modify planned_ticket int(4) null comment 'plannedTicket';
+
+create table testkit.t_refresh_log
+(
+    uid           bigint auto_increment,
+    device_name   varchar(30)  null,
+    update_time   timestamp    null,
+    refresh_way   varchar(5)    null,
+    update_status varchar(5)   null,
+    update_user varchar(30)  null,
+    refresh_file_name varchar(50)  null,
+    fail_log      varchar(300) null,
+    constraint t_refresh_log_pk
+        primary key (uid)
+);

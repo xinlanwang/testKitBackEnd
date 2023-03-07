@@ -9,7 +9,6 @@ import java.util.Date;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.XmlUtil;
 import com.alibaba.fastjson2.JSON;
@@ -26,6 +25,7 @@ import com.ruoyi.system.domain.dto.*;
 import com.ruoyi.system.domain.enums.ComponentTypeMapping;
 import com.ruoyi.system.domain.param.DeviceCompareParam;
 import com.ruoyi.system.domain.param.DeviceListParam;
+import com.ruoyi.system.domain.param.RefreshLogParam;
 import com.ruoyi.system.domain.po.*;
 import com.ruoyi.system.domain.vo.DeviceInfoComponent;
 import com.ruoyi.system.domain.vo.DeviceInfoVo;
@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
 import static cn.hutool.core.text.StrPool.C_SPACE;
 import static com.github.pagehelper.page.PageMethod.offsetPage;
 import static com.ruoyi.common.constant.TestKitConstants.*;
+import static com.ruoyi.common.core.domain.AjaxResult.CODE_TAG;
+import static com.ruoyi.common.core.domain.AjaxResult.MSG_TAG;
 import static com.ruoyi.common.utils.PageUtils.startPage;
 
 /**
@@ -79,6 +81,8 @@ public class DeviceListServiceImpl implements DeviceListService {
     private TDtcReportMapper tdtcReportMapper;
     @Autowired
     private SysDictDataServiceImpl sysDictDataService;
+    @Autowired
+    private TRefreshLogMapper tRefreshLogMapper;
 
     /**
      * 查询车型基本数据列表
@@ -639,33 +643,40 @@ public class DeviceListServiceImpl implements DeviceListService {
         }
     }*/
     @Override
-    public AjaxResult quarzImportDTCReport(Long carlineInfoUid) throws ClassNotFoundException, IOException {
+    public AjaxResult quarzImportDTCReport(Long carlineInfoUid,String refreshWay){
         String firePath = null;
         log.info("准备读取文件，读取文件路径为：{}",AUTO_IMPORT_DTC_PATH);
         RefreshDeviceDTO refreshDeviceDTO = tClusterMapper.selectLastestCluster(carlineInfoUid);
         if (refreshDeviceDTO == null || refreshDeviceDTO.getCarlineInfoUid() == null){
-            return AjaxResult.error("Don't have such device？");
+            String fileMessage = "Don't have such device";
+            insertRefreshLog("UNKNOW", REFRESH_STATUS_FAIL, "UNKNOW", fileMessage, refreshWay);
+            return AjaxResult.error(fileMessage);
         }//和前面的部分合并
         //找文件
         File[] files =  new File(AUTO_IMPORT_DTC_PATH).listFiles();
         if (files == null || files.length == 0){
             log.error("该文件为空或者没有权限读取");
-            return AjaxResult.error("Don't have such file");
+            String fileMessage = "Don't have such file";
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_FAIL, "UNKNOW", fileMessage, refreshWay);
+            return AjaxResult.error(fileMessage);
         }
         log.info("开始读取文件，文件大小为{}",files.length);
 
         DeviceInfoVo deviceInfoVo = null;
-        for (File file:files) {
-            if (DEVICE_TYPE_CAR.equals(refreshDeviceDTO.getDeviceType()) && (file.getName().toUpperCase().contains("CAR") || "CAR".equals(file.getName().toUpperCase()))) {
-                firePath = file.getCanonicalPath();
-                log.info("读取Car文件,文件名称为{}", file.getName());
-                break;
-            } else if (DEVICE_TYPE_BENCH.equals(refreshDeviceDTO.getDeviceType()) && (file.getName().toUpperCase().contains("BENCH") || "BENCH".equals(file.getName().toUpperCase()))){
-                firePath = file.getCanonicalPath();
-                log.info("读取bench文件,文件名称为{}", file.getName());
-                break;
+        try {
+            for (File file:files) {
+                if (DEVICE_TYPE_CAR.equals(refreshDeviceDTO.getDeviceType()) && (file.getName().toUpperCase().contains("CAR") || "CAR".equals(file.getName().toUpperCase()))) {
+                    firePath = file.getCanonicalPath();
+                    log.info("读取Car文件,文件名称为{}", file.getName());
+                    break;
+                } else if (DEVICE_TYPE_BENCH.equals(refreshDeviceDTO.getDeviceType()) && (file.getName().toUpperCase().contains("BENCH") || "BENCH".equals(file.getName().toUpperCase()))){
+                    firePath = file.getCanonicalPath();
+                    log.info("读取bench文件,文件名称为{}", file.getName());
+                    break;
+                }
             }
-
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         Date lastDateByFileName = new Date(0);
@@ -676,19 +687,25 @@ public class DeviceListServiceImpl implements DeviceListService {
         String devicePath = null;
         String dtcTimeStr = null;
         //找同名文件
-        for (File dtcFile:FileUtil.loopFiles(firePath)){
-            if (dtcFile == null){
-                continue;
+        try {
+            for (File dtcFile:FileUtil.loopFiles(firePath)){
+                if (dtcFile == null){
+                    continue;
+                }
+                String fileName = dtcFile.getParentFile().getName();
+                if (fileName.equals(refreshDeviceDTO.getDeviceName()) || fileName.contains(refreshDeviceDTO.getDeviceName())){
+                    devicePath = dtcFile.getCanonicalPath();
+                    break;
+                }
             }
-            String fileName = dtcFile.getParentFile().getName();
-            if (fileName.equals(refreshDeviceDTO.getDeviceName()) || fileName.contains(refreshDeviceDTO.getDeviceName())){
-                devicePath = dtcFile.getCanonicalPath();
-                break;
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         if (StringUtils.isEmpty(devicePath)){
             log.info("this devicePath is {}" + devicePath);
-            return AjaxResult.error("Don't have such report");
+            String fileMessage = "Don't have such report";
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_FAIL, "UNKNOW", fileMessage, refreshWay);
+            return AjaxResult.error(fileMessage);
         }
         //找到最新的一版
         for (File deviceFile:FileUtil.loopFiles(devicePath)){
@@ -707,26 +724,39 @@ public class DeviceListServiceImpl implements DeviceListService {
                 lastFileByFileDate = deviceFile;
             }
         }
-        if (lastFileByFileName != null && !lastFileByFileName.getName().equals(lastFileByFileDate.getName())){
-            Date preciseDateByName = getPreciseDate(lastFileByFileName);
-            Date preciseDateByDate = getPreciseDate(lastFileByFileDate);
-            if (DateUtil.compare(preciseDateByName,preciseDateByDate) < 0){
-                lastFile = lastFileByFileName;
+        try {
+            if (lastFileByFileName != null && !lastFileByFileName.getName().equals(lastFileByFileDate.getName())){
+                Date preciseDateByName = getPreciseDate(lastFileByFileName);
+                Date preciseDateByDate = getPreciseDate(lastFileByFileDate);
+                if (DateUtil.compare(preciseDateByName,preciseDateByDate) < 0){
+                    lastFile = lastFileByFileName;
+                }else {
+                    lastFile = lastFileByFileDate;
+                }
             }else {
-                lastFile = lastFileByFileDate;
+                lastFile = lastFileByFileDate;//如果二者相同则任意一种都可以
             }
-        }else {
-            lastFile = lastFileByFileDate;//如果二者相同则任意一种都可以
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
         if (lastFile == null){
-            return AjaxResult.error("Not such file");
+            String fileMessage = "Not such file";
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_FAIL, "UNKNOW", fileMessage, refreshWay);
+            return AjaxResult.error(fileMessage);
         }
 
         //build
         InputStream fileInputStream = IoUtil.toStream(lastFile);
-        Map<String, Map> reportMapVO = getReoirtMapVO(fileInputStream);
+        Map<String, Map> reportMapVO = null;
+        try {
+            reportMapVO = getReoirtMapVO(fileInputStream);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
         if (reportMapVO.isEmpty()){
-            return AjaxResult.error("This is empty file");
+            String fileMessage = "This is empty file";
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_FAIL, lastFile.getName(), fileMessage, refreshWay);
+            return AjaxResult.error(fileMessage);
         }
 
         //查找最近的一版并比较是否更新，时间与最新一版device进行比较
@@ -736,8 +766,11 @@ public class DeviceListServiceImpl implements DeviceListService {
             dtcTimeDate = DateUtil.parse(dtcTimeStr, new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"));
         }
         if (dtcTimeDate != null && DateUtil.compare(lastDateByFileName,refreshDeviceDTO.getUpdateTime()) > 0){
-            return AjaxResult.success("The current version is the latest");
+            String fileMessage = "The current version is the latest";
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_FAIL, lastFile.getName(), fileMessage, refreshWay);
+            return AjaxResult.error(fileMessage);
         }
+
 
         //插入
         deviceInfoVo = buildDeviceInfoVo(reportMapVO,refreshDeviceDTO.getDeviceType(),refreshDeviceDTO.getDeviceName());
@@ -746,7 +779,30 @@ public class DeviceListServiceImpl implements DeviceListService {
         deviceInfoVo.setDeviceName(refreshDeviceDTO.getDeviceName());
         deviceInfoVo.setCarlineInfoUid(refreshDeviceDTO.getCarlineInfoUid());
         deviceInfoVo.setDtcTime(dtcTimeStr);
-        return updateDeviceInfo(deviceInfoVo);
+        AjaxResult ajaxResult = updateDeviceInfo(deviceInfoVo);
+        if (ajaxResult.get(MSG_TAG) != null && "success".equals(ajaxResult.get(MSG_TAG))){
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_SUCCESS, lastFile.getName(), "", refreshWay);
+        }else {
+            String fileMessage = "refresh fail when update device";
+            Object msg = ajaxResult.get(MSG_TAG);
+            if (msg != null){
+                fileMessage = msg.toString();
+            }
+            insertRefreshLog(refreshDeviceDTO.getDeviceName(), REFRESH_STATUS_FAIL, lastFile.getName(), fileMessage, refreshWay);
+        }
+        return ajaxResult;
+    }
+
+    private void insertRefreshLog(String deviceName, String updateStatus, String fileName, String fileReason, String refreshWay) {
+        TRefreshLog refreshLog = new TRefreshLog();
+        refreshLog.setDeviceName(deviceName);
+        refreshLog.setUpdateTime(new Date());
+        refreshLog.setUpdateStatus(updateStatus);
+        refreshLog.setUpdateUser("user");
+        refreshLog.setRefreshFileName(fileName);
+        refreshLog.setFailLog(fileReason);
+        refreshLog.setRefreshWay(refreshWay);
+        tRefreshLogMapper.insert(refreshLog);
     }
 
     private Date getPreciseDate(File lastFile) throws ClassNotFoundException {
@@ -1521,13 +1577,60 @@ public class DeviceListServiceImpl implements DeviceListService {
     }
 
     @Override
-    public AjaxResult quarzImportAllDTCReport() throws IOException, ClassNotFoundException {
+    public AjaxResult quarzImportAllDTCReport(String refreshWay) {
         List<DeviceListVo> deviceListVos = tCarlineInfoMapper.queryDeviceList(new DeviceListParam());
+        Boolean isRefreshSuccess = true;
         for (DeviceListVo deviceListVo:deviceListVos){
             Long carlineInfoUid = deviceListVo.getCarlineInfoUid();
-            quarzImportDTCReport(carlineInfoUid);
+            AjaxResult ajaxResult = quarzImportDTCReport(carlineInfoUid, refreshWay);
+            if (!"200".equals(ajaxResult.get(CODE_TAG))){
+                isRefreshSuccess = false;
+            }
         }
-        return AjaxResult.success("refresh success");
+        if (isRefreshSuccess){
+            return AjaxResult.success("refresh success");
+        }else {
+            return AjaxResult.warn("refresh not completely successful");
+        }
+    }
+
+    @Override
+    public List<TRefreshLog> selectAllLogList(RefreshLogParam refreshLogParam) {
+        QueryWrapper<TRefreshLog> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("update_time");
+        return tRefreshLogMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<RefreshLogExportDTO> mapRefreshLogDictValue(List<TRefreshLog> list) {
+        List<RefreshLogExportDTO> refreshLogExportDTOS = new ArrayList<>();
+        for (TRefreshLog tRefreshLog:list){
+            RefreshLogExportDTO refreshLogExportDTO = new RefreshLogExportDTO();
+            refreshLogExportDTO.setDeviceName(tRefreshLog.getDeviceName());
+            refreshLogExportDTO.setRefreshFileName(tRefreshLog.getRefreshFileName());
+            refreshLogExportDTO.setFailLog(tRefreshLog.getFailLog());
+            String refreshWay = tRefreshLog.getRefreshWay();
+            if (StringUtils.isNotEmpty(refreshWay) && refreshWay.equals(REFRESH_WAY_MANUAL)){
+                refreshLogExportDTO.setRefreshWay("MANUAL");
+            }
+            if (StringUtils.isNotEmpty(refreshWay) && refreshWay.equals(REFRESH_WAY_AUTO)){
+                refreshLogExportDTO.setRefreshWay("AUTO");
+            }
+            String updateStatus = tRefreshLog.getUpdateStatus();
+            if (StringUtils.isNotEmpty(updateStatus) && updateStatus.equals(REFRESH_STATUS_SUCCESS)){
+                refreshLogExportDTO.setUpdateStatus("SUCCESS");
+            }
+            if (StringUtils.isNotEmpty(updateStatus) && updateStatus.equals(REFRESH_STATUS_FAIL)){
+                refreshLogExportDTO.setUpdateStatus("FAIL");
+            }
+            Date updateTime = tRefreshLog.getUpdateTime();
+            if (updateTime != null){
+                String format = DateUtil.format(updateTime, "yyyy-MM-dd HH:mm:ss");
+                refreshLogExportDTO.setUpdateTime(format);
+            }
+            refreshLogExportDTOS.add(refreshLogExportDTO);
+        }
+        return refreshLogExportDTOS;
     }
 
     /**

@@ -3,9 +3,17 @@ package com.ruoyi.system.controller;
 import cn.hutool.core.io.FileUtil;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.system.domain.dto.ExportRecordListDTO;
 import com.ruoyi.system.domain.dto.ImportGoldenInfoDTO;
 import com.ruoyi.system.domain.dto.ImportPartComponentDTO;
+import com.ruoyi.system.domain.dto.RefreshLogExportDTO;
 import com.ruoyi.system.domain.param.DesktopGetDBParam;
+import com.ruoyi.system.domain.param.DeviceListParam;
+import com.ruoyi.system.domain.param.RecordListParam;
+import com.ruoyi.system.domain.param.RefreshLogParam;
+import com.ruoyi.system.domain.po.TRefreshLog;
 import com.ruoyi.system.service.DesktopService;
 import com.ruoyi.system.service.DeviceListService;
 import com.ruoyi.system.service.GoldenInfoService;
@@ -14,14 +22,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.ruoyi.common.constant.TestKitConstants.AUTO_IMPORT_DTC_PATH;
-import static com.ruoyi.common.constant.TestKitConstants.AUTO_IMPORT_GOLDEN_PATH;
+import static com.ruoyi.common.constant.TestKitConstants.*;
 
 
 /**
@@ -49,7 +58,7 @@ public class TestkitCommonController extends BaseController
      */
     @GetMapping("refresh/all")
     @ApiOperation("提交")
-    public AjaxResult refreshAllDevice() throws Exception {
+    public AjaxResult refreshAllDevice()  {
         //golden
         //删除当前的
         /*Long[] carlineInfoUids = deviceListService.selectAllGolden();
@@ -68,11 +77,7 @@ public class TestkitCommonController extends BaseController
         }*/
 
         //device
-        try {
-            return deviceListService.quarzImportAllDTCReport();
-        } catch (IOException e) {
-            return AjaxResult.success("刷新失败");
-        }
+        return deviceListService.quarzImportAllDTCReport(REFRESH_WAY_MANUAL);
     }
 
 
@@ -84,8 +89,8 @@ public class TestkitCommonController extends BaseController
      */
     @ApiOperation("查询车型基本信息列表")
     @GetMapping("refresh/device/{carlineInfoUid}")
-    public AjaxResult autoSaveVersionList(@PathVariable("carlineInfoUid") Long carlineInfoUid) throws IOException, ClassNotFoundException {
-        return deviceListService.quarzImportDTCReport(carlineInfoUid);
+    public AjaxResult autoSaveVersionList(@PathVariable("carlineInfoUid") Long carlineInfoUid){
+        return deviceListService.quarzImportDTCReport(carlineInfoUid,REFRESH_WAY_MANUAL);
     }
 
     /**
@@ -125,4 +130,25 @@ public class TestkitCommonController extends BaseController
         return AjaxResult.success("golden delete success");
     }
 
+    /**
+     * 导出`refresh`列表
+     */
+    @PostMapping("refresh/log/export")
+    public void exportLog(HttpServletResponse response, RefreshLogParam refreshLogParam)
+    {
+        List<TRefreshLog> list = deviceListService.selectAllLogList(refreshLogParam);
+        List<RefreshLogExportDTO> refreshLogExportDTOS= deviceListService.mapRefreshLogDictValue(list);
+        ExcelUtil<RefreshLogExportDTO> util = new ExcelUtil<RefreshLogExportDTO>(RefreshLogExportDTO.class);
+        util.exportExcel(response, refreshLogExportDTOS, "refreshLogList");
+    }
+
+    /**
+     * 查看`refresh`列表
+     */
+    @PostMapping("refresh/log/list")
+    public TableDataInfo list(@Validated @RequestBody  RefreshLogParam refreshLogParam) {
+        startPage();
+        List<TRefreshLog> list = deviceListService.selectAllLogList(refreshLogParam);
+        return getDataTable(list);
+    }
 }

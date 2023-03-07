@@ -122,7 +122,7 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
             "            </foreach>\n" +
             "        </if>" +
             "       <if test=\"dashboardParam.functionGroupTypes != null and dashboardParam.functionGroupTypes.length > 0\">\n" +
-            "            and tdc.function_group_type in\n" +
+            "            and tdr.function_group_type in\n" +
             "            <foreach collection=\"dashboardParam.variantTypes\" item=\"item\" index=\"index\" open=\"(\" separator=\",\" close=\")\">\n" +
             "                #{item}\n" +
             "            </foreach>\n" +

@@ -2,12 +2,16 @@ package com.ruoyi.system.task;
 
 //import com.ruoyi.system.service.DeviceListService;
 
+import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.service.DeviceListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+
+import static com.ruoyi.common.constant.TestKitConstants.REFRESH_WAY_AUTO;
+import static com.ruoyi.common.constant.TestKitConstants.REFRESH_WAY_MANUAL;
 
 /**
  * 定时任务调度测试
@@ -21,6 +25,7 @@ public class DeviceTask
     private DeviceListService deviceListService;
 
 
+
     public void test(){
         System.out.println("21111111111");
     }
@@ -29,13 +34,7 @@ public class DeviceTask
      */
     public void quarzImportAllDTCReport()
     {
-        try {
-            deviceListService.quarzImportAllDTCReport();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        AjaxResult ajaxResult = deviceListService.quarzImportAllDTCReport(REFRESH_WAY_AUTO);
     }
 
 
