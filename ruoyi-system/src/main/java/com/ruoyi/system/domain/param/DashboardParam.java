@@ -63,4 +63,5 @@ public class DashboardParam extends BaseEntity {
         @ApiModelProperty
         @JsonFormat(pattern = "yyyy-MM-dd")
         private String testEndDate;
+        private String deviceName;
 }

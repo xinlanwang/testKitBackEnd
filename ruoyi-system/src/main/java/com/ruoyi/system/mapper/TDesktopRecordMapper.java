@@ -123,7 +123,7 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
             "        </if>" +
             "       <if test=\"dashboardParam.functionGroupTypes != null and dashboardParam.functionGroupTypes.length > 0\">\n" +
             "            and tdr.function_group_type in\n" +
-            "            <foreach collection=\"dashboardParam.variantTypes\" item=\"item\" index=\"index\" open=\"(\" separator=\",\" close=\")\">\n" +
+            "            <foreach collection=\"dashboardParam.functionGroupTypes\" item=\"item\" index=\"index\" open=\"(\" separator=\",\" close=\")\">\n" +
             "                #{item}\n" +
             "            </foreach>\n" +
             "        </if>" +
@@ -131,7 +131,10 @@ public interface TDesktopRecordMapper  extends BaseMapper<TDesktopRecord>
             "            and tdr.oper_time &gt;= DATE_FORMAT(#{dashboardParam.testStartDate}, '%Y-%m-%d')\n" +
             "        </if>\n" +
             "        <if test=\"dashboardParam.testEndDate != null \">\n" +
-            "            and tdr.oper_time &lt;= DATE_FORMAT(#{dashboardParam.testEndDate}, '%Y-%m-%d')\n" +
+            "            and tdr.oper_time &lt;= DATE_FORMAT(DATE_ADD(#{dashboardParam.testEndDate},INTERVAL 1 DAY), '%Y-%m-%d')\n" +
+            "        </if>" +
+            "       <if test=\"dashboardParam.deviceName != null and dashboardParam.deviceName != ''\">\n" +
+            "            AND lower(tci.device_name) like lower(concat('%', #{dashboardParam.deviceName}, '%'))\n" +
             "        </if>";
 
     String staticRecordByDeviceNameSql = "select tci.device_name as deviceName,sum(tdr.test_hour) as testHour,sum(tdr.mileacge) as mileacge\n" +
