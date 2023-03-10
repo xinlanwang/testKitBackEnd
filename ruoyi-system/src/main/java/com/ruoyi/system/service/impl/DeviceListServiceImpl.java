@@ -1367,7 +1367,8 @@ public class DeviceListServiceImpl implements DeviceListService {
                     String resp = importDeviceDTO.getResp();
                     tCarlineInfo.setResp(resp);
                 }
-                String versionCode = DateUtil.format(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant()), "yyMMddHHmmss");
+//                String versionCode = DateUtil.format(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant()), "yyMMddHHmmss");
+                String versionCode = new Date().toInstant().atZone(ZoneId.of("Asia/Shanghai")).format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
                 tCarlineInfo.setVersionCode(versionCode);
                 tCarlineInfo.setBasicType(BASIC_TYPE_WEB_DEVICE);
                 //版本名称
@@ -1614,10 +1615,7 @@ public class DeviceListServiceImpl implements DeviceListService {
             }
             Date updateTime = tRefreshLog.getUpdateTime();
             if (updateTime != null){
-                ZoneId shanghaiZoneId = ZoneId.of("Asia/Shanghai");
-                ZonedDateTime zonedDateTime = updateTime.toInstant().atZone(shanghaiZoneId);
-                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                String format = zonedDateTime.format(dateTimeFormatter);
+                String format = updateTime.toInstant().atZone(ZoneId.of("Asia/Shanghai")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
                 refreshLogExportDTO.setUpdateTime(format);
             }
             refreshLogExportDTOS.add(refreshLogExportDTO);
@@ -1838,10 +1836,12 @@ public class DeviceListServiceImpl implements DeviceListService {
         tCluster.setIsShow(1);
         //版本名称
         /*时间戳_dtc_文件名   时间戳_manual*/
-        String versionTimeStamp = DateUtil.format(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant()), "yyMMddHHmmss");
+//        String versionTimeStamp = DateUtil.format(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).toInstant()), "yyMMddHHmmss");
+        String versionTimeStamp = new Date().toInstant().atZone(ZoneId.of("Asia/Shanghai")).format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         if (StringUtils.isNotEmpty(deviceInfoVo.getDtcTime())){
             Date dtcTimeDate = DateUtil.parse(deviceInfoVo.getDtcTime(), new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"));
-            versionTimeStamp = DateUtil.format(dtcTimeDate, "yyMMddHHmmss");
+//            versionTimeStamp = DateUtil.format(dtcTimeDate, "yyMMddHHmmss");
+            versionTimeStamp = dtcTimeDate.toInstant().atZone(ZoneId.of("Asia/Shanghai")).format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         }
         StringBuffer autoSaveVersionName = new StringBuffer(versionTimeStamp).append("_");
         if (deviceInfoVo.getIsRefresh() != null){
