@@ -227,8 +227,12 @@ public class DesktopServiceImpl implements DesktopService {
                     dbMap.put(tableName,list);
                 }
             }
-            rs.close();
-            conn.close();
+            if (rs != null){
+                rs.close();
+            }
+            if (conn != null){
+                conn.close();
+            }
             return dbMap;
         } catch (SQLException e) {
             throw new RuntimeException(e);

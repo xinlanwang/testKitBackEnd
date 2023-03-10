@@ -22,7 +22,7 @@ services:
     depends_on:
       - testkit-mysql # This service depends on mysql. Start that first.
     environment: # Pass environment variables to the service
-      SPRING_DATASOURCE_URL: jdbc:mysql://testkit-mysql:3306/testkit?useUnicode=true&useSSL=false&serverTimezone=GMT%2B8&useLegacyDatetimeCode=false&zeroDateTimeBehavior=convertToNull&characterEncoding=utf8
+      SPRING_DATASOURCE_URL: jdbc:mysql://testkit-mysql:3306/testkit?useUnicode=true&useSSL=false&serverTimezone=UTC%2B8&useLegacyDatetimeCode=false&zeroDateTimeBehavior=convertToNull&characterEncoding=utf8
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 12345678
     networks: # Networks to join (Services on the same network can communicate with each other using their name)

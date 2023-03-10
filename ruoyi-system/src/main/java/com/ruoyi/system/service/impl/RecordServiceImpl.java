@@ -1,4 +1,6 @@
 package com.ruoyi.system.service.impl;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.ruoyi.common.utils.reflect.ReflectUtils;
@@ -162,10 +164,24 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Test
-    public void test23(){
-        StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append("djasiodjwide");
-        System.out.println(stringBuffer.delete(stringBuffer.length() - 1 , stringBuffer.length()));
+    public void test23() throws ParseException {
+        String fileName = "EE327_LFV3A28W3L3652105_20210909_044125PM.xml";
+        fileName = fileName.replace(".xml","");
+        if ("AM".equals(fileName.substring(fileName.replace(".xml","").length() - 2,fileName.length())) ||
+                "PM".equals(fileName.substring(fileName.replace(".xml","").length() - 2,fileName.length())) ){
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append(fileName.split("_")[fileName.split("_").length - 2]);
+            stringBuffer.append(fileName.split("_")[fileName.split("_").length - 1]);
+            stringBuffer.delete(stringBuffer.length() - 2,stringBuffer.length());
+            Date fileDate = new SimpleDateFormat("yyyyMMddhhmmss").parse(stringBuffer.toString());
+            System.out.println(fileDate);
+        }else {
+            StringBuffer stringBuffer = new StringBuffer();
+            stringBuffer.append(fileName.split("_")[fileName.split("_").length - 2].replaceAll("\\.",""));
+            stringBuffer.append(fileName.split("_")[fileName.split("_").length - 1].replace(".xml","").replaceAll("\\.",""));
+            Date fileDate = new SimpleDateFormat("ddMMyyyyhhmmss").parse(stringBuffer.toString());
+            System.out.println(fileDate);
+        }
     }
 
     @Override
